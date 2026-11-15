@@ -56,11 +56,11 @@
     <text x="564" y="32.11" text-anchor="middle" font-size="12" fill="#1f2937">retry label</text>
   </g>
   <g id="edge-shipped--done">
-    <path d="M824 80 L864 80 L864 112 L911.24 112" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="898.26" y="92.37" text-anchor="middle" font-size="12" fill="#1f2937">delivered</text>
+    <path d="M824 80 L864 80 L864 120 L908 120" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="898.26" y="94.37" text-anchor="middle" font-size="12" fill="#1f2937">delivered</text>
   </g>
   <g id="edge-cancelled--done">
-    <path d="M624 160 L768 160 L768 128 L911.24 128" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M624 160 L920 160 L920 132" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
   </g>
   <g id="edge-placed--draft">
     <path d="M264 128 L200 128" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>

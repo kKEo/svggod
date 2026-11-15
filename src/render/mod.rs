@@ -177,6 +177,44 @@ fn sides(a: Rect, b: Rect, dir: Direction, diagram: Diagram) -> (Dir, Dir) {
     }
 }
 
+/// True for the round start and end markers.
+fn is_marker(spec: &Spec, r: Ref) -> bool {
+    matches!(r, Ref::Node(i) if matches!(spec.nodes[i].kind, Kind::Start | Kind::End))
+}
+
+/// A marker has one port per side, at its middle. When several edges want the same side of a
+/// marker, the one best lined up with that side keeps it and the others move to a free side that
+/// faces their other end. Only when every side is taken do edges share a port.
+fn spread_marker_sides(spec: &Spec, geo: &Geometry, ends: &[(Ref, Ref)], using: &mut BTreeMap<(Ref, usize), Vec<(usize, bool)>>, chosen: &mut [Option<(Dir, Dir)>]) {
+    let crowded: Vec<(Ref, usize)> = using.iter().filter(|((r, _), list)| list.len() > 1 && is_marker(spec, *r)).map(|(k, _)| *k).collect();
+    for (r, s) in crowded {
+        let c = box_of(geo, r).center();
+        let side = Dir::from_index(s);
+        let other_centre = |&(edge, is_from): &(usize, bool)| box_of(geo, if is_from { ends[edge].1 } else { ends[edge].0 }).center();
+        // How far the other end lies off the line through the centre, out of this side.
+        let off_axis = |p: Point| if matches!(side, Dir::E | Dir::W) { (p.y - c.y).abs() } else { (p.x - c.x).abs() };
+        let mut list = using.remove(&(r, s)).unwrap_or_default();
+        list.sort_by(|a, b| off_axis(other_centre(a)).total_cmp(&off_axis(other_centre(b))).then(a.0.cmp(&b.0)));
+        let mut keep = vec![list[0]];
+        for item in list.into_iter().skip(1) {
+            let v = other_centre(&item) - c;
+            // Free sides, those facing the other end first.
+            let mut options = [Dir::E, Dir::S, Dir::W, Dir::N];
+            options.sort_by(|a, b| v.dot(b.vec()).total_cmp(&v.dot(a.vec())));
+            match options.into_iter().find(|d| *d != side && !using.contains_key(&(r, *d as usize))) {
+                Some(d) => {
+                    using.insert((r, d as usize), vec![item]);
+                    if let Some((sa, sb)) = chosen[item.0].as_mut() {
+                        *if item.1 { sa } else { sb } = d;
+                    }
+                }
+                None => keep.push(item),
+            }
+        }
+        using.insert((r, s), keep);
+    }
+}
+
 fn side_point(r: Rect, side: Dir, offset: f64) -> Point {
     match side {
         Dir::E => Point::new(r.x1, r.y0 + offset),
@@ -315,6 +353,7 @@ fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, shapes_of: &dyn Fn(usiz
         using.entry((*b, sb as usize)).or_default().push((i, false));
         chosen.push(Some((sa, sb)));
     }
+    spread_marker_sides(spec, &geo, &ends, &mut using, &mut chosen);
     // Each port aims straight at the other end, so aligned boxes get a straight edge;
     // ports that want the same spot are spread along the side. The second pass aims at
     // the ports the first one chose. A side with a single edge is the exception: the arrow lands
@@ -340,6 +379,14 @@ fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, shapes_of: &dyn Fn(usiz
             let inset: f64 = if spacing == 16.0 { 16.0 } else { 8.0 };
             let has_loop = looped.contains(r);
             let (first, last) = (if has_loop && side == Dir::E { inset.max(40.0) } else { inset }, if has_loop && side == Dir::N { (len - 48.0).max(inset) } else { len - inset });
+            // A round marker is met at the middle of each side, so every edge runs through its centre
+            // and touches the circle at the point closest to where it comes from.
+            if is_marker(spec, *r) {
+                for (edge, is_from) in list {
+                    port.insert((*edge, *is_from), side_point(rect, side, len / 2.0));
+                }
+                continue;
+            }
             if let [(edge, is_from)] = list[..] {
                 let other = if is_from { ends[edge].1 } else { ends[edge].0 };
                 let aim = match before.get(&(edge, !is_from)) {

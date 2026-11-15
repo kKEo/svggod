@@ -36,6 +36,10 @@ impl Dir {
     fn from(i: usize) -> Dir {
         [Dir::E, Dir::S, Dir::W, Dir::N][i % 4]
     }
+    /// The side for an index as stored by `Dir as usize`.
+    pub fn from_index(i: usize) -> Dir {
+        Dir::from(i)
+    }
     pub fn vec(self) -> kurbo::Vec2 {
         let (dx, dy) = self.delta();
         kurbo::Vec2::new(dx as f64, dy as f64)
