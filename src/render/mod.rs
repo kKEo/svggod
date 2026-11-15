@@ -85,7 +85,7 @@ fn shape(kind: Kind, r: Rect, theme: &Theme) -> Shape {
         Kind::Box => rounded(theme.box_corner, false, vec![]),
         Kind::State => rounded(theme.corner * 1.5, false, vec![]),
         Kind::Start | Kind::End => {
-            let (c, r) = (r.center(), MARKER_R.min(w.min(h) / 2.0));
+            let (c, r) = (r.center(), marker_radius(r));
             let outline = svg::flatten(&kurbo::Circle::new(c, r).to_path(0.05));
             let parts = if kind == Kind::Start { vec![Part::Disc { c, r, ink: true }] } else { vec![Part::Disc { c, r: r - theme.width / 2.0, ink: false }, Part::Disc { c, r: r - 5.0, ink: true }] };
             Shape { outline, parts }
@@ -175,6 +175,25 @@ fn sides(a: Rect, b: Rect, dir: Direction, diagram: Diagram) -> (Dir, Dir) {
         },
         (false, false) => (fwd, back),
     }
+}
+
+/// The radius a start or end marker is drawn with in its box.
+fn marker_radius(r: Rect) -> f64 {
+    MARKER_R.min(r.width().min(r.height()) / 2.0)
+}
+
+/// The point of the circle (`c`, `r`) closest to `from`.
+pub(crate) fn closest_on_circle(c: Point, r: f64, from: Point) -> Point {
+    let v = from - c;
+    let len = v.hypot();
+    if len < 1e-9 { c + Vec2::new(r, 0.0) } else { c + v * (r / len) }
+}
+
+/// How far `p` lies from the infinite line through `a` and `b`.
+fn distance_to_line(p: Point, a: Point, b: Point) -> f64 {
+    let d = b - a;
+    let len = d.hypot();
+    if len < 1e-9 { p.distance(a) } else { (d.cross(p - a) / len).abs() }
 }
 
 /// True for the round start and end markers.
@@ -463,7 +482,22 @@ fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, shapes_of: &dyn Fn(usiz
         let mut pts = vec![tip(*a, pa, sa)];
         pts.extend(mid);
         pts.push(tip(*b, pb, sb));
-        routes.push(route::simplify(pts));
+        let mut pts = route::simplify(pts);
+        // A leg that ends on a marker but does not run through its centre (a kept layout, a router
+        // fallback) is bent to meet the circle at the point closest to where the leg comes from.
+        let n = pts.len();
+        if n >= 2 {
+            for (r, at, from) in [(*a, 0, 1), (*b, n - 1, n - 2)] {
+                if is_marker(spec, r) {
+                    let rect = box_of(&geo, r);
+                    let c = rect.center();
+                    if distance_to_line(c, pts[from], pts[at]) > 0.5 {
+                        pts[at] = closest_on_circle(c, marker_radius(rect), pts[from]);
+                    }
+                }
+            }
+        }
+        routes.push(pts);
     }
 
     // Edge labels: beside the longest segment that has room.
@@ -992,5 +1026,81 @@ mod tests {
             }
         }
         assert!(seen >= 15, "fixtures and examples were found");
+    }
+
+    fn draw(yaml: &str) -> String {
+        let doc = crate::spec::read_document(yaml, "t.yaml").unwrap();
+        let spec = crate::spec::parse(&doc).unwrap();
+        let look = theme::default();
+        render(&spec, &Options { theme: &look, text_as_paths: false, embed: None, interactive: false }).unwrap()
+    }
+
+    /// The centre of a marker node, read from its first circle.
+    fn centre(svg: &str, id: &str) -> Point {
+        let g = svg.split(&format!("<g id=\"node-{id}\">")).nth(1).unwrap();
+        let attr = |name: &str| g.split(&format!(" {name}=\"")).nth(1).unwrap().split('"').next().unwrap().parse::<f64>().unwrap();
+        Point::new(attr("cx"), attr("cy"))
+    }
+
+    /// The points of every edge path, by edge id.
+    fn edges(svg: &str) -> Vec<(String, Vec<Point>)> {
+        svg.split("<g id=\"edge-")
+            .skip(1)
+            .map(|g| {
+                let id = g.split('"').next().unwrap().to_string();
+                let d = g.split(" d=\"").nth(1).unwrap().split('"').next().unwrap();
+                let nums: Vec<f64> = d.split(|c: char| c == 'M' || c == 'L' || c.is_whitespace()).filter(|s| !s.is_empty()).map(|s| s.parse().unwrap()).collect();
+                (id, nums.chunks(2).map(|p| Point::new(p[0], p[1])).collect())
+            })
+            .collect()
+    }
+
+    /// Every edge that starts or ends on a marker meets the circle on the line through its
+    /// centre: the closest point. Returns the side (as a unit vector) each one arrives on.
+    fn assert_marker_ends_are_radial(svg: &str, markers: &[&str]) -> Vec<Vec2> {
+        let mut sides = Vec::new();
+        for (id, pts) in edges(svg) {
+            let (from, to) = id.split_once("--").unwrap();
+            for (m, at, prev) in [(from, pts[0], pts[1]), (to, pts[pts.len() - 1], pts[pts.len() - 2])] {
+                if !markers.contains(&m) {
+                    continue;
+                }
+                let c = centre(svg, m);
+                assert!((at.distance(c) - MARKER_R).abs() < 0.1, "{id}: ends {} px from the centre of {m}", at.distance(c));
+                assert!(distance_to_line(c, prev, at) < 0.5, "{id}: the last leg misses the centre of {m}");
+                sides.push((at - c) / MARKER_R);
+            }
+        }
+        sides
+    }
+
+    #[test]
+    fn edges_meet_markers_at_the_closest_point() {
+        let spec = std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/states.yaml")).unwrap();
+        for dir in ["right", "down"] {
+            let svg = draw(&format!("{spec}direction: {dir}\n"));
+            assert!(!assert_marker_ends_are_radial(&svg, &["begin", "done"]).is_empty(), "{dir}: edges touch the markers");
+        }
+    }
+
+    #[test]
+    fn edges_crowding_one_side_of_a_marker_take_other_sides() {
+        let svg = draw("version: 1\ndiagram: state\ntitle: T\nnodes:\n  - {id: a, label: A}\n  - {id: b, label: B}\n  - {id: c, label: C}\n  - {id: done, kind: end}\nedges:\n  - \"a -> done\"\n  - \"b -> done\"\n  - \"c -> done\"\n");
+        let sides = assert_marker_ends_are_radial(&svg, &["done"]);
+        assert_eq!(sides.len(), 3);
+        for (k, s) in sides.iter().enumerate() {
+            for t in &sides[k + 1..] {
+                assert!((*s - *t).hypot() > 0.5,"two edges share a side of the marker: {sides:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn closest_point_on_a_circle() {
+        let c = Point::new(10.0, 10.0);
+        assert_eq!(closest_on_circle(c, 5.0, Point::new(30.0, 10.0)), Point::new(15.0, 10.0));
+        let p = closest_on_circle(c, 5.0, Point::new(13.0, 14.0));
+        assert!((p.x - 13.0).abs() < 1e-9 && (p.y - 14.0).abs() < 1e-9, "{p:?}");
+        assert!((closest_on_circle(c, 5.0, c).distance(c) - 5.0).abs() < 1e-9);
     }
 }
