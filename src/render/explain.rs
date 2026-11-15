@@ -28,7 +28,8 @@ pub fn badge_room(count: usize, has_text: bool) -> f64 {
 pub fn node_badges(kind: Kind, r: Rect, count: usize) -> Vec<Point> {
     let first = match kind {
         Kind::Decision => Point::new(r.x0 + r.width() / 4.0, r.y0 + r.height() / 4.0),
-        Kind::Start | Kind::End => Point::new(r.x0 - 4.0, r.y0 - 4.0),
+        // The marker is drawn 4 px inside its box; the badge keeps its old place just off the circle.
+        Kind::Start | Kind::End => Point::new(r.x0, r.y0),
         Kind::Actor | Kind::Queue => {
             let rad = r.height() / 2.0;
             Point::new(r.x0 + rad * 0.3, r.y0 + rad * 0.3)

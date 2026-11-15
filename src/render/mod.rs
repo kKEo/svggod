@@ -34,6 +34,8 @@ pub struct Options<'a> {
 }
 
 const STUB: f64 = 16.0;
+/// Radius of the start and end markers. Their box is 32 px, so the circle sits 4 px inside it.
+pub(crate) const MARKER_R: f64 = 12.0;
 /// How far from the middle of a side a lone edge may start, to run straight to the box at the other end.
 const STRAIGHT_WITHIN: f64 = 16.0;
 
@@ -83,7 +85,7 @@ fn shape(kind: Kind, r: Rect, theme: &Theme) -> Shape {
         Kind::Box => rounded(theme.box_corner, false, vec![]),
         Kind::State => rounded(theme.corner * 1.5, false, vec![]),
         Kind::Start | Kind::End => {
-            let (c, r) = (r.center(), w.min(h) / 2.0);
+            let (c, r) = (r.center(), MARKER_R.min(w.min(h) / 2.0));
             let outline = svg::flatten(&kurbo::Circle::new(c, r).to_path(0.05));
             let parts = if kind == Kind::Start { vec![Part::Disc { c, r, ink: true }] } else { vec![Part::Disc { c, r: r - theme.width / 2.0, ink: false }, Part::Disc { c, r: r - 5.0, ink: true }] };
             Shape { outline, parts }

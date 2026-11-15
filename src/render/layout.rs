@@ -106,7 +106,8 @@ pub fn measure(spec: &Spec, t: &Tuning, theme: &Theme) -> Measured {
             let text = block(&n.label, theme.size, fixed.map(|w| (w - 32.0).max(24.0)).unwrap_or(t.wrap), class);
             let lines = text.lines.len() as f64;
             let (w, h, text_dy) = match n.kind {
-                Kind::Start | Kind::End => (24.0, 24.0, 0.0),
+                // Twice the grid step, so the marker's centre sits on a grid line and edges can reach it straight.
+                Kind::Start | Kind::End => (32.0, 32.0, 0.0),
                 Kind::Decision => (up(text.width * 1.5 + 48.0, 16.0).max(128.0), up(lines * lead + 44.0, 16.0).max(64.0), 0.0),
                 Kind::Datastore => (up(text.width + 32.0, 16.0).max(96.0), up(lines * lead + 44.0, 16.0).max(64.0), 6.0),
                 Kind::Client => (up(text.width + 32.0, 16.0).max(96.0), up(lines * lead + 44.0, 16.0).max(64.0), 8.0),

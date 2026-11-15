@@ -1,69 +1,69 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 944 200" data-svgdog="1" font-family="Inter, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 200" data-svgdog="1" font-family="Inter, sans-serif">
   <title>Order states</title>
   <desc>The life of an order from draft to delivery or cancellation.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L10 4L0 8Z" fill="#1f2937"/></marker>
   </defs>
-  <rect x="0" y="0" width="944" height="200" fill="#ffffff"/>
+  <rect x="0" y="0" width="960" height="200" fill="#ffffff"/>
   <g id="node-begin">
-    <circle cx="36" cy="124" r="12" fill="#1f2937"/>
+    <circle cx="40" cy="120" r="12" fill="#1f2937"/>
   </g>
   <g id="node-draft">
-    <rect x="96" y="96" width="96" height="48" rx="12" fill="#dbeafe" stroke="#1f2937" stroke-width="1.5"/>
-    <text x="144" y="125.09" text-anchor="middle" font-size="14" fill="#1f2937">Draft</text>
+    <rect x="104" y="96" width="96" height="48" rx="12" fill="#dbeafe" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="152" y="125.09" text-anchor="middle" font-size="14" fill="#1f2937">Draft</text>
   </g>
   <g id="node-placed">
-    <rect x="256" y="96" width="96" height="48" rx="12" fill="#dbeafe" stroke="#1f2937" stroke-width="1.5"/>
-    <text x="304" y="125.09" text-anchor="middle" font-size="14" fill="#1f2937">Placed</text>
+    <rect x="264" y="96" width="96" height="48" rx="12" fill="#dbeafe" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="312" y="125.09" text-anchor="middle" font-size="14" fill="#1f2937">Placed</text>
   </g>
   <g id="node-paid">
-    <rect x="464" y="56" width="96" height="48" rx="12" fill="#2563eb" stroke="#1f2937" stroke-width="1.5"/>
-    <text x="512" y="85.09" text-anchor="middle" font-size="14" fill="#ffffff">Paid</text>
+    <rect x="472" y="56" width="96" height="48" rx="12" fill="#2563eb" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="520" y="85.09" text-anchor="middle" font-size="14" fill="#ffffff">Paid</text>
   </g>
   <g id="node-shipped">
-    <rect x="720" y="56" width="96" height="48" rx="12" fill="#dbeafe" stroke="#1f2937" stroke-width="1.5"/>
-    <text x="768" y="85.09" text-anchor="middle" font-size="14" fill="#1f2937">Shipped</text>
+    <rect x="728" y="56" width="96" height="48" rx="12" fill="#dbeafe" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="776" y="85.09" text-anchor="middle" font-size="14" fill="#1f2937">Shipped</text>
   </g>
   <g id="node-cancelled">
-    <rect x="504" y="136" width="112" height="48" rx="12" fill="#dbeafe" stroke="#1f2937" stroke-width="1.5"/>
-    <text x="560" y="165.09" text-anchor="middle" font-size="14" fill="#1f2937">Cancelled</text>
+    <rect x="512" y="136" width="112" height="48" rx="12" fill="#dbeafe" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="568" y="165.09" text-anchor="middle" font-size="14" fill="#1f2937">Cancelled</text>
   </g>
   <g id="node-done">
-    <circle cx="908" cy="116" r="11.25" fill="#dbeafe" stroke="#1f2937" stroke-width="1.5"/>
-    <circle cx="908" cy="116" r="7" fill="#1f2937"/>
+    <circle cx="920" cy="120" r="11.25" fill="#dbeafe" stroke="#1f2937" stroke-width="1.5"/>
+    <circle cx="920" cy="120" r="7" fill="#1f2937"/>
   </g>
   <g id="edge-begin--draft">
-    <path d="M47.28 128 L72 128 L72 120 L96 120" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M52 120 L104 120" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
   </g>
   <g id="edge-draft--placed">
-    <path d="M192 112 L256 112" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="224" y="104.11" text-anchor="middle" font-size="12" fill="#1f2937">submit</text>
+    <path d="M200 112 L264 112" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="232" y="104.11" text-anchor="middle" font-size="12" fill="#1f2937">submit</text>
   </g>
   <g id="edge-placed--paid">
-    <path d="M352 112 L408 112 L408 80 L464 80" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="422" y="72.11" text-anchor="middle" font-size="12" fill="#1f2937">payment ok</text>
+    <path d="M360 112 L416 112 L416 80 L472 80" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="430" y="72.11" text-anchor="middle" font-size="12" fill="#1f2937">payment ok</text>
   </g>
   <g id="edge-placed--cancelled">
-    <path d="M352 128 L432 128 L432 160 L504 160" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="450" y="176.63" text-anchor="middle" font-size="12" fill="#1f2937">payment failed</text>
+    <path d="M360 128 L440 128 L440 160 L512 160" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="458" y="176.63" text-anchor="middle" font-size="12" fill="#1f2937">payment failed</text>
   </g>
   <g id="edge-paid--shipped">
-    <path d="M560 80 L720 80" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="640" y="72.11" text-anchor="middle" font-size="12" fill="#1f2937">dispatch</text>
+    <path d="M568 80 L728 80" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="648" y="72.11" text-anchor="middle" font-size="12" fill="#1f2937">dispatch</text>
   </g>
   <g id="edge-paid--paid">
-    <path d="M536 56 L536 40 L576 40 L576 72 L560 72" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="556" y="32.11" text-anchor="middle" font-size="12" fill="#1f2937">retry label</text>
+    <path d="M544 56 L544 40 L584 40 L584 72 L568 72" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="564" y="32.11" text-anchor="middle" font-size="12" fill="#1f2937">retry label</text>
   </g>
   <g id="edge-shipped--done">
-    <path d="M816 80 L856 80 L856 112 L896.72 112" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="890.26" y="92.37" text-anchor="middle" font-size="12" fill="#1f2937">delivered</text>
+    <path d="M824 80 L864 80 L864 112 L911.24 112" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="898.26" y="92.37" text-anchor="middle" font-size="12" fill="#1f2937">delivered</text>
   </g>
   <g id="edge-cancelled--done">
-    <path d="M616 160 L760 160 L760 120 L896.72 120" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M624 160 L768 160 L768 128 L911.24 128" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
   </g>
   <g id="edge-placed--draft">
-    <path d="M256 128 L192 128" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="224" y="144.63" text-anchor="middle" font-size="12" fill="#1f2937">edit</text>
+    <path d="M264 128 L200 128" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="232" y="144.63" text-anchor="middle" font-size="12" fill="#1f2937">edit</text>
   </g>
 </svg>

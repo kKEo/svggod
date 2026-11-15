@@ -45,15 +45,15 @@ fn tidy(r: Rect) -> Rect {
     Rect::new(t(r.x0), t(r.y0), t(r.x1), t(r.y1))
 }
 
-/// The box a node's shape was drawn in. Two shapes are drawn a little inside
-/// their box: the ring of an end marker by half its stroke, and the wavy foot
+/// The box a node's shape was drawn in. Two shapes are drawn inside their box:
+/// a start or end marker, whose circle sits in a 32 px box, and the wavy foot
 /// of a document by 2 px.
 fn box_of_shape(e: &svg::Elem, bbox: Rect) -> Rect {
     match e.tag {
         "circle" => {
-            let r = e.node.attribute("r").and_then(|r| r.parse::<f64>().ok()).unwrap_or(0.0);
-            let lost = r.ceil() - r;
-            tidy(bbox.inflate(lost, lost))
+            let c = bbox.center();
+            let half = 16.0f64.max(bbox.width().max(bbox.height()).ceil() / 2.0);
+            tidy(Rect::new(c.x - half, c.y - half, c.x + half, c.y + half))
         }
         "path" if e.node.attribute("d").is_some_and(|d| d.contains('Q')) => tidy(Rect::new(bbox.x0, bbox.y0, bbox.x1, bbox.y1 + 2.0)),
         _ => tidy(bbox),
