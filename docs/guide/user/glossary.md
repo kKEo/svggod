@@ -30,7 +30,7 @@ These are the words this guide uses, in plain language. The [Operator guide](../
 | **preview** | Drawing an SVG into a PNG so you can look at it |
 | **profile** | How strict the checks are: `minimal`, `docs` or `strict` |
 | **render** | Turning a spec into an SVG, and checking the result |
-| **rule** | One check SVGDog can run, such as `low-contrast`. There are 38 |
+| **rule** | One check SVGDog can run, such as `low-contrast`. There are 39 |
 | **selector** | A short expression that names elements: `#id`, a tag such as `rect`, or `tag[attr="value"]` |
 | **sequence** | A diagram of messages between participants in time order |
 | **severity** | How serious a finding is: error, warning or info |

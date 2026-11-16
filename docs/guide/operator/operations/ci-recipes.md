@@ -102,4 +102,4 @@ The `--git ... --tag` form needs the tag to exist and has not been exercised; un
 | A clean report | `--fail-on warning`, plus `profile = "strict"` in `svgdog.toml` |
 | Only portability and structure checked | `--profile minimal` |
 
-Run `svgdog rules` to see the 38 rules and their default severities.
+Run `svgdog rules` to see the 39 rules and their default severities.

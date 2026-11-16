@@ -13,7 +13,7 @@
 5. **Turn hits into findings.** A hit is dropped if its rule is off or if a suppression covers its element or an ancestor. Otherwise it gets its severity from the settings, a target selector, a line number and a box.
 6. **Sort.** Findings are ordered by line, then rule id.
 
-The catalogue (`src/catalogue.rs`) holds each rule's group, default severity, autofix level (`none`, `safe` or `unsafe`) and numeric options. There are 38 rules: 10 structure, 12 geometry, 10 portability, 6 accessibility. Run `svgdog rules` to list them and `svgdog rules --explain <id>` to see a failing and a passing example; those examples are executed by the test suite.
+The catalogue (`src/catalogue.rs`) holds each rule's group, default severity, autofix level (`none`, `safe` or `unsafe`) and numeric options. There are 39 rules: 10 structure, 13 geometry, 10 portability, 6 accessibility. Run `svgdog rules` to list them and `svgdog rules --explain <id>` to see a failing and a passing example; those examples are executed by the test suite.
 
 ## Findings that cannot be exact
 
@@ -26,8 +26,8 @@ A profile sets the starting severities (`Profile::default_level`, `src/config.rs
 | Profile | Rules on | Severities |
 | --- | --- | --- |
 | `minimal` | The structure group, plus `script-content` and `external-resource` | As catalogued |
-| `docs` | All 38 | As catalogued |
-| `strict` | All 38 | `info` becomes `warning`; `warning` and `error` both become `error` |
+| `docs` | All 39 | As catalogued |
+| `strict` | All 39 | `info` becomes `warning`; `warning` and `error` both become `error` |
 
 On `tests/fixtures/broken.svg` the three profiles give `3 errors, 0 warnings, 1 info`, `7 errors, 11 warnings, 2 info` and `10 errors, 10 warnings, 0 info`.
 

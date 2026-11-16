@@ -22,7 +22,7 @@ This glossary defines the testing words and the requirement numbers used in this
 
 **Profile.** A named rule set chosen with `--profile`: `minimal`, `docs` (default) or `strict`.
 
-**Rule.** One of the 38 checks in the catalogue, listed by `svgdog rules`. Each has a failing and a passing example that a test runs.
+**Rule.** One of the 39 checks in the catalogue, listed by `svgdog rules`. Each has a failing and a passing example that a test runs.
 
 **Scene.** The geometry of every element in an SVG, as printed by `svgdog inspect`.
 

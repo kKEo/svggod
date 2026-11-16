@@ -3,6 +3,9 @@
 
 use kurbo::{Point, Rect};
 
+use std::collections::BTreeMap;
+
+use super::order::{self, Outside, Search};
 use super::theme::Theme;
 use crate::spec::{Diagram, Direction, Kind, Ref, Side, Spec};
 use crate::svg::text::{self, Class};
@@ -143,7 +146,7 @@ pub fn measure(spec: &Spec, t: &Tuning, theme: &Theme) -> Measured {
     Measured { nodes, notes, group_label, edge_label }
 }
 
-#[derive(Default)]
+#[derive(Clone, Default, PartialEq)]
 pub struct Geometry {
     pub nodes: Vec<Rect>,
     pub groups: Vec<Rect>,
@@ -239,7 +242,11 @@ fn level_edges(spec: &Spec, m: &Measured, kids: &[Ref]) -> Vec<(usize, usize, f6
 ///
 /// `anchor` is where edges meet each box across the flow, measured from the box's
 /// start; lining anchors up, not box centres, is what keeps edges straight.
-fn layered(sizes: &[(f64, f64)], anchor: &[f64], edges: &[(usize, usize, f64)], dir: Direction, pad: f64) -> (Vec<Point>, (f64, f64)) {
+///
+/// `search` says how hard to look for an order within the ranks that crosses less, `outside`
+/// what the boxes are joined to beyond these ranks, and `salt` tells one set of ranks from another.
+#[allow(clippy::too_many_arguments)]
+fn layered(sizes: &[(f64, f64)], anchor: &[f64], edges: &[(usize, usize, f64)], dir: Direction, pad: f64, search: &Search, outside: &[Outside], salt: u64) -> (Vec<Point>, (f64, f64)) {
     let n = sizes.len();
     let main = |i: usize| if dir == Direction::Right { sizes[i].0 } else { sizes[i].1 };
     let cross = |i: usize| if dir == Direction::Right { sizes[i].1 } else { sizes[i].0 };
@@ -324,6 +331,8 @@ fn layered(sizes: &[(f64, f64)], anchor: &[f64], edges: &[(usize, usize, f64)], 
             ranks[r].sort_by(|a, b| key(*a).total_cmp(&key(*b)).then(a.cmp(b)));
         }
     }
+    // That order is the plain one. Where its edges cross, a search may find a better one.
+    let ranks = order::reorder(&ranks, &flow, &rank, outside, search, false, salt);
 
     // Main axis: one band per rank, with room for the labels of the edges that cross the gap.
     let mut m_pos = vec![0.0; n];
@@ -399,9 +408,44 @@ struct Build<'a> {
     /// Across the flow, where edges meet each footprint.
     node_anchor: Vec<f64>,
     group_anchor: Vec<f64>,
+    search: Search<'a>,
+    /// An earlier pass over the same spec: where everything lay, so a group can tell
+    /// on which side its outside neighbours are.
+    hint: Option<&'a Geometry>,
+    /// The members of a band in another order than the spec's.
+    order: BTreeMap<usize, Vec<Ref>>,
 }
 
 impl Build<'_> {
+    fn kids(&self, g: usize) -> Vec<Ref> {
+        self.order.get(&g).cloned().unwrap_or_else(|| children(self.spec, Some(g)))
+    }
+
+    /// What the children of group `g` are joined to outside it, placed by the earlier pass.
+    fn outside(&self, kids: &[Ref], g: usize) -> Vec<Outside> {
+        let Some(hint) = self.hint else { return Vec::new() };
+        let right = self.spec.direction == Direction::Right;
+        let frame = hint.groups[g].center();
+        let under = |r: Ref, top: Ref| r == top || matches!(top, Ref::Group(t) if self.spec.ancestors(r).contains(&t));
+        let mut out = Vec::new();
+        for e in &self.spec.edges {
+            let (Some(a), Some(b)) = (self.spec.lookup(&e.from), self.spec.lookup(&e.to)) else { continue };
+            let (inner, outer) = match (under(a, Ref::Group(g)), under(b, Ref::Group(g))) {
+                (true, false) => (a, b),
+                (false, true) => (b, a),
+                _ => continue,
+            };
+            let Some(kid) = kids.iter().position(|k| under(inner, *k)) else { continue };
+            let c = match outer {
+                Ref::Node(i) => hint.nodes[i].center(),
+                Ref::Group(i) => hint.groups[i].center(),
+                Ref::Edge(_) => continue,
+            };
+            out.push(if right { Outside { kid, after: c.x > frame.x, at: c.y } } else { Outside { kid, after: c.y > frame.y, at: c.x } });
+        }
+        out
+    }
+
     fn size(&mut self, r: Ref) -> (f64, f64) {
         match r {
             Ref::Node(i) => {
@@ -412,9 +456,9 @@ impl Build<'_> {
                 s
             }
             Ref::Group(g) => {
-                let kids = children(self.spec, Some(g));
+                let kids = self.kids(g);
                 let banded = self.spec.diagram == Diagram::Layers && self.spec.group_parent[g].is_none();
-                let (pts, (cw, ch)) = self.arrange(&kids, banded);
+                let (pts, (cw, ch)) = self.arrange(&kids, banded, Some(g));
                 let labelled = self.spec.groups[g].label.is_some();
                 let top = if labelled { PAD_LABEL } else { PAD };
                 let w = up((cw + 2.0 * PAD).max(self.m.group_label[g] + 32.0), 16.0);
@@ -453,7 +497,7 @@ impl Build<'_> {
         self.spec.edges.iter().any(|e| (under(&e.from, kid) && !under(&e.to, Ref::Group(g))) || (under(&e.to, kid) && !under(&e.from, Ref::Group(g))))
     }
 
-    fn arrange(&mut self, kids: &[Ref], as_row: bool) -> (Vec<Point>, (f64, f64)) {
+    fn arrange(&mut self, kids: &[Ref], as_row: bool, container: Option<usize>) -> (Vec<Point>, (f64, f64)) {
         let sizes: Vec<(f64, f64)> = kids.iter().map(|k| self.size(*k)).collect();
         let anchors: Vec<f64> = kids.iter().map(|k| self.anchor(*k)).collect();
         let edges = level_edges(self.spec, self.m, kids);
@@ -462,7 +506,8 @@ impl Build<'_> {
             let gap = if self.spec.direction == Direction::Right { up(label + self.t.label_pad + 8.0, 8.0).max(48.0) } else { 48.0 };
             row(&sizes, gap, self.spec.direction)
         } else {
-            layered(&sizes, &anchors, &edges, self.spec.direction, self.t.label_pad)
+            let outside = container.map(|g| self.outside(kids, g)).unwrap_or_default();
+            layered(&sizes, &anchors, &edges, self.spec.direction, self.t.label_pad, &self.search, &outside, container.map_or(0, |g| g as u64 + 1))
         }
     }
 
@@ -489,7 +534,68 @@ impl Build<'_> {
     }
 }
 
-pub fn layout(spec: &Spec, m: &Measured, t: &Tuning) -> Geometry {
+/// Where every box goes. `search` picks among the orders of the boxes within their ranks:
+/// variant 0 is the plain layout, the others look for orders whose edges cross less.
+pub fn layout(spec: &Spec, m: &Measured, t: &Tuning, search: &Search) -> Geometry {
+    // A group is laid out before what is around it. Laying everything out twice lets the
+    // second pass see where a group's outside neighbours ended up.
+    if search.variant > 0 && search.budget.sift && !spec.groups.is_empty() && spec.diagram != Diagram::Free {
+        let first = place_all(spec, m, t, search, None);
+        return place_all(spec, m, t, search, Some(&first));
+    }
+    place_all(spec, m, t, search, None)
+}
+
+/// The members of every band of a layers diagram, in an order whose edges between bands
+/// cross less than in the order of the spec; empty when the spec's order is as good.
+fn band_order(spec: &Spec, loose: &[Ref], bands: &[Ref], search: &Search) -> (Vec<Ref>, BTreeMap<usize, Vec<Ref>>) {
+    let mut lists: Vec<Vec<Ref>> = Vec::new();
+    if !loose.is_empty() {
+        lists.push(loose.to_vec());
+    }
+    for b in bands {
+        if let Ref::Group(g) = b {
+            lists.push(children(spec, Some(*g)));
+        }
+    }
+    let items: Vec<Ref> = lists.iter().flatten().copied().collect();
+    let mut rank = Vec::new();
+    let mut ranks: Vec<Vec<usize>> = Vec::new();
+    for (k, list) in lists.iter().enumerate() {
+        ranks.push((rank.len()..rank.len() + list.len()).collect());
+        rank.extend(std::iter::repeat_n(k, list.len()));
+    }
+    let slot = |id: &str| -> Option<usize> {
+        let r = spec.lookup(id)?;
+        let up = spec.ancestors(r);
+        items.iter().position(|k| *k == r || matches!(k, Ref::Group(g) if up.contains(g)))
+    };
+    let mut flow: Vec<(usize, usize)> = Vec::new();
+    for e in &spec.edges {
+        if let (Some(a), Some(b)) = (slot(&e.from), slot(&e.to))
+            && rank[a] != rank[b]
+        {
+            flow.push(if rank[a] < rank[b] { (a, b) } else { (b, a) });
+        }
+    }
+    flow.sort();
+    flow.dedup();
+    let better = order::reorder(&ranks, &flow, &rank, &[], search, true, 0xBA4D);
+    let mut order = BTreeMap::new();
+    let mut loose_order = loose.to_vec();
+    let mut lists = better.iter().map(|r| r.iter().map(|v| items[*v]).collect::<Vec<Ref>>());
+    if !loose.is_empty() {
+        loose_order = lists.next().unwrap_or(loose_order);
+    }
+    for (b, list) in bands.iter().zip(lists) {
+        if let Ref::Group(g) = b {
+            order.insert(*g, list);
+        }
+    }
+    (loose_order, order)
+}
+
+fn place_all(spec: &Spec, m: &Measured, t: &Tuning, search: &Search, hint: Option<&Geometry>) -> Geometry {
     let mut out = Geometry { nodes: vec![Rect::ZERO; spec.nodes.len()], groups: vec![Rect::ZERO; spec.groups.len()], notes: vec![None; spec.notes.len()] };
     let mut b = Build {
         spec,
@@ -501,6 +607,9 @@ pub fn layout(spec: &Spec, m: &Measured, t: &Tuning) -> Geometry {
         group_kids: vec![Vec::new(); spec.groups.len()],
         node_anchor: vec![0.0; spec.nodes.len()],
         group_anchor: vec![0.0; spec.groups.len()],
+        search: *search,
+        hint,
+        order: BTreeMap::new(),
     };
 
     if spec.diagram == Diagram::Free {
@@ -543,12 +652,15 @@ pub fn layout(spec: &Spec, m: &Measured, t: &Tuning) -> Geometry {
         // Nodes outside any group share a first band without a frame.
         let loose: Vec<Ref> = kids.iter().copied().filter(|k| matches!(k, Ref::Node(_))).collect();
         let bands: Vec<Ref> = kids.iter().copied().filter(|k| matches!(k, Ref::Group(_))).collect();
+        // A band keeps the order of the spec unless another order makes fewer edges cross.
+        let (loose, order) = band_order(spec, &loose, &bands, search);
+        b.order = order;
         let right = spec.direction == Direction::Right;
         let mut cursor = 0.0;
         type Band = (Vec<Ref>, Vec<Point>, (f64, f64));
         let mut rows: Vec<Band> = Vec::new();
         if !loose.is_empty() {
-            let (pts, size) = b.arrange(&loose, true);
+            let (pts, size) = b.arrange(&loose, true, None);
             rows.push((loose, pts, size));
         }
         for g in &bands {
@@ -584,7 +696,7 @@ pub fn layout(spec: &Spec, m: &Measured, t: &Tuning) -> Geometry {
         return out;
     }
 
-    let (pts, _) = b.arrange(&kids, false);
+    let (pts, _) = b.arrange(&kids, false, None);
     for (k, p) in kids.iter().zip(pts) {
         b.place(*k, p, &mut out);
     }

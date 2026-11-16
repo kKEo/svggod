@@ -385,6 +385,31 @@ pub fn run(ctx: &mut Ctx) {
         }
     }
 
+    if ctx.on("edge-crossing") {
+        // One route per subpath, each remembering the connector it belongs to.
+        let mut owner: Vec<usize> = Vec::new();
+        let mut routes: Vec<Vec<Point>> = Vec::new();
+        for &ci in &connectors {
+            for poly in &elems[ci].outline {
+                owner.push(ci);
+                routes.push(poly.clone());
+            }
+        }
+        let mut pairs: BTreeMap<(usize, usize), Vec<Point>> = BTreeMap::new();
+        for c in crate::render::cross::tally(&routes).crossings {
+            let (a, b) = (owner[c.a].min(owner[c.b]), owner[c.a].max(owner[c.b]));
+            if a != b {
+                pairs.entry((b, a)).or_default().push(c.at);
+            }
+        }
+        for ((later, earlier), at) in pairs {
+            let times = if at.len() == 1 { "once".to_string() } else { format!("{} times", at.len()) };
+            let msg = format!("Connector crosses the connector {} {times}.", name(earlier));
+            let points: Vec<Value> = at.iter().map(|p| json!([num(p.x), num(p.y)])).collect();
+            ctx.push("edge-crossing", elems[later].node, elems[later].bbox, msg, vec![("other", json!(name(earlier))), ("count", json!(at.len())), ("points", json!(points))]);
+        }
+    }
+
     if ctx.on("label-on-line") {
         for &ti in &texts {
             let (t, tb) = text_of(&elems[ti]).unwrap();

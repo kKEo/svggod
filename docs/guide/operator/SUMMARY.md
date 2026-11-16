@@ -7,6 +7,7 @@
   - [From spec to validated spec](how-it-works/spec-pipeline.md)
   - [Layout and auto-fit](how-it-works/layout.md)
   - [Edge routing](how-it-works/routing.md)
+  - [Crossings and effort](how-it-works/crossings.md)
   - [Determinism and output ids](how-it-works/determinism.md)
   - [The rule engine](how-it-works/rules-engine.md)
 - [Part II: Install and deploy](install/README.md)

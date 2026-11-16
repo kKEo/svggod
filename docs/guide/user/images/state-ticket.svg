@@ -53,11 +53,11 @@
   </g>
   <g id="edge-progress--solved">
     <path d="M352 344 L352 368 L488 368 L488 392" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="420" y="360.11" text-anchor="middle" font-size="12" fill="#1f2937">fix</text>
+    <text x="420" y="384.63" text-anchor="middle" font-size="12" fill="#1f2937">fix</text>
   </g>
   <g id="edge-solved--progress">
-    <path d="M504 392 L504 376 L368 376 L368 344" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="436" y="392.63" text-anchor="middle" font-size="12" fill="#1f2937">reopen</text>
+    <path d="M504 392 L504 360 L368 360 L368 344" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="436" y="352.11" text-anchor="middle" font-size="12" fill="#1f2937">reopen</text>
   </g>
   <g id="edge-solved--finish">
     <path d="M520 440 L520 492" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>

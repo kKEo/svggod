@@ -53,7 +53,7 @@ Several tests are written to fail when two things drift apart. When you change o
 
 | If you… | These tests fail until you update… |
 |---|---|
-| add or remove a rule | `catalogue_has_38_rules_in_four_groups` (the total of 38 and the per-group counts 10 structure, 12 geometry, 10 portability, 6 accessibility) |
+| add or remove a rule | `catalogue_has_39_rules_in_four_groups` (the total of 39 and the per-group counts 10 structure, 13 geometry, 10 portability, 6 accessibility) |
 | add a rule | `every_rule_example_fails_and_passes_as_documented` needs the rule's `fail` and `pass` examples to behave as documented, and the passing example must not trip other default rules |
 | change the shape of a JSON envelope | `r2_output_validates_against_the_published_schemas` needs the matching file in `schemas/` |
 | add a CLI command or flag | `every_command_has_a_tool_and_every_tool_argument_is_a_real_flag` in `src/mcp.rs` needs a matching MCP tool entry |

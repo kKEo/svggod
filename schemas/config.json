@@ -40,6 +40,16 @@
         }
       }
     },
+    "render": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "effort": {
+          "enum": ["normal", "high", "max"],
+          "description": "How hard to work at edges that cross, for diagrams that do not say: a higher level tries more placements and routes"
+        }
+      }
+    },
     "style": {
       "type": "object",
       "additionalProperties": false,

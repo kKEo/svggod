@@ -295,7 +295,7 @@ impl Pin<'_> {
 /// layout the spec would get on its own; it says where a new box belongs relative
 /// to the others.
 pub fn pinned(spec: &Spec, m: &Measured, t: &Tuning, prev: &Previous) -> (Geometry, Kept) {
-    let fresh = layout::layout(spec, m, t);
+    let fresh = layout::layout(spec, m, t, &super::order::Search::plain());
     let mut kept = census(spec, prev);
     let mut p = Pin { spec, m, prev, own: vec![None; spec.nodes.len()] };
     let mut resized = vec![false; spec.nodes.len()];

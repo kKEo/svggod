@@ -8,7 +8,8 @@ This part explains what SVGDog does between reading a file and writing a result.
 | [From spec to validated spec](spec-pipeline.md) | How a YAML or JSON file becomes a checked, in-memory diagram, and which mistakes stop it. |
 | [Layout and auto-fit](layout.md) | How boxes are placed on the grid, and what happens when a drawing is too wide. |
 | [Edge routing](routing.md) | How connectors find their way between boxes. |
+| [Crossings and effort](crossings.md) | How crossed edges are counted and avoided, what the `effort` setting buys, and the methods behind it. |
 | [Determinism and output ids](determinism.md) | Why the output is byte-identical everywhere, and the ids you can rely on. |
-| [The rule engine](rules-engine.md) | How the 38 rules run, how profiles and config change them, and how suppression works. |
+| [The rule engine](rules-engine.md) | How the 39 rules run, how profiles and config change them, and how suppression works. |
 
 Read the [Reference](../reference/README.md) when you need exact keys, limits and flags; this part is about reasons, not lists.

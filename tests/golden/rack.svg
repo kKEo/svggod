@@ -28,7 +28,7 @@
     <text x="176" y="331.09" text-anchor="middle" font-size="14" fill="#1f2937">NAS</text>
   </g>
   <g id="edge-sw--a">
-    <path d="M136 72 L136 128 L88 128 L88 152" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M136 72 L136 136 L88 136 L88 152" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
   </g>
   <g id="edge-sw--b">
     <path d="M200 72 L200 128 L264 128 L264 152" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>

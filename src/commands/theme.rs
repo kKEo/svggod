@@ -140,7 +140,7 @@ pub fn check(dir: &str, loader: &mut Loader, profile: Option<Profile>, paint: &P
     for (variant, look) in &looks {
         for (name, source) in super::examples::EXAMPLES {
             let parsed = spec::parse(&spec::read_document(source, name)?)?;
-            let opt = render::Options { theme: look, text_as_paths: false, embed: None, interactive: false };
+            let opt = render::Options { theme: look, text_as_paths: false, embed: None, interactive: false, effort: parsed.effort.unwrap_or_default() };
             match render::render(&parsed, &opt) {
                 Ok(svg) => {
                     drawn += 1;

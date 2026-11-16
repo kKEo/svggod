@@ -33,6 +33,7 @@ svgdog render fig/orders.yaml -o fig/orders.svg
 | `SPEC` | Diagram spec, YAML or JSON; `-` reads stdin | required |
 | `-o OUT` | Output SVG; `-` writes the SVG to stdout in place of the report | required |
 | `--theme NAME\|DIR` | A built-in theme (`docs`, `blueprint`, `paper`, `bold`, `cards`; add `-dark`, or `-auto` to follow the reader's light or dark mode) or a theme folder (add `#dark` or `#auto`); see [theme](#theme) | the spec's `theme`, else `[style] theme` in `svgdog.toml`, else `docs-light` |
+| `--effort normal\|high\|max` | How hard to work at edges that cross. A higher level tries more routes and placements where crossings remain, never gives more crossings, and leaves a drawing without crossings exactly as it is. See [Crossings and effort](../how-it-works/crossings.md) | the spec's `effort`, else `[render] effort` in `svgdog.toml`, else `normal` |
 | `--interactive none\|css\|html` | `css`: the same SVG with classes and one `<style>` block, so related things light up on hover and keyboard focus; no script. `html`: a self-contained page holding that SVG and a small script with step controls and a detail line. See [Interactive versions](#interactive-versions) | `none` |
 | `--frames` | Write one picture per entry of the spec's `steps`, named `OUT` with the step number before the extension (`orders.1.svg`, `orders.2.svg`, ...); `OUT` itself is not written | off |
 | `--embed-spec` | Store the spec in the SVG as `<metadata id="svgdog-spec">` (compact JSON), so `describe` can read the drawing back. The `editor-metadata` rule and its fix leave this element alone | off |
@@ -44,7 +45,7 @@ svgdog render fig/orders.yaml -o fig/orders.svg
 
 With `--frames`, every frame is checked and listed in `outputs`, and `summary.files` counts them. A spec without `steps` is exit 3 (`no-steps`), and `-o -` is exit 2. If any frame file exists and `--force` is not given, nothing is written (exit 4).
 
-With `--check` the envelope has `checked` (the number of files compared) and `stale` (a list of `path` and `reason`, `missing` or `differs`) in place of findings; `ok` is false when anything is stale. Give `--check` the same flags the file was rendered with (`--theme`, `--embed-spec`, `--frames`), or it will differ. A file is current when it is what the spec renders over the file itself as `--previous`, or what it renders from nothing, so a drawing made with `--previous` passes.
+With `--check` the envelope has `checked` (the number of files compared) and `stale` (a list of `path` and `reason`, `missing` or `differs`) in place of findings; `ok` is false when anything is stale. Give `--check` the same flags the file was rendered with (`--theme`, `--effort`, `--embed-spec`, `--frames`), or it will differ. A file is current when it is what the spec renders over the file itself as `--previous`, or what it renders from nothing, so a drawing made with `--previous` passes.
 
 #### Keeping the layout
 

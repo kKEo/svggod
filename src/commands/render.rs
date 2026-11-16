@@ -7,6 +7,7 @@ use super::validate::{Paint, report};
 use crate::cli::{FailOn, Live};
 use crate::config::{Loader, Profile, RuleSel};
 use crate::envelope::{AppError, EXIT_FINDINGS, EXIT_OK, EXIT_OUTPUT, Output};
+use crate::render::effort::Effort;
 use crate::render::keep::{Kept, Previous};
 use crate::{render, rules, spec};
 
@@ -100,8 +101,12 @@ pub fn current(bytes: &[u8], path: &Path, spec: &spec::Spec, opt: &render::Optio
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn run(file: &str, inline: Option<&str>, output: &str, theme: Option<&str>, live: Live, frames: bool, embed: bool, check: bool, previous: Option<&str>, no_validate: bool, force: bool, text_as_paths: bool, loader: &mut Loader, profile: Option<Profile>, paint: &Paint) -> Result<Output, AppError> {
+pub fn run(file: &str, inline: Option<&str>, output: &str, theme: Option<&str>, effort: Option<&str>, live: Live, frames: bool, embed: bool, check: bool, previous: Option<&str>, no_validate: bool, force: bool, text_as_paths: bool, loader: &mut Loader, profile: Option<Profile>, paint: &Paint) -> Result<Output, AppError> {
     let to_stdout = output == "-";
+    let effort = match effort {
+        Some(e) => Some(Effort::parse(e).ok_or_else(|| AppError::usage("invalid-argument", format!("'{e}' is not an effort; use one of: normal, high, max.")))?),
+        None => None,
+    };
     if check && to_stdout {
         return Err(AppError::usage("invalid-argument", "--check compares with a file, so it needs an output file, not '-'."));
     }
@@ -139,6 +144,9 @@ pub fn run(file: &str, inline: Option<&str>, output: &str, theme: Option<&str>, 
     let spec_dir = path.and_then(|p| p.parent()).unwrap_or(Path::new(""));
     let look = render::theme::choose(&render::theme::Choice { flag: theme, spec: jobs[0].1.theme.as_deref(), spec_dir, config: cfg.theme(), ceiling: loader.ceiling() })?.with_fonts(cfg.fonts());
 
+    // The flag, else the spec, else the config: like the theme, it is part of what makes the drawing.
+    let effort = effort.or(jobs[0].1.effort).or(cfg.effort()).unwrap_or_default();
+
     let page = |svg: String, job: &spec::Spec| -> String {
         if live != Live::Html {
             return svg;
@@ -149,7 +157,7 @@ pub fn run(file: &str, inline: Option<&str>, output: &str, theme: Option<&str>, 
         // Compare with what is on disk; a file that is missing or different is stale.
         let mut stale: Vec<Value> = Vec::new();
         for (out, job) in &jobs {
-            let opt = render::Options { theme: &look, text_as_paths, embed: embed.then_some(&doc), interactive: live != Live::None };
+            let opt = render::Options { theme: &look, text_as_paths, embed: embed.then_some(&doc), interactive: live != Live::None, effort };
             match std::fs::read(out.as_str()) {
                 Ok(bytes) if current(&bytes, Path::new(previous.unwrap_or(out)), job, &opt, &|svg| page(svg, job))? => {}
                 Ok(_) => stale.push(json!({ "path": out, "reason": "differs" })),
@@ -174,7 +182,7 @@ pub fn run(file: &str, inline: Option<&str>, output: &str, theme: Option<&str>, 
     let mut drawn = Vec::new();
     let mut layout: Option<(Value, String)> = None;
     for (out, job) in &jobs {
-        let opt = render::Options { theme: &look, text_as_paths, embed: embed.then_some(&doc), interactive: live != Live::None };
+        let opt = render::Options { theme: &look, text_as_paths, embed: embed.then_some(&doc), interactive: live != Live::None, effort };
         let laid = lay(job, &opt, earlier.as_ref().zip(previous), force)?;
         if layout.is_none() || laid.relaid {
             layout = layout_json(previous.unwrap_or(""), &laid).map(|j| (j, layout_text(&laid)));

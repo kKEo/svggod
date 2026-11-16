@@ -57,8 +57,8 @@
     <path d="M128 488 L128 536" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
   </g>
   <g id="edge-ok--author">
-    <path d="M160 547.64 L160 496 L240 496 L240 104 L160 104 L160 72" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
-    <text x="304.91" y="304.37" text-anchor="middle" font-size="12" fill="#1f2937">changes requested</text>
+    <path d="M160 547.64 L160 496 L240 496 L240 88 L160 88 L160 72" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="304.91" y="296.37" text-anchor="middle" font-size="12" fill="#1f2937">changes requested</text>
   </g>
   <g id="edge-ok--main">
     <path d="M128 600 L128 648" fill="none" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>

@@ -154,7 +154,7 @@ fn tools_return_the_same_envelope_as_the_cli() {
     let (spec, _, _) = s.call("svgdog_schema", json!({ "name": "spec" }));
     assert_eq!(spec["title"], "svgdog diagram spec");
     let (rules, _, _) = s.call("svgdog_rules", json!({}));
-    assert_eq!(rules["rules"].as_array().unwrap().len(), 38);
+    assert_eq!(rules["rules"].as_array().unwrap().len(), 39);
     let (one, _, _) = s.call("svgdog_rules", json!({ "explain": "text-overflow" }));
     assert_eq!(one["rule"]["id"], "text-overflow");
     assert_eq!(s.finish(), 0);
@@ -274,7 +274,7 @@ fn per_request_protocol_version_is_served_without_a_handshake() {
     assert_eq!(list["result"]["tools"].as_array().unwrap().len(), 14);
     let call = s.request("tools/call", json!({ "name": "svgdog_rules", "arguments": {}, "_meta": meta("2026-07-28") }));
     assert_eq!(call["result"]["resultType"], "complete");
-    assert_eq!(call["result"]["structuredContent"]["rules"].as_array().unwrap().len(), 38);
+    assert_eq!(call["result"]["structuredContent"]["rules"].as_array().unwrap().len(), 39);
 
     let old = s.request("tools/list", json!({ "_meta": meta("1900-01-01") }));
     assert_eq!(old["error"]["code"], -32022);

@@ -1,10 +1,11 @@
 # Determinism and output ids
 
-SVGDog promises that the same input, configuration and version give byte-identical output, on every operating system. This chapter says how that is achieved, how it is checked, and which ids in the output you can depend on when you edit or select elements.
+SVGDog promises that the same input, configuration (the effort included) and version give byte-identical output, on every operating system. This chapter says how that is achieved, how it is checked, and which ids in the output you can depend on when you edit or select elements.
 
 ## What makes the output repeatable
 
-- **No external inputs.** Rendering reads only the spec. There are no timestamps, random numbers or environment lookups in the render path.
+- **No external inputs.** Rendering reads only the spec. There are no timestamps or environment lookups in the render path. Where a search starts from a shuffled order (at higher [effort](crossings.md#the-effort-setting)), the shuffle comes from a small generator seeded by the attempt number, so it is the same on every run.
+- **Counted work, not timed work.** Every limit on how hard the layout and the routing try is a number of attempts. Nothing stops because time ran out, so a slow machine draws what a fast one draws.
 - **Bundled fonts.** Text is measured and rasterised with Inter and JetBrains Mono, which are compiled into the binary (`fonts/`, exposed by `text::bundled()` in `src/svg/text.rs` and loaded in `src/preview.rs:16-27`). Every generic family, and any font a file names that SVGDog does not have, falls back to one of the two. A font installed on the machine cannot change a measurement or a PNG. The two fonts are under the SIL Open Font License; the licence texts are in `fonts/`.
 - **Ordered data.** Layout and routing walk lists in spec order, and the port bookkeeping uses ordered maps (`BTreeMap`), so iteration order never depends on hashing.
 - **Rounded numbers.** Every coordinate is written through `util::fmt`, which rounds to two decimals and drops a zero fraction (`src/util.rs:19`). Integer-grid layout means most numbers are whole.

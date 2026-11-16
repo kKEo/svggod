@@ -50,6 +50,10 @@ An internal error. Please report it, with the command you ran and the input file
 
 ## Questions
 
+### Two arrows cross. Can SVGDog avoid that?
+
+It already tries: a crossing is kept only when no drawing without it was found. When one is left, the result carries an `edge-crossing` note that names the two arrows. Ask for more work with `effort: high` at the top of the spec (or `--effort high` on the command line); `max` tries harder still and can take several seconds on a dense diagram. A higher effort never adds crossings, and a drawing that has none stays exactly as it was. If a crossing remains, try listing the arrow that should run straight first under `edges:`, or `direction: down`. Some diagrams cannot be drawn without a crossing at all, for example three boxes that each connect to the same three others.
+
 ### `fix` says "No change" but findings remain. Why?
 
 `fix` only applies repairs that findings carry. Findings without a `[fix]` tag need a person: a missing title, a reference to an element that does not exist. Findings tagged `[fix --unsafe]` need `--unsafe`, which can change the picture's look; try it with `--dry-run` first.

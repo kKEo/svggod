@@ -8,7 +8,7 @@ This part is the look-up half of the operator book: every command and flag, ever
 | [Spec reference](spec.md) | Every key of the YAML/JSON diagram spec, its type and limit, and the checks that reject a spec |
 | [Configuration](configuration.md) | `svgdog.toml`: discovery, profiles, rules, overrides, and the `svgdog-disable` comment |
 | [Themes](themes.md) | The built-in themes, how a theme is named and found, and every key of `theme.toml` |
-| [Rules catalogue](rules.md) | All 38 rules with severity, autofix, thresholds and examples (generated) |
+| [Rules catalogue](rules.md) | All 39 rules with severity, autofix, thresholds and examples (generated) |
 | [Envelope and exit codes](envelope-exit-codes.md) | The JSON result shape, exit codes 0 to 5 and the error codes |
 | [JSON Schemas](schemas.md) | The six embedded schemas and how to validate against them |
 | [MCP tools](mcp-tools.md) | The fourteen tools, their parameters, the protocol versions and root confinement |

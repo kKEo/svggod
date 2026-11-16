@@ -12,7 +12,7 @@ This glossary defines the words the operator guide uses, in alphabetical order. 
 
 **Canonical form.** The way SVGDog writes a spec when it cannot patch the text in place. Comments and hand formatting are lost; the result reports `"formatting": "rewritten"`.
 
-**Catalogue.** The list of 38 rules with their groups, severities, autofix levels and options (`src/catalogue.rs`). `svgdog rules` prints it.
+**Catalogue.** The list of 39 rules with their groups, severities, autofix levels and options (`src/catalogue.rs`). `svgdog rules` prints it.
 
 **Diagram type.** One of `flow`, `layers`, `sequence`, `free`, `state`, `timeline` or `compare`, chosen by the `diagram` key in a **spec**.
 

@@ -1,6 +1,6 @@
 # Checking and fixing SVGs
 
-SVGDog can check any SVG file, including ones drawn in other tools, against 38 rules for correctness, readability, portability and accessibility. It can then repair most problems itself. This page takes about ten minutes and uses the broken example file from the repository.
+SVGDog can check any SVG file, including ones drawn in other tools, against 39 rules for correctness, readability, portability and accessibility. It can then repair most problems itself. This page takes about ten minutes and uses the broken example file from the repository.
 
 ## Check a file: validate
 
@@ -98,7 +98,7 @@ Use it to find an element's id before an `edit`, or to understand a finding that
 ## Learn about a rule: rules
 
 ```bash
-svgdog --format text rules                      # all 38 rules, grouped
+svgdog --format text rules                      # all 39 rules, grouped
 svgdog --format text rules --explain low-contrast   # one rule, with a failing and a passing example
 ```
 

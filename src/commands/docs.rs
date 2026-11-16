@@ -145,7 +145,8 @@ pub fn run(paths: &[String], check: bool, assets: &str, theme: Option<&str>, for
             // The picture in the page is an SVG either way; the html version is a second file beside it.
             // The picture already there says where the boxes were; they stay when they can.
             let look = render::theme::choose(&render::theme::Choice { flag: theme, spec: parsed.theme.as_deref(), spec_dir: folder, config: cfg.theme(), ceiling: loader.ceiling() }).map_err(at)?.with_fonts(cfg.fonts());
-            let opt = |interactive: bool| render::Options { theme: &look, text_as_paths: false, embed: None, interactive };
+            let effort = parsed.effort.or(cfg.effort()).unwrap_or_default();
+            let opt = |interactive: bool| render::Options { theme: &look, text_as_paths: false, embed: None, interactive, effort };
             let shown_target = shown(&target);
             let earlier = super::render::previous_in(&target);
             let keep = match &earlier {

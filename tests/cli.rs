@@ -58,12 +58,12 @@ const BROKEN: &str = "tests/fixtures/broken.svg";
 // ------------------------------------------------------------------ catalogue
 
 #[test]
-fn catalogue_has_38_rules_in_four_groups() {
+fn catalogue_has_39_rules_in_four_groups() {
     let v = run(&["rules"]).json();
     let rules = v["rules"].as_array().unwrap();
     let count = |g: &str| rules.iter().filter(|r| r["group"] == g).count();
-    assert_eq!(rules.len(), 38);
-    assert_eq!((count("structure"), count("geometry"), count("portability"), count("accessibility")), (10, 12, 10, 6));
+    assert_eq!(rules.len(), 39);
+    assert_eq!((count("structure"), count("geometry"), count("portability"), count("accessibility")), (10, 13, 10, 6));
 }
 
 /// Every rule's failing example raises the rule and its passing example does not.
@@ -2375,4 +2375,85 @@ fn a_change_of_theme_keeps_the_boxes_where_they_were() {
     assert_eq!(apart(&centres(&after)), apart(&before));
     // and the picture is then current for that theme
     assert_eq!(run_in(dir.path(), &["render", spec.to_str().unwrap(), "-o", "o.svg", "--theme", "bold", "--check", "--no-config"], None).code, 0);
+}
+
+// ------------------------------------------------------------------ crossings and effort
+
+/// Three boxes each joined to three others: the smallest graph that cannot be drawn without a crossing.
+const K33: &str = "version: 1\ndiagram: flow\ntitle: Three by three\ndescription: Every source feeds every sink.\ndirection: down\nnodes:\n  - {id: a1, label: A1}\n  - {id: a2, label: A2}\n  - {id: a3, label: A3}\n  - {id: b1, label: B1}\n  - {id: b2, label: B2}\n  - {id: b3, label: B3}\nedges:\n  - a1 -> b1\n  - a1 -> b2\n  - a1 -> b3\n  - a2 -> b1\n  - a2 -> b2\n  - a2 -> b3\n  - a3 -> b1\n  - a3 -> b2\n  - a3 -> b3\n";
+
+/// How many times edges cross, as the findings on a render report it.
+fn crossings(v: &Value) -> u64 {
+    v["findings"].as_array().unwrap().iter().filter(|f| f["rule"] == "edge-crossing").map(|f| f["measured"]["count"].as_u64().unwrap()).sum()
+}
+
+#[test]
+fn crossed_edges_are_reported_as_a_note() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("x.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 100\"><title>t</title><desc>d</desc><defs><marker id=\"a\" markerWidth=\"6\" markerHeight=\"6\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0 0L6 3L0 6z\"/></marker></defs><path d=\"M10 50 L190 50\" fill=\"none\" stroke=\"#1f2937\" marker-end=\"url(#a)\"/><path d=\"M100 10 L100 90\" fill=\"none\" stroke=\"#1f2937\" marker-end=\"url(#a)\"/><path d=\"M10 50 L10 90\" fill=\"none\" stroke=\"#1f2937\" marker-end=\"url(#a)\"/></svg>").unwrap();
+    let v = run_in(dir.path(), &["validate", "x.svg", "--no-config", "--rules", "edge-crossing"], None).json();
+    let found: Vec<&Value> = v["findings"].as_array().unwrap().iter().filter(|f| f["rule"] == "edge-crossing").collect();
+    // The two lines through each other are reported once; the two that share an end are not.
+    assert_eq!(found.len(), 1, "{v:#}");
+    assert_eq!(found[0]["severity"], "info");
+    assert_eq!(found[0]["measured"]["count"], 1);
+    assert_eq!(found[0]["measured"]["points"], serde_json::json!([[100, 50]]));
+}
+
+#[test]
+fn more_effort_gives_fewer_crossings_and_the_same_drawing_every_time() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("k.yaml"), K33).unwrap();
+    let render = |effort: &str, out: &str| run_in(dir.path(), &["render", "k.yaml", "-o", out, "--no-config", "--effort", effort], None).json();
+    let (normal, high) = (crossings(&render("normal", "n.svg")), crossings(&render("high", "h.svg")));
+    assert!(high < normal, "normal {normal}, high {high}");
+    assert!(high >= 1, "this graph cannot be drawn without a crossing");
+    render("high", "h2.svg");
+    assert_eq!(fs::read(dir.path().join("h.svg")).unwrap(), fs::read(dir.path().join("h2.svg")).unwrap());
+}
+
+#[test]
+fn a_drawing_without_crossings_is_the_same_at_every_effort() {
+    for name in [ORDERS, "tests/fixtures/checkout.yaml", "tests/fixtures/gallery/layers-saas.yaml"] {
+        let (v, normal) = render_fixture(name, &[]);
+        assert_eq!(crossings(&v), 0, "{name}");
+        assert_eq!(render_fixture(name, &["--effort", "max"]).1, normal, "{name}");
+    }
+}
+
+#[test]
+fn effort_comes_from_the_flag_then_the_spec_then_the_config() {
+    let dir = tempfile::tempdir().unwrap();
+    let at = |name: &str| dir.path().join(name);
+    fs::write(at("plain.yaml"), K33).unwrap();
+    fs::write(at("keen.yaml"), format!("{K33}effort: high\n")).unwrap();
+    let render = |spec: &str, out: &str, extra: &[&str]| {
+        let mut args = vec!["render", spec, "-o", out];
+        args.extend(extra);
+        let r = run_in(dir.path(), &args, None);
+        assert!(r.code <= 1, "{}{}", r.stdout, r.stderr);
+        fs::read(at(out)).unwrap()
+    };
+    let normal = render("plain.yaml", "normal.svg", &["--no-config"]);
+    let high = render("plain.yaml", "high.svg", &["--no-config", "--effort", "high"]);
+    assert_ne!(normal, high);
+    // the spec says so
+    assert_eq!(render("keen.yaml", "spec.svg", &["--no-config"]), high);
+    // a drawing made from the spec's own effort is what --check expects
+    assert_eq!(run_in(dir.path(), &["render", "keen.yaml", "-o", "spec.svg", "--no-config", "--check"], None).code, 0);
+    // the flag wins over the spec
+    assert_eq!(render("keen.yaml", "flag.svg", &["--no-config", "--effort", "normal"]), normal);
+    // the config speaks for specs that do not say
+    fs::write(at("svgdog.toml"), "[render]\neffort = \"high\"\n").unwrap();
+    assert_eq!(render("plain.yaml", "config.svg", &[]), high);
+
+    // values that are not levels are refused where they are written
+    let flag = run_in(dir.path(), &["render", "plain.yaml", "-o", "-", "--no-config", "--effort", "lots"], None);
+    assert_eq!((flag.code, flag.json()["error"]["code"].as_str().unwrap().to_string()), (2, "invalid-argument".to_string()));
+    fs::write(at("bad.yaml"), format!("{K33}effort: lots\n")).unwrap();
+    let spec = run_in(dir.path(), &["render", "bad.yaml", "-o", "-", "--no-config"], None).json();
+    assert_eq!((spec["error"]["code"].as_str(), spec["error"]["path"].as_str()), (Some("invalid-value"), Some("effort")));
+    fs::write(at("svgdog.toml"), "[render]\neffort = \"lots\"\n").unwrap();
+    let config = run_in(dir.path(), &["render", "plain.yaml", "-o", "-"], None).json();
+    assert!(config["error"]["message"].as_str().unwrap().contains("not an effort"), "{config:#}");
 }

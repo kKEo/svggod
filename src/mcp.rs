@@ -81,6 +81,7 @@ const TOOLS: &[Tool] = &[
             arg("output", Kind::Path, Some("-o"), false, "Where to write the SVG; omit to get it back in the result"),
             arg("preview", Kind::Bool, None, false, "Also return a PNG image of the result, to look at"),
             arg("theme", Kind::Str, Some("--theme"), false, "Built-in theme: docs, blueprint, paper, bold or cards; add -dark, or -auto to follow the reader's light or dark mode. Or a theme folder inside the root, such as ./themes/acme (add #dark or #auto). svgdog_theme_list describes them. Default: the spec's, else svgdog.toml's, else docs-light"),
+            arg("effort", Kind::Str, Some("--effort"), false, "How hard to work at edges that cross: normal, high or max. Raise it when the result reports edge-crossing. Default: the spec's, else svgdog.toml's, else normal"),
             arg("interactive", Kind::Str, Some("--interactive"), false, "css: one SVG that highlights related things on hover and focus. html: a self-contained page with step controls and details. Default none"),
             arg("embed_spec", Kind::Bool, Some("--embed-spec"), false, "Store the spec inside the SVG, so svgdog_describe can read the drawing back"),
             arg("check", Kind::Bool, Some("--check"), false, "Write nothing; report whether 'output' is what the spec renders now"),

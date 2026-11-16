@@ -42,7 +42,7 @@ pub fn run(file: &str, set: &[String], ops_arg: Option<&str>, inline: Option<&se
         let (applied, after) = (edited.applied, edited.text);
         let spec_dir = path.and_then(|p| p.parent()).unwrap_or(Path::new(""));
         let look = render::theme::choose(&render::theme::Choice { flag: None, spec: parsed.theme.as_deref(), spec_dir, config: cfg.theme(), ceiling: loader.ceiling() })?.with_fonts(cfg.fonts());
-        let svg = render::render(&parsed, &render::Options { theme: &look, text_as_paths: false, embed: None, interactive: false })?;
+        let svg = render::render(&parsed, &render::Options { theme: &look, text_as_paths: false, embed: None, interactive: false, effort: parsed.effort.or(cfg.effort()).unwrap_or_default() })?;
         let how = if edited.preserved { "Comments and layout are kept." } else { "The spec was rewritten in canonical form; comments are not kept." };
         let note = format!("{applied} of {} operation{} changed the spec. {how} Findings are for the diagram it renders.\n", list.len(), if list.len() == 1 { "" } else { "s" });
         let extra = vec![("operations", json!({ "given": list.len(), "applied": applied })), ("formatting", json!(if edited.preserved { "preserved" } else { "rewritten" }))];

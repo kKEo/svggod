@@ -139,6 +139,8 @@ pub struct Spec {
     pub description: Option<String>,
     pub direction: Direction,
     pub theme: Option<String>,
+    /// How hard to work at edges that cross, when the spec says.
+    pub effort: Option<crate::render::effort::Effort>,
     pub max_width: f64,
     pub nodes: Vec<Node>,
     pub edges: Vec<Edge>,
@@ -228,7 +230,7 @@ impl Spec {
     }
 }
 
-pub const ROOT_FIELDS: &[&str] = &["version", "diagram", "title", "description", "direction", "theme", "max_width", "nodes", "edges", "groups", "notes", "steps", "focus", "legend", "caption"];
+pub const ROOT_FIELDS: &[&str] = &["version", "diagram", "title", "description", "direction", "theme", "effort", "max_width", "nodes", "edges", "groups", "notes", "steps", "focus", "legend", "caption"];
 pub const NODE_FIELDS: &[&str] = &["id", "label", "kind", "emphasis", "width", "at", "detail", "link", "when", "match"];
 pub const DIAGRAMS: &[&str] = &["flow", "layers", "sequence", "free", "state", "timeline", "compare"];
 pub const EDGE_FIELDS: &[&str] = &["id", "from", "to", "label", "style", "arrow", "detail", "link"];
@@ -422,6 +424,7 @@ pub fn parse(doc: &Value) -> Result<Spec, AppError> {
         _ => Direction::Right,
     };
     let theme = string(root, "", "theme", false, 1, 200)?;
+    let effort = choice(root, "", "effort", &["normal", "high", "max"])?.and_then(crate::render::effort::Effort::parse);
     let max_width = match root.get("max_width") {
         None | Some(Value::Null) => 960.0,
         Some(v) => match v.as_i64() {
@@ -777,5 +780,5 @@ pub fn parse(doc: &Value) -> Result<Spec, AppError> {
         Some(_) => return Err(err("invalid-spec", "legend", "legend must be true, false, or a list of entries.".into())),
     };
 
-    Ok(Spec { diagram, title, description, direction, theme, max_width, nodes, edges, groups, notes, steps, focus, legend, caption, shown: None, node_parent, group_parent, ids })
+    Ok(Spec { diagram, title, description, direction, theme, effort, max_width, nodes, edges, groups, notes, steps, focus, legend, caption, shown: None, node_parent, group_parent, ids })
 }

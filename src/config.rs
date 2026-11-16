@@ -8,6 +8,7 @@ use serde::Deserialize;
 
 use crate::catalogue::{self, Group, RULES};
 use crate::envelope::{AppError, Severity};
+use crate::render::effort::Effort;
 use crate::util::{Rgba, did_you_mean};
 
 pub const CONFIG_NAME: &str = "svgdog.toml";
@@ -71,6 +72,8 @@ struct Raw {
     #[serde(default)]
     style: RawStyle,
     #[serde(default)]
+    render: RawRender,
+    #[serde(default)]
     rules: toml::Table,
     #[serde(default)]
     overrides: Vec<RawOverride>,
@@ -91,6 +94,12 @@ struct RawStyle {
     palette: Option<Vec<String>>,
     stroke_widths: Option<Vec<Num>>,
     grid: Option<Num>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(deny_unknown_fields)]
+struct RawRender {
+    effort: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -125,6 +134,7 @@ pub struct Config {
     backgrounds: Vec<(String, Rgba)>,
     fonts: Vec<String>,
     theme: Option<String>,
+    effort: Option<Effort>,
     palette: Vec<Rgba>,
     stroke_widths: Vec<f64>,
     grid: Option<f64>,
@@ -235,6 +245,7 @@ impl Config {
             backgrounds: vec![("light".into(), background("light").unwrap()), ("dark".into(), background("dark").unwrap())],
             fonts: vec![],
             theme: None,
+            effort: None,
             palette: vec![],
             stroke_widths: vec![],
             grid: None,
@@ -296,6 +307,9 @@ impl Config {
         }
         c.fonts = raw.style.fonts.unwrap_or_default();
         c.theme = raw.style.theme.filter(|t| !t.trim().is_empty());
+        if let Some(e) = &raw.render.effort {
+            c.effort = Some(Effort::parse(e).ok_or_else(|| bad(path, "render.effort", format!("'{e}' is not an effort; use one of: normal, high, max.")))?);
+        }
         for p in raw.style.palette.unwrap_or_default() {
             c.palette.push(Rgba::parse(&p).ok_or_else(|| bad(path, "style.palette", format!("'{p}' is not a colour.")))?);
         }
@@ -321,6 +335,11 @@ impl Config {
     /// `[style] theme`, the project's theme, with the folder its path starts from.
     pub fn theme(&self) -> Option<(&str, &Path)> {
         self.theme.as_deref().map(|t| (t, self.dir.as_path()))
+    }
+
+    /// `[render] effort`, how hard to work at edges that cross in diagrams that do not say.
+    pub fn effort(&self) -> Option<Effort> {
+        self.effort
     }
 
     /// `[style] fonts`, the font-family list render writes.

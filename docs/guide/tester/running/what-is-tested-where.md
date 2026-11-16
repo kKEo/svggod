@@ -18,7 +18,7 @@ The file is split into commented sections. Section names follow the requirement 
 
 | Section in `tests/cli.rs` | Tests | Examples |
 |---|---|---|
-| Catalogue | 5 | `catalogue_has_38_rules_in_four_groups`, `every_rule_example_fails_and_passes_as_documented`, `broken_diagram_reports_expected_rules` |
+| Catalogue | 5 | `catalogue_has_39_rules_in_four_groups`, `every_rule_example_fails_and_passes_as_documented`, `broken_diagram_reports_expected_rules` |
 | R1, R2, R3: input and output | 4 | `r2_output_validates_against_the_published_schemas`, `r3_stdout_is_json_with_and_without_quiet_and_has_no_ansi` |
 | R4: exit codes | 2 | `r4_exit_codes` |
 | R6: self-description | 1 | `r6_help_is_short_and_has_an_example` |
@@ -32,8 +32,11 @@ The file is split into commented sections. Section names follow the requirement 
 | Phase 3: render | 11 | `every_fixture_and_theme_renders_without_errors_or_warnings`, `r16_ids_survive_adding_a_node`, `spec_errors_name_the_path_and_suggest_a_fix`, `edit_changes_a_spec_and_reports_on_the_drawing` |
 | Phase 4: preview | 5 | `r13_preview_is_a_png_of_bounded_width`, `preview_background_annotate_and_crop` |
 | Phase 5: cross-platform and speed | 4 | `r8_output_matches_the_golden_files`, `r15_cold_start_is_fast`, `sequence_diagrams_put_lifelines_in_order_and_messages_top_to_bottom`, `spec_edits_keep_yaml_comments` |
+| Crossings and effort | 4 | `crossed_edges_are_reported_as_a_note`, `more_effort_gives_fewer_crossings_and_the_same_drawing_every_time`, `a_drawing_without_crossings_is_the_same_at_every_effort`, `effort_comes_from_the_flag_then_the_spec_then_the_config` |
 
 The section counts add up to 55.
+
+Crossings are also guarded from inside the binary: the unit test `edges_cross_no_more_than_the_table_says` in `src/render/mod.rs` draws every fixture, gallery spec and example and fails when any of them has more crossings than its table allows (today none has any). The pieces behind it have unit tests of their own in `src/render/cross.rs` (counting), `src/render/order.rs` (the order within ranks), `src/render/route.rs` (the search) and `src/render/effort.rs` (the seeded shuffle).
 
 ## `tests/mcp.rs`
 

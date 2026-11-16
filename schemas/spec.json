@@ -12,6 +12,7 @@
     "description": { "type": "string", "maxLength": 500 },
     "direction": { "enum": ["right", "down"], "default": "right" },
     "theme": { "type": "string", "default": "docs-light", "description": "A built-in theme (docs, blueprint, paper, bold, cards, cards; add -dark or -auto), or a theme folder relative to this file, such as ./themes/acme (add #dark or #auto)" },
+    "effort": { "enum": ["normal", "high", "max"], "default": "normal", "description": "How hard to work at edges that cross; a higher level tries more placements and routes, and never gives more crossings" },
     "max_width": { "type": "integer", "minimum": 200, "maximum": 2000, "default": 960 },
     "nodes": {
       "description": "Optional when edges name the nodes: an id that is only mentioned becomes a box labelled with the id.",

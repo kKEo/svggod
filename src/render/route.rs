@@ -48,10 +48,34 @@ impl Dir {
 
 const COST_STEP: u32 = 10;
 const COST_BEND: u32 = 45;
-const COST_CROSS: u32 = 30;
+/// What crossing another route costs when nothing else is asked for.
+pub const COST_CROSS: u32 = 30;
 const COST_SHARE: u32 = 400;
 const COST_BORDER: u32 = 60;
 
+/// One search: from `from`, leaving in `out`, to `to`, where the route goes on in `arrive`.
+pub struct Seek<'a> {
+    pub from: Point,
+    pub out: Dir,
+    pub to: Point,
+    pub arrive: Dir,
+    /// Extra areas this one route must stay out of.
+    pub avoid: &'a [Rect],
+    /// The route must reach `to` already travelling in `arrive`. Otherwise it may also
+    /// turn into `arrive` there, at the price of the bend.
+    pub strict: bool,
+    /// The price of crossing another route.
+    pub cross: u32,
+}
+
+/// Working memory of the search, kept between searches on grids of one size.
+#[derive(Default)]
+pub struct Scratch {
+    dist: Vec<u32>,
+    prev: Vec<u32>,
+}
+
+#[derive(Clone)]
 pub struct Grid {
     origin: Point,
     cols: i32,
@@ -60,9 +84,9 @@ pub struct Grid {
     soft: Vec<u32>,
     /// Points on a frame's outline: fine to cross, poor to run along.
     border: Vec<bool>,
-    /// Unit segments already taken: from a point to its east and south neighbours.
-    east: Vec<bool>,
-    south: Vec<bool>,
+    /// How many routes take each unit segment: from a point to its east and south neighbours.
+    east: Vec<u8>,
+    south: Vec<u8>,
 }
 
 impl Grid {
@@ -73,7 +97,7 @@ impl Grid {
         let cols = ((bounds.x1 - ox) / STEP).ceil() as i32 + 1;
         let rows = ((bounds.y1 - oy) / STEP).ceil() as i32 + 1;
         let n = (cols * rows) as usize;
-        Grid { origin: Point::new(ox, oy), cols, rows, hard: vec![false; n], soft: vec![0; n], border: vec![false; n], east: vec![false; n], south: vec![false; n] }
+        Grid { origin: Point::new(ox, oy), cols, rows, hard: vec![false; n], soft: vec![0; n], border: vec![false; n], east: vec![0; n], south: vec![0; n] }
     }
 
     fn idx(&self, i: i32, j: i32) -> usize {
@@ -143,10 +167,10 @@ impl Grid {
 
     fn segment_used(&self, i: i32, j: i32, d: Dir) -> bool {
         match d {
-            Dir::E => self.east[self.idx(i, j)],
-            Dir::W => i > 0 && self.east[self.idx(i - 1, j)],
-            Dir::S => self.south[self.idx(i, j)],
-            Dir::N => j > 0 && self.south[self.idx(i, j - 1)],
+            Dir::E => self.east[self.idx(i, j)] > 0,
+            Dir::W => i > 0 && self.east[self.idx(i - 1, j)] > 0,
+            Dir::S => self.south[self.idx(i, j)] > 0,
+            Dir::N => j > 0 && self.south[self.idx(i, j - 1)] > 0,
         }
     }
 
@@ -159,6 +183,14 @@ impl Grid {
     /// `avoid` lists extra areas this one route must stay out of. The result is marked
     /// as taken so later routes keep clear of it.
     pub fn route(&mut self, from: Point, out: Dir, to: Point, arrive: Dir, avoid: &[Rect]) -> Option<Vec<Point>> {
+        let pts = self.find(&Seek { from, out, to, arrive, avoid, strict: true, cross: COST_CROSS }, &mut Scratch::default())?;
+        self.mark(&pts);
+        Some(pts)
+    }
+
+    /// The cheapest route for `q` on the grid as it stands. Nothing is marked.
+    pub fn find(&self, q: &Seek, scratch: &mut Scratch) -> Option<Vec<Point>> {
+        let Seek { from, out, to, arrive, avoid, strict, cross } = *q;
         let (si, sj) = self.cell(from);
         let (ti, tj) = self.cell(to);
         if !self.inside(si, sj) || !self.inside(ti, tj) {
@@ -166,8 +198,11 @@ impl Grid {
         }
         let avoided = |p: Point| avoid.iter().any(|r| p.x >= r.x0 - 1e-6 && p.x <= r.x1 + 1e-6 && p.y >= r.y0 - 1e-6 && p.y <= r.y1 + 1e-6);
         let n = (self.cols * self.rows) as usize * 4;
-        let mut dist = vec![u32::MAX; n];
-        let mut prev = vec![u32::MAX; n];
+        let Scratch { dist, prev } = scratch;
+        dist.clear();
+        dist.resize(n, u32::MAX);
+        prev.clear();
+        prev.resize(n, u32::MAX);
         let state = |i: i32, j: i32, d: Dir| self.idx(i, j) * 4 + d as usize;
         let h = |i: i32, j: i32| ((i - ti).unsigned_abs() + (j - tj).unsigned_abs()) * COST_STEP;
         let mut heap = BinaryHeap::new();
@@ -175,15 +210,37 @@ impl Grid {
         dist[start] = 0;
         let mut seq = 0u32;
         heap.push(Reverse((h(si, sj), seq, start as u32)));
-        let goal = state(ti, tj, arrive);
-        while let Some(Reverse((_, _, s))) = heap.pop() {
-            let s = s as usize;
-            if s == goal {
-                break;
+        // Where the route ends: the state it reaches `to` in, and what the whole route costs.
+        const DONE: u32 = u32::MAX;
+        let mut end: Option<(u32, usize)> = None;
+        while let Some(Reverse((f, _, s))) = heap.pop() {
+            if s == DONE {
+                if end.is_some_and(|(cost, _)| cost == f) {
+                    break;
+                }
+                continue;
             }
+            let s = s as usize;
             let (cell, d) = (s / 4, Dir::from(s % 4));
             let (i, j) = ((cell as i32) % self.cols, (cell as i32) / self.cols);
             let base = dist[s];
+            if f != base + h(i, j) {
+                continue; // a cheaper way to this state was found after this entry was queued
+            }
+            if i == ti && j == tj && (d == arrive || (!strict && d != arrive.opposite())) {
+                // Turning into the last leg is a bend like any other; the little extra keeps
+                // a route that arrives straight ahead of one that costs the same.
+                let total = base + if d == arrive { 0 } else { COST_BEND + 5 };
+                if strict {
+                    end = Some((total, s));
+                    break;
+                }
+                if end.is_none_or(|(cost, _)| total < cost) {
+                    end = Some((total, s));
+                    seq += 1;
+                    heap.push(Reverse((total, seq, DONE)));
+                }
+            }
             for nd in [d, Dir::from(d as usize + 1), Dir::from(d as usize + 3)] {
                 let (dx, dy) = nd.delta();
                 let (ni, nj) = (i + dx, j + dy);
@@ -191,8 +248,8 @@ impl Grid {
                     continue;
                 }
                 let k = self.idx(ni, nj);
-                let end = ni == ti && nj == tj;
-                if (self.hard[k] || avoided(self.point(ni, nj))) && !end {
+                let at_end = ni == ti && nj == tj;
+                if (self.hard[k] || avoided(self.point(ni, nj))) && !at_end {
                     continue;
                 }
                 let horizontal = matches!(nd, Dir::E | Dir::W);
@@ -203,8 +260,8 @@ impl Grid {
                 if self.segment_used(i, j, nd) {
                     cost += COST_SHARE;
                 }
-                if self.runs(ni, nj, !horizontal) && !end {
-                    cost += COST_CROSS;
+                if self.runs(ni, nj, !horizontal) && !at_end {
+                    cost += cross;
                 }
                 // Turning on top of another route hides which line goes where.
                 if nd != d && (self.runs(i, j, true) || self.runs(i, j, false)) {
@@ -219,9 +276,7 @@ impl Grid {
                 }
             }
         }
-        if dist[goal] == u32::MAX {
-            return None;
-        }
+        let (_, goal) = end?;
         let mut cells = Vec::new();
         let mut s = goal;
         loop {
@@ -252,7 +307,6 @@ impl Grid {
                 pts = m.to_vec();
             }
         }
-        self.mark(&pts);
         Some(pts)
     }
 
@@ -294,17 +348,31 @@ impl Grid {
 
     /// Record a route so later ones keep off its track.
     pub fn mark(&mut self, pts: &[Point]) {
+        self.count(pts, true);
+    }
+
+    /// Take back what `mark` recorded for the same route.
+    pub fn unmark(&mut self, pts: &[Point]) {
+        self.count(pts, false);
+    }
+
+    fn count(&mut self, pts: &[Point], add: bool) {
+        let step = |v: &mut u8| *v = if add { v.saturating_add(1) } else { v.saturating_sub(1) };
         for w in pts.windows(2) {
             let ((ai, aj), (bi, bj)) = (self.cell(w[0]), self.cell(w[1]));
             if aj == bj {
                 for i in ai.min(bi)..ai.max(bi) {
-                    let k = self.idx(i, aj);
-                    self.east[k] = true;
+                    if self.inside(i, aj) {
+                        let k = self.idx(i, aj);
+                        step(&mut self.east[k]);
+                    }
                 }
-            } else {
+            } else if ai == bi {
                 for j in aj.min(bj)..aj.max(bj) {
-                    let k = self.idx(ai, j);
-                    self.south[k] = true;
+                    if self.inside(ai, j) {
+                        let k = self.idx(ai, j);
+                        step(&mut self.south[k]);
+                    }
                 }
             }
         }
@@ -345,6 +413,52 @@ mod tests {
         assert!(a.windows(2).all(|w| w[0].x == w[1].x || w[0].y == w[1].y));
         let b = g.route(Point::new(16.0, 80.0), Dir::E, Point::new(224.0, 80.0), Dir::E, &[]).unwrap();
         assert_ne!(a, b, "a second edge should take another track");
+    }
+
+    fn seek(from: Point, out: Dir, to: Point, arrive: Dir, strict: bool, cross: u32) -> Seek<'static> {
+        Seek { from, out, to, arrive, avoid: &[], strict, cross }
+    }
+
+    #[test]
+    fn a_route_taken_back_leaves_the_grid_as_it_was() {
+        let mut g = Grid::new(Rect::new(0.0, 0.0, 240.0, 160.0), Point::ZERO);
+        let q = seek(Point::new(16.0, 80.0), Dir::E, Point::new(224.0, 80.0), Dir::E, true, COST_CROSS);
+        let first = g.find(&q, &mut Scratch::default()).unwrap();
+        g.mark(&first);
+        g.mark(&first);
+        g.unmark(&first);
+        assert_ne!(g.find(&q, &mut Scratch::default()).unwrap(), first, "still taken once");
+        g.unmark(&first);
+        assert_eq!(g.find(&q, &mut Scratch::default()).unwrap(), first);
+    }
+
+    #[test]
+    fn a_dear_crossing_is_gone_round_and_a_cheap_one_is_taken() {
+        let mut g = Grid::new(Rect::new(0.0, 0.0, 240.0, 240.0), Point::ZERO);
+        // A short wall of line across the straight way.
+        g.mark(&[Point::new(120.0, 96.0), Point::new(120.0, 144.0)]);
+        let q = |cross| seek(Point::new(40.0, 120.0), Dir::E, Point::new(200.0, 120.0), Dir::E, true, cross);
+        assert_eq!(g.find(&q(30), &mut Scratch::default()).unwrap().len(), 2, "straight through");
+        // Going round takes four bends and a little more line: dearer than 240, cheaper than 480.
+        assert_eq!(g.find(&q(240), &mut Scratch::default()).unwrap().len(), 2, "a crossing is not avoided at any price");
+        let round = g.find(&q(480), &mut Scratch::default()).unwrap();
+        assert!(round.len() > 2 && round.iter().any(|p| p.y < 96.0 || p.y > 144.0), "{round:?}");
+    }
+
+    #[test]
+    fn the_last_leg_may_be_turned_into_when_that_is_not_required() {
+        let g = Grid::new(Rect::new(0.0, 0.0, 240.0, 160.0), Point::ZERO);
+        // The end lies one step beside the start's line: no room for a jog that arrives heading south.
+        let (from, to) = (Point::new(40.0, 40.0), Point::new(120.0, 48.0));
+        let strict = g.find(&seek(from, Dir::E, to, Dir::S, true, COST_CROSS), &mut Scratch::default()).unwrap();
+        let loose = g.find(&seek(from, Dir::E, to, Dir::S, false, COST_CROSS), &mut Scratch::default()).unwrap();
+        assert_eq!(strict.len(), 3, "{strict:?}");
+        assert_eq!(strict[1], Point::new(120.0, 40.0));
+        assert_eq!(loose, strict, "arriving straight on is preferred when it costs no more");
+        // With the straight arrival walled off, only the loose search still gets there.
+        let mut walled = g.clone();
+        walled.block(Rect::new(104.0, 16.0, 136.0, 46.0));
+        assert!(walled.find(&seek(from, Dir::E, to, Dir::S, false, COST_CROSS), &mut Scratch::default()).is_some());
     }
 
     #[test]

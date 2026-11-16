@@ -103,7 +103,7 @@ Repeat render (or fix) until the exit code is 0.
 | Command | Purpose |
 | --- | --- |
 | `render <spec> -o <out.svg>` | Compile a YAML or JSON spec to SVG and validate the result; `--previous` keeps an earlier layout |
-| `validate <file.svg>...` | Run the 38 rules on SVG files, including ones SVGDog did not make |
+| `validate <file.svg>...` | Run the 39 rules on SVG files, including ones SVGDog did not make |
 | `inspect <file.svg>` | List visible elements with their bounding boxes, as data |
 | `preview <file.svg> -o <out.png>` | Rasterize to PNG; `--annotate` outlines findings, `--crop` zooms in |
 | `edit <file> --set ... \| --ops ...` | Targeted changes to an SVG or a spec |

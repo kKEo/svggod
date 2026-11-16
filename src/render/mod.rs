@@ -1,14 +1,18 @@
 //! The create path: a spec in, deterministic SVG out.
 
 mod compare;
+pub mod cross;
+pub mod effort;
 mod explain;
 pub mod interactive;
 pub mod keep;
 pub mod layout;
+pub mod order;
 pub mod route;
 mod sequence;
 mod timeline;
 pub mod theme;
+mod wire;
 
 use std::collections::BTreeMap;
 
@@ -20,7 +24,9 @@ use crate::svg::text::{self, Class};
 use crate::svg::{self, SVG_NS};
 use crate::util::fmt;
 use layout::{Geometry, Measured, Tuning};
+use effort::{Budget, Effort};
 use route::{Dir, Grid};
+use wire::{STUB, Wire};
 use theme::Theme;
 
 pub struct Options<'a> {
@@ -31,9 +37,10 @@ pub struct Options<'a> {
     pub embed: Option<&'a serde_json::Value>,
     /// Add the classes and the style block of the `css` interactive version.
     pub interactive: bool,
+    /// How hard to work at edges that cross, already chosen among the flag, the spec and the config.
+    pub effort: Effort,
 }
 
-const STUB: f64 = 16.0;
 /// Radius of the start and end markers. Their box is 32 px, so the circle sits 4 px inside it.
 pub(crate) const MARKER_R: f64 = 12.0;
 /// How far from the middle of a side a lone edge may start, to run straight to the box at the other end.
@@ -332,12 +339,64 @@ fn midpoint(route: &[Point]) -> Point {
     route.first().copied().unwrap_or(Point::ZERO)
 }
 
-fn arrange(spec: &Spec, m: &Measured, t: &Tuning, shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Drawn {
-    connect(spec, m, layout::layout(spec, m, t), shapes_of)
+/// Place the boxes and route the edges. When the edges of the plain placement cross, other
+/// orders of the boxes are placed and routed too, and the drawing that scores best is kept.
+fn arrange(spec: &Spec, m: &Measured, t: &Tuning, ladder: &[Budget], shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Drawn {
+    let floor = least_crossings(spec);
+    let mut best: Option<((bool, cross::Score), Drawn)> = None;
+    'levels: for budget in ladder {
+        let mut seen: Vec<Geometry> = Vec::new();
+        for variant in 0..=budget.routed {
+            let geo = layout::layout(spec, m, t, &order::Search { variant, budget });
+            if seen.contains(&geo) {
+                continue;
+            }
+            seen.push(geo.clone());
+            let d = connect(spec, m, geo, budget, shapes_of);
+            // A drawing that fits the width beats one that does not, whatever crosses.
+            let mark = (d.size.0 > spec.max_width + 1e-6, cross::score(&d.routes));
+            if best.as_ref().is_none_or(|(b, _)| mark < *b) {
+                best = Some((mark, d));
+            }
+            if best.as_ref().is_some_and(|(b, _)| b.1.crossings <= floor) {
+                break 'levels;
+            }
+        }
+    }
+    best.expect("the plain placement is always drawn").1
+}
+
+/// A number of crossings that no drawing of the spec's boxes and edges can go below.
+fn least_crossings(spec: &Spec) -> usize {
+    let index = |r: Ref| match r {
+        Ref::Node(i) => i,
+        Ref::Group(g) => spec.nodes.len() + g,
+        Ref::Edge(_) => usize::MAX,
+    };
+    let edges: Vec<(usize, usize)> = spec.edges.iter().filter_map(|e| Some((index(spec.lookup(&e.from)?), index(spec.lookup(&e.to)?)))).collect();
+    cross::least(spec.nodes.len() + spec.groups.len(), &edges)
+}
+
+/// Route the edges between boxes that stay where they are, working up the levels of effort
+/// while edges cross.
+fn connect_best(spec: &Spec, m: &Measured, geo: Geometry, ladder: &[Budget], shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Drawn {
+    let floor = least_crossings(spec);
+    let mut best: Option<(cross::Score, Drawn)> = None;
+    for budget in ladder {
+        let d = connect(spec, m, geo.clone(), budget, shapes_of);
+        let mark = cross::score(&d.routes);
+        if best.as_ref().is_none_or(|(b, _)| mark < *b) {
+            best = Some((mark, d));
+        }
+        if best.as_ref().is_some_and(|(b, _)| b.crossings <= floor) {
+            break;
+        }
+    }
+    best.expect("there is at least one level of effort").1
 }
 
 /// Route the edges between boxes that are already placed, then set labels and notes.
-fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Drawn {
+fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, budget: &Budget, shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Drawn {
 
     // Work in positive coordinates with room around the content for routes.
     let all = |geo: &Geometry| geo.nodes.iter().chain(&geo.groups).chain(geo.notes.iter().flatten()).copied().reduce(|a, b| a.union(b)).unwrap_or(Rect::ZERO);
@@ -458,17 +517,16 @@ fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, shapes_of: &dyn Fn(usiz
         _ => p,
     };
 
-    let mut routes: Vec<Vec<Point>> = Vec::new();
+    // A loop from a box back to itself goes round its top right corner; every other edge is routed.
+    let mut fixed: Vec<Option<Vec<Point>>> = vec![None; ends.len()];
+    let mut wires: Vec<Wire> = Vec::new();
     for (i, (a, b)) in ends.iter().enumerate() {
         let Some((sa, sb)) = chosen[i] else {
-            // A loop from a box back to itself, round its top right corner.
             let r = box_of(&geo, *a);
             let (start, end) = (Point::new(r.x1 - 24.0, r.y0), Point::new(r.x1, r.y0 + 16.0));
-            routes.push(vec![tip(*a, start, Dir::N), Point::new(start.x, r.y0 - 16.0), Point::new(r.x1 + 16.0, r.y0 - 16.0), Point::new(r.x1 + 16.0, end.y), tip(*a, end, Dir::E)]);
+            fixed[i] = Some(vec![tip(*a, start, Dir::N), Point::new(start.x, r.y0 - 16.0), Point::new(r.x1 + 16.0, r.y0 - 16.0), Point::new(r.x1 + 16.0, end.y), tip(*a, end, Dir::E)]);
             continue;
         };
-        let (pa, pb) = (port[&(i, true)], port[&(i, false)]);
-        let (s, t) = (pa + sa.vec() * STUB, pb + sb.vec() * STUB);
         // Frames that hold neither end are walls for this edge.
         let mut inside: Vec<usize> = spec.ancestors(*a);
         inside.extend(spec.ancestors(*b));
@@ -478,16 +536,23 @@ fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, shapes_of: &dyn Fn(usiz
             }
         }
         let walls: Vec<Rect> = (0..spec.groups.len()).filter(|g| !inside.contains(g)).map(|g| geo.groups[g]).collect();
-        let mid = grid.route(s, sa, t, sb.opposite(), &walls).or_else(|| grid.route(s, sa, t, sb.opposite(), &[])).unwrap_or_else(|| vec![s, t]);
-        let mut pts = vec![tip(*a, pa, sa)];
-        pts.extend(mid);
-        pts.push(tip(*b, pb, sb));
+        wires.push(Wire { edge: i, ends: [(*a, sa), (*b, sb)], ports: [port[&(i, true)], port[&(i, false)]], walls });
+    }
+    let finish = |w: &Wire, mid: Option<&[Point]>| -> Vec<Point> {
+        let [(a, sa), (b, sb)] = w.ends;
+        let [pa, pb] = w.ports;
+        let mut pts = vec![tip(a, pa, sa)];
+        match mid {
+            Some(mid) => pts.extend_from_slice(mid),
+            None => pts.extend([pa + sa.vec() * STUB, pb + sb.vec() * STUB]),
+        }
+        pts.push(tip(b, pb, sb));
         let mut pts = route::simplify(pts);
         // A leg that ends on a marker but does not run through its centre (a kept layout, a router
         // fallback) is bent to meet the circle at the point closest to where the leg comes from.
         let n = pts.len();
         if n >= 2 {
-            for (r, at, from) in [(*a, 0, 1), (*b, n - 1, n - 2)] {
+            for (r, at, from) in [(a, 0, 1), (b, n - 1, n - 2)] {
                 if is_marker(spec, r) {
                     let rect = box_of(&geo, r);
                     let c = rect.center();
@@ -497,8 +562,9 @@ fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, shapes_of: &dyn Fn(usiz
                 }
             }
         }
-        routes.push(pts);
-    }
+        pts
+    };
+    let routes = wire::solve(&grid, wires, &fixed, budget, least_crossings(spec), &finish);
 
     // Edge labels: beside the longest segment that has room.
     // How badly a rectangle collides with what is already drawn; 0 means free.
@@ -781,6 +847,7 @@ fn draw(spec: &Spec, opt: &Options, prev: Option<&keep::Previous>) -> Result<(St
     let theme = placeholder.as_ref().unwrap_or(&opt.theme.theme);
     let (small, small_lead) = (theme.small, theme.small_lead());
     let kinds: Vec<Kind> = spec.nodes.iter().map(|n| n.kind).collect();
+    let ladder = opt.effort.ladder();
     let mut kept: Option<keep::Kept> = None;
     let mut chosen = None;
     if let Some(prev) = prev.filter(|p| keep::pins(spec, p)) {
@@ -788,7 +855,7 @@ fn draw(spec: &Spec, opt: &Options, prev: Option<&keep::Previous>) -> Result<(St
         let t = &layout::LEVELS[keep::level(spec, prev, theme)];
         let m = layout::measure(spec, t, theme);
         let (geo, mut k) = keep::pinned(spec, &m, t, prev);
-        let d = connect(spec, &m, geo, &|i, r| shape(kinds[i], r, theme));
+        let d = connect_best(spec, &m, geo, &ladder, &|i, r| shape(kinds[i], r, theme));
         if d.size.0 > spec.max_width + 1e-6 {
             k.reasons.push(keep::Reason { id: String::new(), why: format!("with the boxes kept in place the drawing would be {} px wide; max_width allows {}", fmt(d.size.0), fmt(spec.max_width)) });
         }
@@ -802,8 +869,8 @@ fn draw(spec: &Spec, opt: &Options, prev: Option<&keep::Previous>) -> Result<(St
             let d = match spec.diagram {
                 Diagram::Sequence => sequence::arrange(spec, &m, t, &|i, r| shape(kinds[i], r, theme)),
                 Diagram::Timeline => timeline::arrange(spec, &m, theme),
-                Diagram::Compare => connect(spec, &m, compare::layout(spec, &m), &|i, r| shape(kinds[i], r, theme)),
-                _ => arrange(spec, &m, t, &|i, r| shape(kinds[i], r, theme)),
+                Diagram::Compare => connect_best(spec, &m, compare::layout(spec, &m), &ladder, &|i, r| shape(kinds[i], r, theme)),
+                _ => arrange(spec, &m, t, &ladder, &|i, r| shape(kinds[i], r, theme)),
             };
             let fits = d.size.0 <= spec.max_width + 1e-6;
             chosen = Some((m, d));
@@ -999,7 +1066,7 @@ mod tests {
     fn boxes_read_back_from_a_drawing_are_the_boxes_drawn() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
         let mut seen = 0;
-        for dir in ["tests/fixtures", "examples"] {
+        for dir in ["tests/fixtures", "tests/fixtures/gallery", "examples"] {
             for entry in std::fs::read_dir(root.join(dir)).unwrap() {
                 let path = entry.unwrap().path();
                 if path.extension().and_then(|e| e.to_str()) != Some("yaml") {
@@ -1010,7 +1077,7 @@ mod tests {
                 let spec = crate::spec::parse(&doc).unwrap();
                 for text_as_paths in [false, true] {
                     let look = theme::default();
-                    let opt = Options { theme: &look, text_as_paths, embed: None, interactive: false };
+                    let opt = Options { theme: &look, text_as_paths, embed: None, interactive: false, effort: Effort::Normal };
                     let svg = render(&spec, &opt).unwrap();
                     let prev = keep::read(&svg, &name).unwrap();
                     // Drawn over itself, nothing may move and the bytes must be the same.
@@ -1032,7 +1099,31 @@ mod tests {
         let doc = crate::spec::read_document(yaml, "t.yaml").unwrap();
         let spec = crate::spec::parse(&doc).unwrap();
         let look = theme::default();
-        render(&spec, &Options { theme: &look, text_as_paths: false, embed: None, interactive: false }).unwrap()
+        render(&spec, &Options { theme: &look, text_as_paths: false, embed: None, interactive: false, effort: Effort::Normal }).unwrap()
+    }
+
+    /// How many times the edges of each fixture, gallery spec and example cross. The table
+    /// lists the drawings that have crossings; every other one must have none, and today that
+    /// is all of them. A change that raises a count is a regression.
+    #[test]
+    fn edges_cross_no_more_than_the_table_says() {
+        const CROSSINGS: &[(&str, usize)] = &[];
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let mut seen = 0;
+        for dir in ["tests/fixtures", "tests/fixtures/gallery", "examples"] {
+            let mut paths: Vec<_> = std::fs::read_dir(root.join(dir)).unwrap().map(|e| e.unwrap().path()).filter(|p| p.extension().and_then(|e| e.to_str()) == Some("yaml")).collect();
+            paths.sort();
+            for path in paths {
+                let name = format!("{dir}/{}", path.file_name().unwrap().to_string_lossy());
+                let svg = draw(&std::fs::read_to_string(&path).unwrap());
+                let routes: Vec<Vec<Point>> = edges(&svg).into_iter().map(|(_, pts)| pts).collect();
+                let found = cross::tally(&routes);
+                let allowed = CROSSINGS.iter().find(|(n, _)| *n == name).map_or(0, |(_, c)| *c);
+                assert_eq!(found.crossings.len(), allowed, "{name}: {:?}", found.crossings);
+                seen += 1;
+            }
+        }
+        assert!(seen >= 30, "fixtures, gallery specs and examples were found");
     }
 
     /// The centre of a marker node, read from its first circle.

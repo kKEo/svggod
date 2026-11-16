@@ -35,7 +35,7 @@ More examples to copy: [Flow gallery](flow-gallery.md).
 
 ## Layers
 
-Use `layers` for tiers. Each top-level group becomes a band that runs across the full width, stacked in order. Nodes that are in no group share an unframed first band.
+Use `layers` for tiers. Each top-level group becomes a band that runs across the full width, stacked in order. Nodes that are in no group share an unframed first band. Inside a band the nodes stand in the order you list them, unless another order keeps arrows between bands from crossing.
 
 ```yaml
 version: 1

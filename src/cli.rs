@@ -91,6 +91,9 @@ pub enum Command {
         /// Theme: docs, blueprint, paper, bold or cards (add -dark or -auto), or a theme folder [default: the spec's, else svgdog.toml's, else docs-light]
         #[arg(long, value_name = "NAME|DIR")]
         theme: Option<String>,
+        /// How hard to work at edges that cross: normal, high or max [default: the spec's, else svgdog.toml's, else normal]
+        #[arg(long, value_name = "LEVEL")]
+        effort: Option<String>,
         /// css: an SVG that highlights on hover; html: a page with step controls [default: none]
         #[arg(long, value_enum, default_value = "none", value_name = "none|css|html", hide_possible_values = true, hide_default_value = true)]
         interactive: Live,
