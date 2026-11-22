@@ -29,6 +29,58 @@ pub fn line_of(doc: &Document, node: Node) -> u32 {
     doc.text_pos_at(node.range().start).row
 }
 
+/// Boxes sorted into a grid of cells, so the boxes around a point are looked up and
+/// not searched for among all of them. A box over many cells is kept aside and always offered.
+pub struct Cells {
+    origin: Point,
+    cell: (f64, f64),
+    side: usize,
+    cells: Vec<Vec<usize>>,
+    wide: Vec<usize>,
+}
+
+impl Cells {
+    /// A box over more cells than this is kept aside.
+    const WIDE: usize = 16;
+
+    pub fn of(boxes: &[(usize, Rect)]) -> Cells {
+        let finite = |r: &Rect| r.x0.is_finite() && r.y0.is_finite() && r.x1.is_finite() && r.y1.is_finite();
+        let bounds = boxes.iter().filter(|(_, r)| finite(r)).map(|(_, r)| *r).reduce(|a, b| a.union(b)).unwrap_or(Rect::ZERO);
+        let side = ((boxes.len() as f64).sqrt().ceil() as usize).clamp(1, 256);
+        let cell = ((bounds.width() / side as f64).max(f64::MIN_POSITIVE), (bounds.height() / side as f64).max(f64::MIN_POSITIVE));
+        let mut out = Cells { origin: bounds.origin(), cell, side, cells: vec![Vec::new(); side * side], wide: Vec::new() };
+        for (i, r) in boxes {
+            if !finite(r) {
+                out.wide.push(*i);
+                continue;
+            }
+            let (c0, r0) = out.cell_of(Point::new(r.x0, r.y0));
+            let (c1, r1) = out.cell_of(Point::new(r.x1, r.y1));
+            if (c1 - c0 + 1) * (r1 - r0 + 1) > Self::WIDE {
+                out.wide.push(*i);
+                continue;
+            }
+            for row in r0..=r1 {
+                for col in c0..=c1 {
+                    out.cells[row * side + col].push(*i);
+                }
+            }
+        }
+        out
+    }
+
+    fn cell_of(&self, p: Point) -> (usize, usize) {
+        let at = |v: f64, o: f64, size: f64| (((v - o) / size).floor().max(0.0) as usize).min(self.side - 1);
+        (at(p.x, self.origin.x, self.cell.0), at(p.y, self.origin.y, self.cell.1))
+    }
+
+    /// Every box that may hold `p`, and some that do not; in no particular order.
+    pub fn near(&self, p: Point) -> impl Iterator<Item = usize> + '_ {
+        let (col, row) = self.cell_of(p);
+        self.cells[row * self.side + col].iter().chain(&self.wide).copied()
+    }
+}
+
 /// Where each line of a text ends, so the line of a place is a search and not a scan
 /// of the whole text: with thousands of findings the scan made validation quadratic.
 pub struct Lines(Vec<usize>);
@@ -170,6 +222,8 @@ pub struct Scene<'a, 'i> {
     pub ids: BTreeMap<&'a str, Vec<Node<'a, 'i>>>,
     pub elems: Vec<Elem<'a, 'i>>,
     lines: Lines,
+    /// The painted closed shapes by where they are; made when first asked for.
+    shapes: std::cell::OnceCell<Cells>,
     /// Each element's number among the siblings with its name, and whether it has any; made when first asked for.
     places: std::cell::OnceCell<std::collections::HashMap<usize, (usize, bool)>>,
 }
@@ -587,7 +641,7 @@ impl<'a, 'i> Scene<'a, 'i> {
                 }
             }
         }
-        Scene { doc, root, lenient_ns, viewbox, canvas, svggod_output, css, ids, elems, lines: Lines::of(doc.input_text()), places: Default::default() }
+        Scene { doc, root, lenient_ns, viewbox, canvas, svggod_output, css, ids, elems, lines: Lines::of(doc.input_text()), shapes: Default::default(), places: Default::default() }
     }
 
     pub fn is_svg(&self, node: Node) -> bool {
@@ -599,6 +653,15 @@ impl<'a, 'i> Scene<'a, 'i> {
 
     pub fn line(&self, node: Node) -> u32 {
         self.lines.at(node.range().start)
+    }
+
+    /// Indices into `elems` of the painted closed shapes whose box may hold `p`.
+    pub fn shapes_near(&self, p: Point) -> impl Iterator<Item = usize> + '_ {
+        let cells = self.shapes.get_or_init(|| {
+            let boxes: Vec<(usize, Rect)> = self.elems.iter().enumerate().filter(|(_, e)| e.closed_shape().is_some() && e.painted()).filter_map(|(i, e)| Some((i, e.bbox?))).collect();
+            Cells::of(&boxes)
+        });
+        cells.near(p)
     }
 
     fn place(&self, node: Node) -> (usize, bool) {

@@ -2489,3 +2489,29 @@ fn files_written_under_the_old_name_svgdog_still_work() {
     fs::write(at("svggod.toml"), "version = 1\n").unwrap();
     assert_eq!(run_in(dir.path(), &["validate", "s.svg", "--rules", "shape-overlap"], None).code, 0, "svggod.toml wins over svgdog.toml");
 }
+
+// Hardening: limits on what is read.
+
+#[test]
+fn an_input_over_the_size_limit_is_refused_before_it_is_read() {
+    let dir = tempfile::tempdir().unwrap();
+    // A sparse file: 65 MB long, nothing on disk.
+    fs::File::create(dir.path().join("huge.svg")).unwrap().set_len(65 * 1024 * 1024).unwrap();
+    for args in [&["validate", "huge.svg", "--format", "json"][..], &["render", "huge.svg", "-o", "out.svg", "--format", "json"]] {
+        let r = run_in(dir.path(), args, None);
+        assert_eq!(r.code, 3, "{args:?}");
+        assert_eq!(r.json()["error"]["code"], "input-too-large");
+    }
+}
+
+#[test]
+fn deep_nesting_is_a_finding_for_validate_and_an_input_error_for_inspect() {
+    let dir = tempfile::tempdir().unwrap();
+    let deep = format!("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 9 9\">{}<rect width=\"5\" height=\"5\"/>{}</svg>", "<g>".repeat(5000), "</g>".repeat(5000));
+    fs::write(dir.path().join("deep.svg"), deep).unwrap();
+    let v = run_in(dir.path(), &["validate", "deep.svg", "--format", "json"], None);
+    assert_eq!(v.code, 1);
+    assert_eq!(rules_of(&v.json()), ["xml-well-formed"]);
+    let i = run_in(dir.path(), &["inspect", "deep.svg", "--format", "json"], None);
+    assert_eq!((i.code, i.json()["error"]["code"].as_str()), (3, Some("malformed-xml")));
+}

@@ -67,6 +67,8 @@
 //! What this page lists follows semantic versioning. So do the spec format, the
 //! rule ids and the error codes. The modules behind it are private.
 
+#![forbid(unsafe_code)]
+#![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 // Without the program, what only its commands call is unused; that is expected.
 #![cfg_attr(not(feature = "cli"), allow(dead_code, unused_imports))]

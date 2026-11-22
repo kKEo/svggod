@@ -148,3 +148,30 @@ fn rasterize_never_opens_a_file_the_svg_points_to() {
     }
     assert_ne!(svggod::rasterize(&with(&format!("data:image/png;base64,{b64}")), 64).unwrap().png, blank);
 }
+
+#[test]
+fn root_keeps_theme_folders_inside_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let (inside, outside) = (dir.path().join("root"), dir.path().join("elsewhere"));
+    for d in [inside.join("brand"), outside.join("brand")] {
+        std::fs::create_dir_all(&d).unwrap();
+        std::fs::write(d.join("theme.toml"), include_str!("../themes/paper/theme.toml")).unwrap();
+    }
+    let spec = |theme: &str| format!("{SPEC}theme: {theme}\n");
+    let r = Renderer::new().base_dir(&inside).root(&inside);
+    r.render(&spec("./brand")).unwrap();
+    assert_eq!(r.render(&spec("../elsewhere/brand")).unwrap_err().code, "outside-root");
+    assert_eq!(r.render(&spec(&outside.join("brand").to_string_lossy())).unwrap_err().code, "outside-root");
+    assert_eq!(r.clone().theme(outside.join("brand").to_string_lossy()).render(SPEC).unwrap_err().code, "outside-root");
+    // Without a root the same folder is read.
+    Renderer::new().base_dir(&inside).render(&spec("../elsewhere/brand")).unwrap();
+}
+
+#[test]
+fn max_effort_caps_what_a_spec_asks_for() {
+    let greedy = format!("{SPEC}effort: max\n");
+    let capped = Renderer::new().max_effort(Effort::Normal);
+    assert_eq!(capped.render(&greedy).unwrap(), Renderer::new().render(SPEC).unwrap());
+    assert_eq!(capped.clone().effort(Effort::Max).render(SPEC).unwrap(), Renderer::new().render(SPEC).unwrap());
+    assert!(Effort::Normal < Effort::High && Effort::High < Effort::Max);
+}

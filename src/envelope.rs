@@ -17,8 +17,11 @@ pub const EXIT_INTERNAL: i32 = 5;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Severity {
+    /// Worth knowing; never fails a check.
     Info,
+    /// Likely a problem for a reader.
     Warning,
+    /// Wrong, unsafe or unreadable.
     Error,
 }
 
@@ -48,6 +51,7 @@ impl Severity {
 pub struct Finding {
     /// Id of the rule that raised it, such as `text-overflow`.
     pub rule: &'static str,
+    /// How serious it is, after the profile and the config.
     pub severity: Severity,
     /// The name the SVG was validated under.
     pub file: String,

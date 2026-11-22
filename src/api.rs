@@ -19,7 +19,9 @@ use crate::{catalogue, rules, spec};
 pub struct Renderer {
     theme: Option<String>,
     base: Option<PathBuf>,
+    root: Option<PathBuf>,
     effort: Option<Effort>,
+    max_effort: Option<Effort>,
     text_as_paths: bool,
     embed_spec: bool,
     interactive: bool,
@@ -50,9 +52,26 @@ impl Renderer {
         self
     }
 
+    /// The only folder theme files may be read from. A theme path that leads out of
+    /// it, from a spec or from [`theme`](Renderer::theme), fails with `outside-root`.
+    /// Set this when the specs come from someone else; without it a spec can name
+    /// any folder on the disk.
+    pub fn root(mut self, dir: impl Into<PathBuf>) -> Renderer {
+        self.root = Some(dir.into());
+        self
+    }
+
     /// How hard to work at edges that cross, whatever the spec says.
     pub fn effort(mut self, effort: Effort) -> Renderer {
         self.effort = Some(effort);
+        self
+    }
+
+    /// The most effort a drawing may take, whatever the spec or [`effort`](Renderer::effort)
+    /// asks for. A spec can say `effort: max`, which takes many times longer on a dense
+    /// diagram; set this when the specs come from someone else.
+    pub fn max_effort(mut self, most: Effort) -> Renderer {
+        self.max_effort = Some(most);
         self
     }
 
@@ -87,13 +106,16 @@ impl Renderer {
         let doc = spec::read_document(spec, "spec")?;
         let parsed = spec::parse(&doc)?;
         let spec_dir = self.base.as_deref().unwrap_or(Path::new(""));
-        let look = crate::render::theme::choose(&crate::render::theme::Choice { flag: self.theme.as_deref(), spec: parsed.theme.as_deref(), spec_dir, config: None, ceiling: None })?;
+        let look = crate::render::theme::choose(&crate::render::theme::Choice { flag: self.theme.as_deref(), spec: parsed.theme.as_deref(), spec_dir, config: None, ceiling: self.root.as_deref() })?;
         let opt = crate::render::Options {
             theme: &look,
             text_as_paths: self.text_as_paths,
             embed: self.embed_spec.then_some(&doc),
             interactive: self.interactive,
-            effort: self.effort.or(parsed.effort).unwrap_or_default(),
+            effort: {
+                let asked = self.effort.or(parsed.effort).unwrap_or_default();
+                self.max_effort.map_or(asked, |most| asked.min(most))
+            },
         };
         crate::render::render(&parsed, &opt)
     }

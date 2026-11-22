@@ -3,7 +3,8 @@
 
 /// How hard the renderer works at edges that cross. Every level is a fixed budget
 /// of attempts, never a time, so a level gives the same drawing on every machine.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+/// Ordered: `Normal < High < Max`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[non_exhaustive]
 pub enum Effort {
     /// One pass; the default.
@@ -57,7 +58,7 @@ impl Effort {
         levels.iter().map(|e| e.budget()).collect()
     }
 
-    pub const fn budget(self) -> Budget {
+    pub(crate) const fn budget(self) -> Budget {
         match self {
             Effort::Normal => Budget { reroutes: 64, cross: &[240], orders: 1, starts: 1, sweeps: (6, 2), sift: false, routed: 1 },
             Effort::High => Budget { reroutes: 512, cross: &[240, 480], orders: 3, starts: 8, sweeps: (12, 4), sift: true, routed: 3 },

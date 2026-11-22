@@ -20,16 +20,18 @@ fn text_of<'e>(e: &'e Elem) -> Option<(&'e TextInfo, Rect)> {
 
 /// The smallest painted closed shape drawn before `ti` that encloses `p`.
 pub fn container(scene: &Scene, ti: usize, p: Point, opaque: bool) -> Option<usize> {
+    // Smallest box first; of equal boxes, the one drawn last.
     let mut best: Option<(f64, usize)> = None;
-    for (i, e) in scene.elems[..ti].iter().enumerate() {
+    for i in scene.shapes_near(p).filter(|i| *i < ti) {
+        let e = &scene.elems[i];
         let (Some(path), Some(b)) = (e.closed_shape(), e.bbox) else { continue };
-        if !e.painted() || !b.contains(p) || (opaque && e.style.fill_alpha() < 0.5) {
+        if !b.contains(p) || (opaque && e.style.fill_alpha() < 0.5) {
             continue;
         }
-        if !svg::contains_point(path, p) {
+        if best.is_some_and(|(a, j)| b.area() > a || (b.area() == a && i < j)) {
             continue;
         }
-        if best.is_none_or(|(a, _)| b.area() <= a) {
+        if svg::contains_point(path, p) {
             best = Some((b.area(), i));
         }
     }

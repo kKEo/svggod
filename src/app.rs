@@ -181,13 +181,10 @@ fn dispatch(args: &[String]) -> i32 {
 /// Run the command line in `args` (the program name first) and return the exit code.
 ///
 /// Output goes to stdout and stderr as the command line contract says. A panic is
-/// a bug: it is reported in the contract's shape instead of a backtrace.
+/// a bug: it is caught and reported in the contract's shape, with exit code 5. The
+/// process's panic hook is left alone, so the caller's own hook still runs.
 pub fn run(args: &[String]) -> i32 {
-    let hook = std::panic::take_hook();
-    std::panic::set_hook(Box::new(|_| {}));
-    let outcome = std::panic::catch_unwind(|| dispatch(args));
-    std::panic::set_hook(hook);
-    match outcome {
+    match std::panic::catch_unwind(|| dispatch(args)) {
         Ok(code) => code,
         Err(payload) => {
             let detail = payload.downcast_ref::<&str>().map(|s| s.to_string()).or_else(|| payload.downcast_ref::<String>().cloned()).unwrap_or_else(|| "unknown panic".into());
@@ -200,6 +197,8 @@ pub fn run(args: &[String]) -> i32 {
 
 /// The `svggod` program: run the process's own arguments and exit with the code.
 pub fn main() -> ! {
+    // The whole process is ours here, so the backtrace can go: `run` reports the bug.
+    std::panic::set_hook(Box::new(|_| {}));
     let args: Vec<String> = std::env::args_os().map(|a| a.to_string_lossy().into_owned()).collect();
     std::process::exit(run(&args))
 }

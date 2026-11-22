@@ -8,7 +8,7 @@
 //! 2026-07-28, where each request carries its version and the client may call
 //! `server/discover` first.
 
-use std::io::{BufRead, Write};
+use std::io::{BufRead, Read, Write};
 use std::path::{Component, Path, PathBuf};
 
 use clap::Parser;
@@ -506,6 +506,45 @@ fn handle(root: &Path, msg: &Value) -> Option<Value> {
     }
 }
 
+/// The longest message read, in bytes; a spec or a set of edits is far smaller.
+const MAX_MESSAGE: u64 = 64 * 1024 * 1024;
+
+enum Message {
+    Line(String),
+    /// Longer than `MAX_MESSAGE`; the rest of the line has been skipped.
+    TooLong,
+}
+
+/// Read one line without ever holding more than `MAX_MESSAGE` of it. `None` at the end of the input.
+fn read_message(input: &mut impl BufRead) -> std::io::Result<Option<Message>> {
+    let mut buf = Vec::new();
+    let n = input.by_ref().take(MAX_MESSAGE + 1).read_until(b'\n', &mut buf)?;
+    if n == 0 {
+        return Ok(None);
+    }
+    if buf.len() as u64 > MAX_MESSAGE && buf.last() != Some(&b'\n') {
+        // Drop the rest of the line, a buffer at a time.
+        loop {
+            let chunk = input.fill_buf()?;
+            if chunk.is_empty() {
+                break;
+            }
+            match chunk.iter().position(|b| *b == b'\n') {
+                Some(i) => {
+                    input.consume(i + 1);
+                    break;
+                }
+                None => {
+                    let len = chunk.len();
+                    input.consume(len);
+                }
+            }
+        }
+        return Ok(Some(Message::TooLong));
+    }
+    Ok(Some(Message::Line(String::from_utf8_lossy(&buf).into_owned())))
+}
+
 /// Serve until stdin closes. Messages are JSON objects, one per line.
 pub fn serve(root: &Path) -> Result<(), AppError> {
     let root: PathBuf = root.canonicalize().map_err(|e| AppError::input("root-not-found", format!("Cannot use {} as the root directory: {e}.", root.display())).path(root.display().to_string()))?;
@@ -516,8 +555,19 @@ pub fn serve(root: &Path) -> Result<(), AppError> {
     std::env::set_current_dir(&root).map_err(|e| AppError::input("root-not-found", format!("Cannot enter {}: {e}.", root.display())))?;
     let stdin = std::io::stdin();
     let mut stdout = std::io::stdout();
-    for line in stdin.lock().lines() {
-        let Ok(line) = line else { break };
+    let mut input = stdin.lock();
+    loop {
+        let line = match read_message(&mut input) {
+            Ok(Some(Message::Line(line))) => line,
+            Ok(Some(Message::TooLong)) => {
+                let r = rpc_error(Value::Null, -32600, &format!("Invalid request: a message may be at most {} MB", MAX_MESSAGE / (1024 * 1024)), None);
+                if writeln!(stdout, "{r}").is_err() || stdout.flush().is_err() {
+                    break;
+                }
+                continue;
+            }
+            Ok(None) | Err(_) => break,
+        };
         if line.trim().is_empty() {
             continue;
         }
@@ -562,5 +612,20 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn a_message_over_the_limit_is_skipped_and_the_next_one_is_read() {
+        let long = "x".repeat(MAX_MESSAGE as usize + 10);
+        let text = format!("{{\"a\":1}}\n{long}\n{{\"b\":2}}\nlast");
+        let mut input = std::io::BufReader::new(text.as_bytes());
+        let mut seen = Vec::new();
+        while let Some(m) = read_message(&mut input).unwrap() {
+            seen.push(match m {
+                Message::Line(l) => l.trim().to_string(),
+                Message::TooLong => "TOO LONG".into(),
+            });
+        }
+        assert_eq!(seen, ["{\"a\":1}", "TOO LONG", "{\"b\":2}", "last"]);
     }
 }
