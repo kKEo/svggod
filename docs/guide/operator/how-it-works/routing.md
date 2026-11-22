@@ -1,6 +1,6 @@
 # Edge routing
 
-After boxes are placed, SVGDog draws each connector as a polyline of horizontal and vertical segments. This chapter explains how it chooses which side of a box an edge uses, where on that side it attaches, and how the path between two attachments is found. Knowing this helps you read why an edge bends where it does and what to change in the spec when a route looks wrong. The code is in `src/render/mod.rs` (`connect`, `sides`), `src/render/route.rs` (the search) and `src/render/wire.rs` (routing all edges, and routing again where they cross).
+After boxes are placed, SVGGod draws each connector as a polyline of horizontal and vertical segments. This chapter explains how it chooses which side of a box an edge uses, where on that side it attaches, and how the path between two attachments is found. Knowing this helps you read why an edge bends where it does and what to change in the spec when a route looks wrong. The code is in `src/render/mod.rs` (`connect`, `sides`), `src/render/route.rs` (the search) and `src/render/wire.rs` (routing all edges, and routing again where they cross).
 
 ## Step 1: choose the sides
 

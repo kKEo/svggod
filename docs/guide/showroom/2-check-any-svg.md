@@ -1,6 +1,6 @@
 # 2. Check an SVG you did not make
 
-**Level: easy.** You have an SVG from a design tool, a colleague or an old repository, and you want to know if it is safe and readable before it goes into your documentation. SVGDog does not need a spec for this: it checks any SVG. Ten minutes.
+**Level: easy.** You have an SVG from a design tool, a colleague or an old repository, and you want to know if it is safe and readable before it goes into your documentation. SVGGod does not need a spec for this: it checks any SVG. Ten minutes.
 
 ## The workflow at a glance
 
@@ -9,12 +9,12 @@ legacy.svg --validate--> findings --fix--> legacy-fixed.svg --validate--> clean?
                               \--preview --annotate--> where the problems are
 ```
 
-The examples use `tests/fixtures/broken.svg` from the SVGDog repository, a small diagram with deliberate problems. Use any SVG you have instead.
+The examples use `tests/fixtures/broken.svg` from the SVGGod repository, a small diagram with deliberate problems. Use any SVG you have instead.
 
 ## 1. Find the problems
 
 ```bash
-svgdog --format text validate broken.svg
+svggod --format text validate broken.svg
 ```
 
 ```text
@@ -30,18 +30,18 @@ svgdog --format text validate broken.svg
 1 file checked: 7 errors, 11 warnings, 2 info, 15 fixable
 ```
 
-Each line gives the line number, the severity, the **rule** that was broken, **where** in the file (a selector you can use later) and a message that says what to do. `[fix]` means SVGDog can repair it without moving or recolouring your content; `[fix --unsafe]` means the repair would move or recolour something, so you must ask for it.
+Each line gives the line number, the severity, the **rule** that was broken, **where** in the file (a selector you can use later) and a message that says what to do. `[fix]` means SVGGod can repair it without moving or recolouring your content; `[fix --unsafe]` means the repair would move or recolour something, so you must ask for it.
 
 The exit code is `1` here because there are errors. Warnings and info do not fail a run unless you ask: `--fail-on warning`.
 
-> **Tip.** Want to know why a rule exists? `svgdog rules --explain low-contrast` prints a failing example, a passing one and the fix.
+> **Tip.** Want to know why a rule exists? `svggod rules --explain low-contrast` prints a failing example, a passing one and the fix.
 
 ## 2. See where they are
 
 Words are hard to match to a picture. Outline the problems on a PNG:
 
 ```bash
-svgdog --format text preview broken.svg -o broken-annotated.png --annotate
+svggod --format text preview broken.svg -o broken-annotated.png --annotate
 ```
 
 ```text
@@ -56,10 +56,10 @@ Wrote broken-annotated.png (1200 x 600 px, 30212 bytes).
 ## 3. Apply the safe fixes
 
 ```bash
-svgdog --format text fix broken.svg -o broken-fixed.svg
+svggod --format text fix broken.svg -o broken-fixed.svg
 ```
 
-SVGDog lists what is left and ends with:
+SVGGod lists what is left and ends with:
 
 ```text
 1 file checked: 6 errors, 3 warnings, 0 info, 4 fixable
@@ -67,7 +67,7 @@ SVGDog lists what is left and ends with:
 
 The original file is untouched: `-o` writes a copy. Use `--in-place` when you want to change the file itself, and `--dry-run` to see the diff without writing anything.
 
-The 20 findings became 9. The safe fixes cleared the editor leftovers, the unused definition, the fixed size, clipped content, hairline strokes, a detached arrow end and the script attribute. They also widened the left box to fit its label and moved the arrow's start out to the new edge. Safe fixes never move or recolour your content, though a box may grow to hold its text. The 4 that SVGDog still calls fixable all need `--unsafe`.
+The 20 findings became 9. The safe fixes cleared the editor leftovers, the unused definition, the fixed size, clipped content, hairline strokes, a detached arrow end and the script attribute. They also widened the left box to fit its label and moved the arrow's start out to the new edge. Safe fixes never move or recolour your content, though a box may grow to hold its text. The 4 that SVGGod still calls fixable all need `--unsafe`.
 
 ## 4. Decide about the rest
 
@@ -80,10 +80,10 @@ What is left needs a human or a deliberate choice:
 | `dangling-reference` | The file points at something that does not exist | Remove the reference or add the target |
 | `foreign-object` | Its content may vanish in some pipelines | Redraw that part as plain shapes |
 
-When you are happy to let SVGDog move and recolour, preview the change first:
+When you are happy to let SVGGod move and recolour, preview the change first:
 
 ```bash
-svgdog fix broken-fixed.svg --unsafe --dry-run
+svggod fix broken-fixed.svg --unsafe --dry-run
 ```
 
 ```text
@@ -93,13 +93,13 @@ svgdog fix broken-fixed.svg --unsafe --dry-run
 That leaves only what needs a person: the missing reference, the `foreignObject`, the missing title and description, and the font fallback. When the diff looks right, write it:
 
 ```bash
-svgdog fix broken-fixed.svg --unsafe --in-place
+svggod fix broken-fixed.svg --unsafe --in-place
 ```
 
 Look at the picture again with `preview` afterwards:
 
 ```bash
-svgdog --format text preview broken-fixed.svg -o broken-fixed.png
+svggod --format text preview broken-fixed.svg -o broken-fixed.png
 ```
 
 ![The same SVG after the safe and unsafe fixes: both labels are dark and fit their boxes, nothing is clipped, and the arrow runs from the edge of the left box to the edge of the right one.](images/legacy-fixed.png)
@@ -109,7 +109,7 @@ Compare it with the annotated picture above. The labels are readable, the text f
 ## 5. Confirm
 
 ```bash
-svgdog --format text validate broken-fixed.svg
+svggod --format text validate broken-fixed.svg
 ```
 
 ```text
@@ -120,7 +120,7 @@ The exit code is still `1`, and that is the honest answer: three errors are left
 
 ## Choosing how strict to be
 
-SVGDog has three profiles, set with `--profile` or in a config file (see [workflow 5](5-agents-and-ci.md)):
+SVGGod has three profiles, set with `--profile` or in a config file (see [workflow 5](5-agents-and-ci.md)):
 
 | Profile | Checks | Use it for |
 |---|---|---|
@@ -134,9 +134,9 @@ On the broken file the three profiles report 3, 7 and 10 errors.
 
 | You did | With |
 |---|---|
-| Listed the problems | `svgdog validate` |
-| Located them on the picture | `svgdog preview --annotate` |
-| Repaired what is safe | `svgdog fix` |
+| Listed the problems | `svggod validate` |
+| Located them on the picture | `svggod preview --annotate` |
+| Repaired what is safe | `svggod fix` |
 | Chose a strictness | `--profile` |
 
 **Next:** repeating this by hand does not scale to a whole documentation site. [Workflow 3](3-diagrams-in-pages.md) puts the diagrams inside the pages themselves.

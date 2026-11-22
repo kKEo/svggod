@@ -4,19 +4,19 @@ This page explains what the golden files in `tests/golden/` are, how to regenera
 
 ## What they are
 
-A golden file is a saved expected output. The test `r8_output_matches_the_golden_files` in `tests/cli.rs` runs SVGDog, compares the bytes it produces with the saved files, and fails on any difference. Because SVGDog promises identical output for identical input (requirement R8), a one-byte change is a finding.
+A golden file is a saved expected output. The test `r8_output_matches_the_golden_files` in `tests/cli.rs` runs SVGGod, compares the bytes it produces with the saved files, and fails on any difference. Because SVGGod promises identical output for identical input (requirement R8), a one-byte change is a finding.
 
 The test produces and compares these files, among others:
 
 | Golden file | Produced by |
 |---|---|
-| `orders.svg`, `checkout.svg`, `tiers.svg`, `rack.svg`, `login.svg` | `svgdog render tests/fixtures/<name>.yaml -o <name>.svg --no-config` |
+| `orders.svg`, `checkout.svg`, `tiers.svg`, `rack.svg`, `login.svg` | `svggod render tests/fixtures/<name>.yaml -o <name>.svg --no-config` |
 | `orders-dark-paths.svg` | `render` of `orders.yaml` with `--theme docs-dark --text-as-paths` |
 | `orders-blueprint-dark.svg`, `walkthrough-paper.svg`, `login-bold-auto.svg` | `render` of the fixture in the name with `--theme blueprint-dark`, `paper` and `bold-auto`: one drawing per built-in theme beyond the default |
 | `showcase-<theme>.svg`, `showcase-<theme>-dark.svg` | `render` of `showcase.yaml` with each of the five built-in themes, light and dark, under `--profile strict`: the pictures of the Theme gallery in the user guide |
-| `broken.findings.json` | `svgdog validate tests/fixtures/broken.svg --no-config --max-findings 500` (the file path is replaced by `broken.svg`) |
-| `orders.scene.json` | `svgdog inspect orders.svg --fields id,tag,bbox,text,fill,stroke,refs` |
-| `orders.png` | `svgdog preview orders.svg -o orders.png --width 800 --annotate --no-config` |
+| `broken.findings.json` | `svggod validate tests/fixtures/broken.svg --no-config --max-findings 500` (the file path is replaced by `broken.svg`) |
+| `orders.scene.json` | `svggod inspect orders.svg --fields id,tag,bbox,text,fill,stroke,refs` |
+| `orders.png` | `svggod preview orders.svg -o orders.png --width 800 --annotate --no-config` |
 
 Together they exercise the layout and routing code, every built-in theme, the text-to-path emitter, the finding format, the scene format, and the PNG rasterizer with the bundled fonts.
 
@@ -29,7 +29,7 @@ The picture above is `tests/golden/orders.png`, copied into this book by `docs/s
 Read the failure message first:
 
 ```text
-orders.svg differs from tests/golden/orders.svg (3120 vs 3052 bytes). If the change is intended, regenerate with SVGDOG_UPDATE_GOLDEN=1.
+orders.svg differs from tests/golden/orders.svg (3120 vs 3052 bytes). If the change is intended, regenerate with SVGGOD_UPDATE_GOLDEN=1.
 ```
 
 Then decide:
@@ -44,7 +44,7 @@ Then decide:
 ## Regenerate
 
 ```bash
-SVGDOG_UPDATE_GOLDEN=1 cargo test r8_output_matches
+SVGGOD_UPDATE_GOLDEN=1 cargo test r8_output_matches
 ```
 
 With that variable set, the test writes every produced file into `tests/golden/` instead of comparing, and passes. Run it again without the variable to confirm:
@@ -61,7 +61,7 @@ git diff --stat tests/golden
 git diff tests/golden/orders.svg          # SVG and JSON diff as text
 ```
 
-Look at the PNG with your image viewer, or render a fresh one: `svgdog preview tests/golden/orders.svg -o /tmp/orders.png`.
+Look at the PNG with your image viewer, or render a fresh one: `svggod preview tests/golden/orders.svg -o /tmp/orders.png`.
 
 > **Warning.** Regenerating on one machine proves nothing about the others. Push the regenerated files and wait for both CI jobs to pass before you merge.
 

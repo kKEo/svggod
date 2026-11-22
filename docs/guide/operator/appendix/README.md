@@ -10,6 +10,6 @@ This appendix holds the reference material that does not belong to one chapter: 
 
 - The [reference part](../reference/README.md) lists every flag, spec key, rule and tool.
 - The [user guide](../../user/) explains the same tool for someone who only draws diagrams.
-- The [tester guide](../../tester/) explains how SVGDog's own changes are checked.
-- The source repository is at [github.com/kKEo/svgdog](https://github.com/kKEo/svgdog). Its `README.md` is a one-page summary of the commands.
-- The SVG format itself is defined by the W3C SVG 1.1 and SVG 2 specifications; SVGDog checks a static subset of it.
+- The [tester guide](../../tester/) explains how SVGGod's own changes are checked.
+- The source repository is at [github.com/kKEo/svggod](https://github.com/kKEo/svggod). Its `README.md` is a one-page summary of the commands.
+- The SVG format itself is defined by the W3C SVG 1.1 and SVG 2 specifications; SVGGod checks a static subset of it.

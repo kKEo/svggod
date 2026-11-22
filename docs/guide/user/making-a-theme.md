@@ -2,19 +2,19 @@
 
 This page shows how to give your diagrams your own colours, font, text sizes and line style. It takes about fifteen minutes. You need to know how to [choose a theme](themes-and-settings.md#themes) first.
 
-A theme of your own is a folder that holds one file, `theme.toml`. You keep the folder in your project, next to your diagrams, and point SVGDog at it.
+A theme of your own is a folder that holds one file, `theme.toml`. You keep the folder in your project, next to your diagrams, and point SVGGod at it.
 
 ## 1. Start from a built-in theme
 
 Pick the built-in theme closest to what you want (the [Theme gallery](theme-gallery.md) shows them all) and copy it:
 
 ```bash
-svgdog --format text theme init themes/acme --from paper
+svggod --format text theme init themes/acme --from paper
 ```
 
 ```text
 Wrote themes/acme/theme.toml (705 bytes), a copy of 'paper' named 'acme'.
-Change it, then check it with: svgdog theme check themes/acme
+Change it, then check it with: svggod theme check themes/acme
 Use it with: --theme themes/acme
 ```
 
@@ -88,13 +88,13 @@ Everything in `[font]` and `[line]` is optional. A key you leave out takes the v
 
 Two things to know about fonts:
 
-- SVGDog carries two fonts, Inter and JetBrains Mono, and measures text with one of them: JetBrains Mono when the first name in `family` is a monospace font, Inter otherwise. If you name another font, boxes are sized for the stand-in, and the reader's device draws your font if it has it. End the list with `sans-serif` or `monospace` so there is always a fallback.
+- SVGGod carries two fonts, Inter and JetBrains Mono, and measures text with one of them: JetBrains Mono when the first name in `family` is a monospace font, Inter otherwise. If you name another font, boxes are sized for the stand-in, and the reader's device draws your font if it has it. End the list with `sans-serif` or `monospace` so there is always a fallback.
 - For the exact same letters everywhere, render with `--text-as-paths` (see [Text as outlines](themes-and-settings.md#text-as-outlines)).
 
 ## 3. Check it
 
 ```bash
-svgdog --format text theme check themes/acme
+svggod --format text theme check themes/acme
 ```
 
 ```text
@@ -113,12 +113,12 @@ It exits with 1 when it finds a problem. A line that starts with `Not drawn:` me
 
 ## 4. Use it
 
-A theme folder goes wherever a theme name goes. SVGDog treats a value as a folder when it starts with `.` or contains `/`.
+A theme folder goes wherever a theme name goes. SVGGod treats a value as a folder when it starts with `.` or contains `/`.
 
 On the command line, the path is relative to where you run the command:
 
 ```bash
-svgdog --format text render fig/orders.yaml -o fig/orders.svg --theme ./themes/acme
+svggod --format text render fig/orders.yaml -o fig/orders.svg --theme ./themes/acme
 ```
 
 In a spec, the path is relative to the spec file (in a Markdown page, to the page):
@@ -127,7 +127,7 @@ In a spec, the path is relative to the spec file (in a Markdown page, to the pag
 theme: ../themes/acme
 ```
 
-In `svgdog.toml`, the path is relative to that file, and the theme becomes the project default:
+In `svggod.toml`, the path is relative to that file, and the theme becomes the project default:
 
 ```toml
 [style]
@@ -137,16 +137,16 @@ theme = "themes/acme"
 For the dark or the adaptive variant, add `#dark` or `#auto` after the path:
 
 ```bash
-svgdog --format text render fig/orders.yaml -o fig/orders.svg --theme ./themes/acme#auto
+svggod --format text render fig/orders.yaml -o fig/orders.svg --theme ./themes/acme#auto
 ```
 
 ## Keeping pictures up to date
 
-A theme is part of what a picture is made from. When you change `theme.toml`, the pictures drawn with it are out of date, and `svgdog render --check` and `svgdog docs --check` report them. Render again to update them.
+A theme is part of what a picture is made from. When you change `theme.toml`, the pictures drawn with it are out of date, and `svggod render --check` and `svggod docs --check` report them. Render again to update them.
 
 ## Sharing a theme
 
-A theme is one small text file, so commit the folder with your project. To use the same theme in several projects, copy the folder into each one. SVGDog does not download themes: it reads them from your disk only (see [Trust and privacy](trust-and-privacy.md)).
+A theme is one small text file, so commit the folder with your project. To use the same theme in several projects, copy the folder into each one. SVGGod does not download themes: it reads them from your disk only (see [Trust and privacy](trust-and-privacy.md)).
 
 ## When something goes wrong
 

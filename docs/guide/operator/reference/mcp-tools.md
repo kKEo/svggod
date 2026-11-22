@@ -1,23 +1,23 @@
 # MCP tools
 
-`svgdog mcp --root-path DIR` serves the commands as Model Context Protocol tools over stdio, so an AI agent can render, check, fix and look at diagrams without a shell. The server adds no behaviour of its own: a tool call is turned into the command line it mirrors, run in process, and answered with the same JSON envelope the CLI prints. This page lists the transport, the protocol versions, root confinement and every tool with its parameters.
+`svggod mcp --root-path DIR` serves the commands as Model Context Protocol tools over stdio, so an AI agent can render, check, fix and look at diagrams without a shell. The server adds no behaviour of its own: a tool call is turned into the command line it mirrors, run in process, and answered with the same JSON envelope the CLI prints. This page lists the transport, the protocol versions, root confinement and every tool with its parameters.
 
 ## Starting the server
 
 ```bash
-svgdog mcp --root-path ./docs
+svggod mcp --root-path ./docs
 ```
 
 Register it in an MCP client as a stdio server, for example:
 
 ```json
-{ "mcpServers": { "svgdog": { "command": "svgdog", "args": ["mcp", "--root-path", "/path/to/docs"] } } }
+{ "mcpServers": { "svggod": { "command": "svggod", "args": ["mcp", "--root-path", "/path/to/docs"] } } }
 ```
 
 - **Transport:** stdio, one JSON-RPC message per line, in both directions. The server runs until stdin closes.
 - **Root:** required. The server changes its working directory to the root, so relative paths in tool calls are relative to it. A root that does not exist or is not a directory ends the start-up with a JSON error (`root-not-found`, exit 3).
 - **Methods:** `initialize`, `server/discover`, `ping`, `tools/list`, `tools/call`. Notifications get no reply. Unknown methods answer `-32601`, bad JSON `-32700`.
-- **Server instructions:** sent to the client at start-up. They describe the loop: `svgdog_examples` for a spec to start from (`svgdog_schema`, name `spec`, has every field), `svgdog_render` with the spec as text and `preview: true`, read the findings and look at the image, `svgdog_fix` or change the spec, repeat until no errors, `svgdog_preview` with `annotate` for a look.
+- **Server instructions:** sent to the client at start-up. They describe the loop: `svggod_examples` for a spec to start from (`svggod_schema`, name `spec`, has every field), `svggod_render` with the spec as text and `preview: true`, read the findings and look at the image, `svggod_fix` or change the spec, repeat until no errors, `svggod_preview` with `annotate` for a look.
 
 ## Protocol versions
 
@@ -35,7 +35,7 @@ Every path argument is checked before anything runs. A path is refused (`outside
 - it lies outside the root, including through symlinks, or
 - it climbs out with `..`.
 
-`-` (stdin or stdout) is refused in every path argument, because stdin and stdout carry the protocol (`invalid-argument`). Globs given to `svgdog_validate` are expanded first, and every file they reach is checked. Config discovery also stops at the root. A theme folder is checked the same way, whether the `theme` argument, a spec or `svgdog.toml` names it.
+`-` (stdin or stdout) is refused in every path argument, because stdin and stdout carry the protocol (`invalid-argument`). Globs given to `svggod_validate` are expanded first, and every file they reach is checked. Config discovery also stops at the root. A theme folder is checked the same way, whether the `theme` argument, a spec or `svggod.toml` names it.
 
 ## Tools
 
@@ -46,10 +46,10 @@ Tools marked † also accept the three config arguments:
 | Argument | Type | Meaning |
 |---|---|---|
 | `profile` | string | `minimal`, `docs` or `strict` |
-| `config` | path | A config file to use instead of the nearest `svgdog.toml` |
+| `config` | path | A config file to use instead of the nearest `svggod.toml` |
 | `no_config` | boolean | Ignore any config file |
 
-### svgdog_render †
+### svggod_render †
 
 Compile a spec (YAML or JSON) to SVG and validate it. Mirrors [`render`](commands.md#render). Not read-only.
 
@@ -72,7 +72,7 @@ Compile a spec (YAML or JSON) to SVG and validate it. Mirrors [`render`](command
 
 With `spec` and no `output`, one call takes a diagram from text to a checked drawing and a picture, with no files involved. Giving both `spec` and `file` is `argument-conflict`; giving neither is `missing-argument`. A `spec` value that is a single line ending in `.yaml`, `.yml` or `.json` is refused with a hint to use `file`. A spec given as text has no location, so config discovery starts at the root.
 
-### svgdog_validate †
+### svggod_validate †
 
 Run the rules on SVG files. Read-only. Mirrors [`validate`](commands.md#validate).
 
@@ -84,7 +84,7 @@ Run the rules on SVG files. Read-only. Mirrors [`validate`](commands.md#validate
 | `fail_on` | string | no | `error` or `warning`: lowest severity that makes `ok` false |
 | `max_findings` | integer | no | Cap on listed findings; default 50 |
 
-### svgdog_inspect
+### svggod_inspect
 
 Describe an SVG's elements as data with bounding boxes. Read-only; takes no config arguments. Mirrors [`inspect`](commands.md#inspect).
 
@@ -95,7 +95,7 @@ Describe an SVG's elements as data with bounding boxes. Read-only; takes no conf
 | `depth` | integer | no | Deepest nesting level to return |
 | `fields` | list of strings | no | Any of `id`, `tag`, `bbox`, `text`, `fill`, `stroke`, `refs` |
 
-### svgdog_preview †
+### svggod_preview †
 
 Rasterize an SVG to PNG. Mirrors [`preview`](commands.md#preview). Not read-only.
 
@@ -110,7 +110,7 @@ Rasterize an SVG to PNG. Mirrors [`preview`](commands.md#preview). Not read-only
 | `step` | integer | no | Show the drawing with this step chosen, the rest faded |
 | `force` | boolean | no | Replace an existing output file |
 
-### svgdog_edit †
+### svggod_edit †
 
 Apply targeted changes to an SVG or a spec. Mirrors [`edit`](commands.md#edit). Not read-only. Give `set` or `ops` (not both), and one of `dry_run`, `output` or `in_place`.
 
@@ -118,14 +118,14 @@ Apply targeted changes to an SVG or a spec. Mirrors [`edit`](commands.md#edit). 
 |---|---|---|---|
 | `file` | path | yes | SVG or spec file |
 | `set` | list of strings | no | Changes of the form `SELECTOR.attr=value` |
-| `ops` | JSON | no | Operations inline: an array, or a finding's `fix` object (see `svgdog_schema` with `ops`) |
+| `ops` | JSON | no | Operations inline: an array, or a finding's `fix` object (see `svggod_schema` with `ops`) |
 | `dry_run` | boolean | no | Report the diff and findings; write nothing |
 | `output` | path | no | Write the result to a new file |
 | `in_place` | boolean | no | Change the input file |
 
 Unlike the CLI's `--ops FILE`, `ops` here is the JSON itself, so a client can pass a finding's `fix` straight back.
 
-### svgdog_fix †
+### svggod_fix †
 
 Apply the autofixes that findings carry. Mirrors [`fix`](commands.md#fix). Not read-only. Give one of `dry_run`, `output` or `in_place`.
 
@@ -138,7 +138,7 @@ Apply the autofixes that findings carry. Mirrors [`fix`](commands.md#fix). Not r
 | `output` | path | no | Write the result to a new file |
 | `in_place` | boolean | no | Change the input file |
 
-### svgdog_schema
+### svggod_schema
 
 Print the JSON Schema of a format. Read-only. Mirrors [`schema`](commands.md#schema).
 
@@ -146,7 +146,7 @@ Print the JSON Schema of a format. Read-only. Mirrors [`schema`](commands.md#sch
 |---|---|---|---|
 | `name` | string | yes | `spec`, `config`, `findings`, `scene` or `ops` |
 
-### svgdog_rules
+### svggod_rules
 
 List every rule, or explain one. Read-only. Mirrors [`rules`](commands.md#rules).
 
@@ -154,7 +154,7 @@ List every rule, or explain one. Read-only. Mirrors [`rules`](commands.md#rules)
 |---|---|---|---|
 | `explain` | string | no | Rule id to explain |
 
-### svgdog_docs †
+### svggod_docs †
 
 Render the diagrams inside Markdown pages. Mirrors [`docs`](commands.md#docs). Not read-only.
 
@@ -167,7 +167,7 @@ Render the diagrams inside Markdown pages. Mirrors [`docs`](commands.md#docs). N
 | `force` | boolean | no | Lay a diagram out afresh when its boxes cannot stay where the picture on disk has them |
 | `interactive` | string | no | `css` or `html` |
 
-### svgdog_describe
+### svggod_describe
 
 Say in words what a diagram shows, and return its spec. Read-only. Mirrors [`describe`](commands.md#describe).
 
@@ -176,11 +176,11 @@ Say in words what a diagram shows, and return its spec. Read-only. Mirrors [`des
 | `file` | path | yes | Spec, or an SVG rendered with `embed_spec` |
 | `short` | boolean | no | One or two sentences |
 
-### svgdog_theme_list
+### svggod_theme_list
 
 List the built-in themes with their colours, fonts, sizes and line styles. Read-only. Takes no arguments. Mirrors [`theme list`](commands.md#theme).
 
-### svgdog_theme_init
+### svggod_theme_init
 
 Write a `theme.toml`, copied from a built-in theme, into a folder. Mirrors [`theme init`](commands.md#theme).
 
@@ -190,7 +190,7 @@ Write a `theme.toml`, copied from a built-in theme, into a folder. Mirrors [`the
 | `from` | string | no | Built-in theme to copy; default `docs` |
 | `force` | boolean | no | Replace a `theme.toml` that is already there |
 
-### svgdog_theme_check
+### svggod_theme_check
 
 Check a theme folder: the file, the contrast of its colours, and the bundled examples drawn with it. Read-only. Mirrors [`theme check`](commands.md#theme). Also takes the config arguments.
 
@@ -198,7 +198,7 @@ Check a theme folder: the file, the contrast of its colours, and the bundled exa
 |---|---|---|---|
 | `dir` | path | yes | Folder that holds the `theme.toml` |
 
-### svgdog_examples
+### svggod_examples
 
 List the bundled example specs, or return one in full. Read-only. Mirrors [`examples`](commands.md#examples).
 
@@ -213,25 +213,25 @@ Each tool's input schema sets `additionalProperties: false`, and its annotations
 Request (one line on stdin):
 
 ```json
-{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"svgdog_render","arguments":{"file":"orders.yaml","output":"orders.svg"}}}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"svggod_render","arguments":{"file":"orders.yaml","output":"orders.svg"}}}
 ```
 
 Response (one line on stdout; `structuredContent` repeats the JSON in `content[0].text`):
 
 ```json
-{"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"tool\":\"svgdog\",\"version\":\"1.0.0\",\"command\":\"render\",\"ok\":true,\"summary\":{\"files\":1,\"errors\":0,\"warnings\":0,\"info\":0,\"fixable\":0,\"truncated\":false},\"findings\":[],\"outputs\":[{\"path\":\"orders.svg\",\"bytes\":3052}]}"}],"structuredContent":{"tool":"svgdog","version":"1.0.0","command":"render","ok":true,"summary":{"files":1,"errors":0,"warnings":0,"info":0,"fixable":0,"truncated":false},"findings":[],"outputs":[{"path":"orders.svg","bytes":3052}]},"isError":false}}
+{"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"tool\":\"svggod\",\"version\":\"1.0.0\",\"command\":\"render\",\"ok\":true,\"summary\":{\"files\":1,\"errors\":0,\"warnings\":0,\"info\":0,\"fixable\":0,\"truncated\":false},\"findings\":[],\"outputs\":[{\"path\":\"orders.svg\",\"bytes\":3052}]}"}],"structuredContent":{"tool":"svggod","version":"1.0.0","command":"render","ok":true,"summary":{"files":1,"errors":0,"warnings":0,"info":0,"fixable":0,"truncated":false},"findings":[],"outputs":[{"path":"orders.svg","bytes":3052}]},"isError":false}}
 ```
 
 A path outside the root:
 
 ```json
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"svgdog_render","arguments":{"file":"../orders.yaml","output":"x.svg"}}}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"svggod_render","arguments":{"file":"../orders.yaml","output":"x.svg"}}}
 ```
 
 answers with `isError: true` and this envelope:
 
 ```json
-{"tool":"svgdog","version":"1.0.0","command":"render","ok":false,"error":{"code":"outside-root","message":"'../orders.yaml' (file) is outside the root; the server only reads and writes inside its root directory.","path":"../orders.yaml"}}
+{"tool":"svggod","version":"1.0.0","command":"render","ok":false,"error":{"code":"outside-root","message":"'../orders.yaml' (file) is outside the root; the server only reads and writes inside its root directory.","path":"../orders.yaml"}}
 ```
 
 An unknown tool name answers with the JSON-RPC error `-32602` and a did-you-mean hint. A panic inside a tool is caught and returned as an `internal-error` envelope, so the server stays up.

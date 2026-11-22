@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SVGDog documentation</title>
-<meta name="description" content="SVGDog compiles a short YAML spec into a clean SVG diagram and checks it against 39 rules. Start with the user guide, the operator guide or the tester guide.">
+<title>SVGGod documentation</title>
+<meta name="description" content="SVGGod compiles a short YAML spec into a clean SVG diagram and checks it against 39 rules. Start with the user guide, the operator guide or the tester guide.">
 <style>
 :root {
   --paper: #f2f5f8;
@@ -37,7 +37,7 @@ body {
   color: var(--ink);
   font: 17px/1.55 var(--sans);
   background-color: var(--paper);
-  /* 8 px minor grid, 64 px major grid: the same grid svgdog snaps every diagram to */
+  /* 8 px minor grid, 64 px major grid: the same grid svggod snaps every diagram to */
   background-image:
     linear-gradient(var(--grid-major) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
@@ -144,13 +144,13 @@ dl { margin: 0; }
 </head>
 <body>
 <div class="wrap">
-  <header class="top"><span>SVGDog</span> documentation</header>
+  <header class="top"><span>SVGGod</span> documentation</header>
 
   <main>
     <section class="hero">
       <div>
         <h1>Describe a diagram once. Get an SVG that checks out.</h1>
-        <p class="lede">SVGDog turns a short YAML spec into a clean SVG, then checks it against 39 rules for layout, portability and accessibility. One binary, no network, the same output on every run.</p>
+        <p class="lede">SVGGod turns a short YAML spec into a clean SVG, then checks it against 39 rules for layout, portability and accessibility. One binary, no network, the same output on every run.</p>
         <div class="actions">
           <a class="btn" href="tldr.html">TL;DR in 10 slides</a>
           <a class="btn btn-ghost" href="showroom/">Show room: 5 workflows</a>
@@ -161,13 +161,13 @@ dl { margin: 0; }
         <div class="paper">
           <img src="assets/orders.svg" width="872" height="256" alt="A flow diagram titled Order placement. A Storefront box sends POST /orders to the Order API. Inside a Backend group, the Order API inserts into the Orders DB and publishes to a Fulfilment queue, which carries the note At-least-once delivery.">
         </div>
-        <figcaption>tests/fixtures/orders.yaml, rendered by SVGDog. Unedited output.</figcaption>
+        <figcaption>tests/fixtures/orders.yaml, rendered by SVGGod. Unedited output.</figcaption>
       </figure>
     </section>
 
     <section aria-labelledby="books-h">
       <h2 id="books-h">Pick the guide that fits your job</h2>
-      <p class="books-intro">Three short books, one for each way of working with SVGDog. Each one points you to the others when you need them.</p>
+      <p class="books-intro">Three short books, one for each way of working with SVGGod. Each one points you to the others when you need them.</p>
       <div class="books">
         <a class="book" href="user/">
           <p class="for">For everyone</p>
@@ -183,7 +183,7 @@ dl { margin: 0; }
         <a class="book" href="operator/">
           <p class="for">For operators and developers</p>
           <h3>Operator guide</h3>
-          <p>How SVGDog works inside, every command and setting, and how to run it in CI.</p>
+          <p>How SVGGod works inside, every command and setting, and how to run it in CI.</p>
           <ul>
             <li>Layout, routing and the rule engine</li>
             <li>CLI, spec, config and MCP reference</li>
@@ -208,7 +208,7 @@ dl { margin: 0; }
 
   <footer>
     <dl class="block">
-      <div><dt>Source</dt><dd><a href="https://github.com/kKEo/svgdog">github.com/kKEo/svgdog</a></dd></div>
+      <div><dt>Source</dt><dd><a href="https://github.com/kKEo/svggod">github.com/kKEo/svggod</a></dd></div>
       <div><dt>Install today</dt><dd><code>cargo build --release</code></dd></div>
       <div><dt>Licence</dt><dd>Not yet declared</dd></div>
     </dl>

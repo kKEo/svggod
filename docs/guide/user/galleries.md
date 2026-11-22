@@ -15,4 +15,4 @@ Each gallery shows finished diagrams with the spec that draws them. Find the one
 
 To choose a type first, see [Diagram types](diagram-types.md#which-one-should-i-pick).
 
-The pictures are drawn by SVGDog from the specs shown, every time the guide is built, so what you see is what the spec gives you.
+The pictures are drawn by SVGGod from the specs shown, every time the guide is built, so what you see is what the spec gives you.

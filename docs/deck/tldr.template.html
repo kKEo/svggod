@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SVGDog in 10 slides</title>
-<meta name="description" content="A ten-slide summary of svgdog: what it does, the render-fix-preview loop, the checks, the MCP server and where to read more.">
+<title>SVGGod in 10 slides</title>
+<meta name="description" content="A ten-slide summary of svggod: what it does, the render-fix-preview loop, the checks, the MCP server and where to read more.">
 <style>
 :root {
   --paper: #f2f5f8;
@@ -153,10 +153,10 @@ ol.steps pre { padding: 12px 16px; }
 </head>
 <body>
 
-<section class="slide" data-title="svgdog">
+<section class="slide" data-title="svggod">
   <div class="cols two">
     <div style="display:grid;gap:24px">
-      <h1>SVGDog</h1>
+      <h1>SVGGod</h1>
       <p class="sub">Diagrams as code, checked like code.</p>
       <ul class="plain">
         <li>One binary that draws an SVG from a short YAML spec</li>
@@ -176,16 +176,16 @@ ol.steps pre { padding: 12px 16px; }
     <li>A picture in your docs can't be diffed, reviewed or regenerated.</li>
     <li>An AI agent can write SVG, but it can't see what it drew.</li>
   </ul>
-  <p class="sub">Describe the diagram in YAML. SVGDog draws it, checks it and tells you exactly what is wrong.</p>
+  <p class="sub">Describe the diagram in YAML. SVGGod draws it, checks it and tells you exactly what is wrong.</p>
 </section>
 
 <section class="slide" data-title="The loop">
   <h2>The whole loop fits in four commands.</h2>
   <ol class="steps">
-    <li><pre>svgdog schema spec                       <span class="c"># learn the spec format, once</span></pre></li>
-    <li><pre>svgdog render orders.yaml -o orders.svg  <span class="c"># compile and check in one call</span></pre></li>
-    <li><pre>svgdog fix orders.svg --in-place         <span class="c"># apply the safe fixes findings carry</span></pre></li>
-    <li><pre>svgdog preview orders.svg -o orders.png --annotate</pre></li>
+    <li><pre>svggod schema spec                       <span class="c"># learn the spec format, once</span></pre></li>
+    <li><pre>svggod render orders.yaml -o orders.svg  <span class="c"># compile and check in one call</span></pre></li>
+    <li><pre>svggod fix orders.svg --in-place         <span class="c"># apply the safe fixes findings carry</span></pre></li>
+    <li><pre>svggod preview orders.svg -o orders.png --annotate</pre></li>
   </ol>
   <p class="muted">Repeat until the exit code is 0. <code>preview</code> writes a PNG file you can open; it doesn't start a server.</p>
 </section>
@@ -218,7 +218,7 @@ edges:
   <span class="c"># … two more edges</span></pre>
     <div>
       <div class="sheet"><img src="{{orders}}" alt="The rendered Order placement diagram."></div>
-      <p class="note" style="margin-top:16px">Excerpt of tests/fixtures/orders.yaml. SVGDog places nodes on an 8 px grid and routes the connectors around the boxes.</p>
+      <p class="note" style="margin-top:16px">Excerpt of tests/fixtures/orders.yaml. SVGGod places nodes on an 8 px grid and routes the connectors around the boxes.</p>
     </div>
   </div>
 </section>
@@ -241,21 +241,21 @@ edges:
     <div class="cell"><div class="count">10</div><h3>Portability</h3><p>Will it render everywhere?</p><div class="ids"><span>script-content</span><span>external-resource</span><span>fixed-size</span></div></div>
     <div class="cell"><div class="count">6</div><h3>Accessibility</h3><p>Can everyone use it?</p><div class="ids"><span>title-missing</span><span>low-contrast</span><span>palette</span></div></div>
   </div>
-  <p class="muted">Three profiles set how strict to be: <code>minimal</code>, <code>docs</code> and <code>strict</code>. Silence a single element with an svgdog-disable comment that gives a reason.</p>
+  <p class="muted">Three profiles set how strict to be: <code>minimal</code>, <code>docs</code> and <code>strict</code>. Silence a single element with an svggod-disable comment that gives a reason.</p>
 </section>
 
 <section class="slide" data-title="Edit and fix">
   <h2>Change one thing, or fix what the checker found.</h2>
   <div class="cols two">
     <div style="display:grid;gap:14px">
-      <pre>svgdog edit orders.yaml \
+      <pre>svggod edit orders.yaml \
   --set '#api.label=Orders service' \
   --in-place</pre>
       <p class="muted">On a spec, <code>edit</code> patches the YAML text so your comments survive, then re-renders and reports findings. On an SVG, it changes only the elements you target.</p>
     </div>
     <div style="display:grid;gap:14px">
-      <pre>svgdog fix broken.svg --in-place
-svgdog fix broken.svg --dry-run</pre>
+      <pre>svggod fix broken.svg --in-place
+svggod fix broken.svg --dry-run</pre>
       <p class="muted"><code>--dry-run</code> shows the diff first. Each finding says whether it carries a fix. <code>--unsafe</code> adds fixes that move or recolour content. Writes are atomic.</p>
     </div>
   </div>
@@ -265,12 +265,12 @@ svgdog fix broken.svg --dry-run</pre>
   <h2>Agents get the same tools over MCP.</h2>
   <div class="cols two">
     <div style="display:grid;gap:14px">
-      <pre>svgdog mcp --root-path ./docs</pre>
+      <pre>svggod mcp --root-path ./docs</pre>
       <p class="muted">A stdio server. Every path stays inside <code>--root-path</code>. Ask for a preview without an output file and the PNG comes back as image content, so the agent can look at what it drew.</p>
     </div>
     <ul class="tools">
-      <li>svgdog_render</li><li>svgdog_validate</li><li>svgdog_inspect</li><li>svgdog_preview</li>
-      <li>svgdog_edit</li><li>svgdog_fix</li><li>svgdog_schema</li><li>svgdog_rules</li>
+      <li>svggod_render</li><li>svggod_validate</li><li>svggod_inspect</li><li>svggod_preview</li>
+      <li>svggod_edit</li><li>svggod_fix</li><li>svggod_schema</li><li>svggod_rules</li>
     </ul>
   </div>
 </section>
@@ -292,7 +292,7 @@ svgdog fix broken.svg --dry-run</pre>
     <a href="operator/"><strong>Operator guide</strong><span>Internals, reference and CI recipes.</span></a>
     <a href="tester/"><strong>Tester guide</strong><span>Run, read and add tests.</span></a>
   </div>
-  <p class="muted"><a href="./">Back to the documentation home</a>, or the <a href="https://github.com/kKEo/svgdog">source on GitHub</a>.</p>
+  <p class="muted"><a href="./">Back to the documentation home</a>, or the <a href="https://github.com/kKEo/svggod">source on GitHub</a>.</p>
 </section>
 
 <button class="zone prev" aria-label="Previous slide"></button>

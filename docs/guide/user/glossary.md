@@ -19,18 +19,18 @@ These are the words this guide uses, in plain language. The [Operator guide](../
 | **grid** | The 8-pixel grid every box and arrow snaps to, so diagrams look tidy |
 | **group** | A labelled frame drawn around related nodes |
 | **id** | A short name for a node, group or edge, used to refer to it |
-| **JSON** | A text format for data that programs read. SVGDog prints it by default when its output is not a terminal |
+| **JSON** | A text format for data that programs read. SVGGod prints it by default when its output is not a terminal |
 | **kind** | The shape and colour of a node: `box`, `service`, `client`, `datastore`, `queue`, `actor`, `external`, `decision` or `document` |
 | **layers** | A diagram of stacked bands, such as tiers of an architecture |
 | **lifeline** | In a `sequence` diagram, the vertical line that belongs to one participant |
-| **MCP** | Model Context Protocol, the standard way for an AI assistant to call tools such as SVGDog |
+| **MCP** | Model Context Protocol, the standard way for an AI assistant to call tools such as SVGGod |
 | **node** | A box in the diagram |
 | **note** | A short callout attached to a node, group or edge |
 | **PNG** | A picture file format. `preview` makes PNG files |
 | **preview** | Drawing an SVG into a PNG so you can look at it |
 | **profile** | How strict the checks are: `minimal`, `docs` or `strict` |
 | **render** | Turning a spec into an SVG, and checking the result |
-| **rule** | One check SVGDog can run, such as `low-contrast`. There are 39 |
+| **rule** | One check SVGGod can run, such as `low-contrast`. There are 39 |
 | **selector** | A short expression that names elements: `#id`, a tag such as `rect`, or `tag[attr="value"]` |
 | **sequence** | A diagram of messages between participants in time order |
 | **severity** | How serious a finding is: error, warning or info |

@@ -2,7 +2,7 @@
 
 A spec is a small text file that describes your diagram. This page explains every part of it, with a picture to go with the main example. It takes about fifteen minutes to read.
 
-Specs are written in YAML (a simple list-and-label format) or JSON. SVGDog treats a file that starts with `{` as JSON and anything else as YAML. The examples here use YAML.
+Specs are written in YAML (a simple list-and-label format) or JSON. SVGGod treats a file that starts with `{` as JSON and anything else as YAML. The examples here use YAML.
 
 ## A complete example
 
@@ -53,7 +53,7 @@ notes:
     text: At-least-once delivery
 ```
 
-And this is the picture SVGDog draws from it:
+And this is the picture SVGGod draws from it:
 
 ![A left-to-right flow diagram titled Order placement. A Storefront box on the left sends POST /orders to a highlighted Order API box. The Order API, the Orders DB and the Fulfilment queue sit together inside a frame labelled Backend. The Order API sends insert to the Orders DB and a dashed publish arrow to the Fulfilment queue, which carries the note At-least-once delivery.](images/orders.svg)
 
@@ -74,7 +74,7 @@ And this is the picture SVGDog draws from it:
 | `notes` | no | Short callouts attached to a box, a group or an arrow |
 | `steps`, `focus`, `legend`, `caption` | no | Words and markers that explain the picture (see [Explaining a diagram](explaining-a-diagram.md)) |
 
-> **Tip.** If you leave out `description`, SVGDog writes one for you from the diagram, for example "Flow diagram: browser to api (request)". Screen readers speak it. Your own sentence is usually better, because it can say why the diagram matters; write one in real specs.
+> **Tip.** If you leave out `description`, SVGGod writes one for you from the diagram, for example "Flow diagram: browser to api (request)". Screen readers speak it. Your own sentence is usually better, because it can say why the diagram matters; write one in real specs.
 
 ## Nodes: the boxes
 
@@ -99,9 +99,9 @@ edges:
 - `label`: up to 40 characters, shown on the arrow.
 - `style`: `sync` (solid line, the default), `async` (dashed line) or `dependency` (dotted line).
 - `arrow`: `end` (default), `both` or `none`.
-- `id`: optional. If you leave it out, SVGDog uses `from--to`. Give an edge an id when you want to attach a note to it.
+- `id`: optional. If you leave it out, SVGGod uses `from--to`. Give an edge an id when you want to attach a note to it.
 
-A node may point to itself (`from: auth, to: auth`); SVGDog draws a small loop.
+A node may point to itself (`from: auth, to: auth`); SVGGod draws a small loop.
 
 ### The short way
 
@@ -127,7 +127,7 @@ edges:
   - "api -> database: query"
 ```
 
-Add a node to `nodes` when you want a nicer label, a shape or emphasis. If a name in an edge is one letter away from a node you declared, SVGDog treats it as a typing mistake and tells you, so a slip does not quietly add a box.
+Add a node to `nodes` when you want a nicer label, a shape or emphasis. If a name in an edge is one letter away from a node you declared, SVGGod treats it as a typing mistake and tells you, so a slip does not quietly add a box.
 
 ## Groups: the frames
 
@@ -138,7 +138,7 @@ groups:
   - {id: backend, label: Backend, members: [api, db, queue]}
 ```
 
-Groups may be nested inside each other. Two groups may not overlap without one containing the other, and a group cannot contain itself; SVGDog reports an error if you try.
+Groups may be nested inside each other. Two groups may not overlap without one containing the other, and a group cannot contain itself; SVGGod reports an error if you try.
 
 ## Notes: the callouts
 
@@ -154,7 +154,7 @@ notes:
 
 ## Mistakes are explained
 
-If the spec has a typo, SVGDog says where and often suggests the fix. For example a node written as `{id: a, labl: A}` gives:
+If the spec has a typo, SVGGod says where and often suggests the fix. For example a node written as `{id: a, labl: A}` gives:
 
 ```text
 error[unknown-field]: Unknown field 'labl' in nodes[0].
@@ -170,19 +170,19 @@ error[unknown-reference]: edges[0].to names 'bb', which is not defined.
 
 ## Start from an example
 
-SVGDog carries a few small specs you can copy:
+SVGGod carries a few small specs you can copy:
 
 ```bash
-svgdog examples
-svgdog examples flow --format text > my-diagram.yaml
+svggod examples
+svggod examples flow --format text > my-diagram.yaml
 ```
 
 ## Read the format yourself
 
-SVGDog can print the exact format it accepts, as a JSON Schema:
+SVGGod can print the exact format it accepts, as a JSON Schema:
 
 ```bash
-svgdog schema spec
+svggod schema spec
 ```
 
 Editors that understand JSON Schema can use this for completion and checking. The same text is what an AI assistant reads to learn the format.
@@ -192,7 +192,7 @@ Editors that understand JSON Schema can use this for completion and checking. Th
 To change one value in a spec, use `edit` rather than opening the file:
 
 ```bash
-svgdog --format text edit hello.yaml --set '#api.label=Orders API' --dry-run
+svggod --format text edit hello.yaml --set '#api.label=Orders API' --dry-run
 ```
 
-SVGDog shows the exact change to the file and, because of `--dry-run`, writes nothing. Remove `--dry-run` and add `--in-place` to apply it. Comments and layout in your YAML are kept, with one exception: removing a node, group or edge rewrites the file in a standard layout.
+SVGGod shows the exact change to the file and, because of `--dry-run`, writes nothing. Remove `--dry-run` and add `--in-place` to apply it. Comments and layout in your YAML are kept, with one exception: removing a node, group or edge rewrites the file in a standard layout.

@@ -45,7 +45,7 @@ steps:
 Only the theme changes from one picture to the next:
 
 ```bash
-svgdog --format text render showcase.yaml -o showcase.svg --theme paper-dark
+svggod --format text render showcase.yaml -o showcase.svg --theme paper-dark
 ```
 
 Each theme also has an `-auto` variant, which is the light picture with a rule that switches to the dark colours when the reader's system is in dark mode.

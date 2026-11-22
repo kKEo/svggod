@@ -37,7 +37,7 @@ notes:
 
 ## A review loop with decisions
 
-Decision diamonds and arrows that lead back up. SVGDog keeps the main direction readable and routes the loops around the side.
+Decision diamonds and arrows that lead back up. SVGGod keeps the main direction readable and routes the loops around the side.
 
 <!-- spec: flow-review -->
 ```yaml

@@ -14,7 +14,7 @@ steps:
   - A step with nothing to point at still gets a line.
 ```
 
-SVGDog numbers the steps, puts each number on the things that step shows, and lists the sentences under the drawing:
+SVGGod numbers the steps, puts each number on the things that step shows, and lists the sentences under the drawing:
 
 ![An order flow with numbered badges on its boxes and arrows, and the four numbered steps listed below it with a legend and a caption](images/walkthrough.svg)
 
@@ -28,7 +28,7 @@ SVGDog numbers the steps, puts each number on the things that step shows, and li
 For slides or a page that reveals the story bit by bit, ask for frames:
 
 ```bash
-svgdog render orders.yaml -o orders.svg --frames
+svggod render orders.yaml -o orders.svg --frames
 ```
 
 This writes `orders.1.svg`, `orders.2.svg` and so on. Each frame marks one step, keeps what it shows at full strength and dims the rest. Nothing moves between frames, so they can be shown one after another. This is frame 2 of the diagram above, in the dark theme:
@@ -40,7 +40,7 @@ This writes `orders.1.svg`, `orders.2.svg` and so on. Each frame marks one step,
 Frames are separate pictures. For a single page where the reader clicks through the steps, ask for the interactive page:
 
 ```bash
-svgdog render orders.yaml -o orders.html --interactive html
+svggod render orders.yaml -o orders.html --interactive html
 ```
 
 The page shows the drawing with Previous and Next buttons under it; the arrow keys work too. Choosing a step fades everything that step is not about. Clicking a box that has a `detail` shows the detail under the drawing. The page is one file with nothing to install, and it still shows the whole numbered diagram where scripts are switched off.
@@ -48,7 +48,7 @@ The page shows the drawing with Previous and Next buttons under it; the arrow ke
 There is a lighter version with no script at all:
 
 ```bash
-svgdog render orders.yaml -o orders.svg --interactive css
+svggod render orders.yaml -o orders.svg --interactive css
 ```
 
 It is an ordinary SVG in which pointing at a box fades everything that is not connected to it, and pointing at a step in the list highlights what the step is about. This works when your site places the SVG directly into the page. Shown as a plain image, which is what Markdown's image syntax does on most sites including GitHub, it looks exactly like the normal picture.
@@ -56,7 +56,7 @@ It is an ordinary SVG in which pointing at a box fades everything that is not co
 To look at one step yourself, or to let an assistant check it, make a PNG of it:
 
 ```bash
-svgdog preview orders.svg -o step2.png --step 2
+svggod preview orders.svg -o step2.png --step 2
 ```
 
 ## Focus: look here

@@ -1,6 +1,6 @@
 # Release gates
 
-This page describes the checks in `.github/workflows/release.yml` that run before SVGDog binaries are published, and how to verify a release.
+This page describes the checks in `.github/workflows/release.yml` that run before SVGGod binaries are published, and how to verify a release.
 
 > **Note.** At the time of writing `release.yml` is new and no `v*` tag exists in the repository, so the `publish` job has not run yet. Treat the description below as the intended behaviour and confirm it on the first real tag (use a pre-release tag such as `v1.0.1-rc.1` first).
 
@@ -43,25 +43,25 @@ To fix it, change `version` in `Cargo.toml` (and commit the updated `Cargo.lock`
 | `aarch64-apple-darwin` | `macos-latest` |
 | `x86_64-apple-darwin` | `macos-latest` |
 
-Each build runs `cargo build --locked --release --target <target>` and packages a folder named `svgdog-<version>-<target>` holding the binary and `README.md`. The package is a `.tar.gz`. The workflow does not run the tests against the cross-built binaries; the tests run once, on native builds, in `check`.
+Each build runs `cargo build --locked --release --target <target>` and packages a folder named `svggod-<version>-<target>` holding the binary and `README.md`. The package is a `.tar.gz`. The workflow does not run the tests against the cross-built binaries; the tests run once, on native builds, in `check`.
 
 ### Checksums and pre-releases
 
-The `publish` job downloads all packages, writes `SHA256SUMS` with `sha256sum svgdog-* > SHA256SUMS`, and runs `gh release create` with `--generate-notes --verify-tag`. A tag that contains a hyphen (`v1.1.0-rc.1`) is published as a pre-release.
+The `publish` job downloads all packages, writes `SHA256SUMS` with `sha256sum svggod-* > SHA256SUMS`, and runs `gh release create` with `--generate-notes --verify-tag`. A tag that contains a hyphen (`v1.1.0-rc.1`) is published as a pre-release.
 
 ## Verify a published release by hand
 
 ```bash
 # download the archive for your system and SHA256SUMS from the release page, then:
 sha256sum --check --ignore-missing SHA256SUMS      # on macOS: shasum -a 256 -c SHA256SUMS
-tar -xzf svgdog-1.0.0-x86_64-unknown-linux-musl.tar.gz
-./svgdog-1.0.0-x86_64-unknown-linux-musl/svgdog --version     # prints: svgdog 1.0.0
+tar -xzf svggod-1.0.0-x86_64-unknown-linux-musl.tar.gz
+./svggod-1.0.0-x86_64-unknown-linux-musl/svggod --version     # prints: svggod 1.0.0
 ```
 
 Then run a smoke test with a fixture from the repository:
 
 ```bash
-./svgdog-1.0.0-x86_64-unknown-linux-musl/svgdog render tests/fixtures/orders.yaml -o /tmp/orders.svg
+./svggod-1.0.0-x86_64-unknown-linux-musl/svggod render tests/fixtures/orders.yaml -o /tmp/orders.svg
 echo $?     # 0 means no findings at or above the failing level
 ```
 
@@ -69,6 +69,6 @@ echo $?     # 0 means no findings at or above the failing level
 
 - [ ] `cargo test --locked` and `cargo test --locked --release r15` pass on `master`.
 - [ ] `version` in `Cargo.toml` is the number you are about to tag, and `Cargo.lock` is committed.
-- [ ] Golden files are current (`cargo test r8_output_matches` passes without `SVGDOG_UPDATE_GOLDEN`).
+- [ ] Golden files are current (`cargo test r8_output_matches` passes without `SVGGOD_UPDATE_GOLDEN`).
 - [ ] You rehearsed with a manual run or a pre-release tag.
-- [ ] After publishing, `SHA256SUMS` verifies and `svgdog --version` prints the tagged version.
+- [ ] After publishing, `SHA256SUMS` verifies and `svggod --version` prints the tagged version.

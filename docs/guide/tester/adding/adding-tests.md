@@ -44,7 +44,7 @@ cargo test --test cli my_new_behaviour -- --nocapture
 - Name the test after the behaviour, and start the name with `rN_` if it checks a numbered requirement ([glossary](../appendix/glossary.md)).
 - Assert on the JSON envelope and the exit code, not on stderr text.
 - Never write into the repository from a test. Use `tempfile::tempdir()`.
-- Pass `--no-config` when the test must not pick up a `svgdog.toml` from a parent directory.
+- Pass `--no-config` when the test must not pick up a `svggod.toml` from a parent directory.
 - Keep timing assertions out of ordinary tests; only the `r15_` tests measure time.
 
 ## Changes that force other changes

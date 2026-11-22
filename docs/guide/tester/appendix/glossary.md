@@ -4,7 +4,7 @@ This glossary defines the testing words and the requirement numbers used in this
 
 ## Words
 
-**Approximate.** A flag (`"approximate": true`) on a finding whose geometry SVGDog measured on an SVG it did not draw. Such findings are capped at warning severity.
+**Approximate.** A flag (`"approximate": true`) on a finding whose geometry SVGGod measured on an SVG it did not draw. Such findings are capped at warning severity.
 
 **Baseline.** See *golden file*.
 
@@ -22,9 +22,9 @@ This glossary defines the testing words and the requirement numbers used in this
 
 **Profile.** A named rule set chosen with `--profile`: `minimal`, `docs` (default) or `strict`.
 
-**Rule.** One of the 39 checks in the catalogue, listed by `svgdog rules`. Each has a failing and a passing example that a test runs.
+**Rule.** One of the 39 checks in the catalogue, listed by `svggod rules`. Each has a failing and a passing example that a test runs.
 
-**Scene.** The geometry of every element in an SVG, as printed by `svgdog inspect`.
+**Scene.** The geometry of every element in an SVG, as printed by `svggod inspect`.
 
 **Timing budget.** The upper limit enforced by the `r15` tests, strict only in release builds.
 
@@ -51,4 +51,4 @@ The tests and CI comments refer to "the spec's agent requirements (R1 to R16)". 
 | R15 | speed: cold start under 100 ms, a 200 KB file validates in under 1 s (release builds) | `r15_cold_start_is_fast`, `r15_a_200_kb_file_validates_quickly` |
 | R16 | ids stay stable when a node is added | `r16_ids_survive_adding_a_node` |
 
-> **Looking for more words?** Words about drawing diagrams are defined in the [user guide](../../user/), and words about how SVGDog works inside in the [operator guide](../../operator/). Each book has its own glossary.
+> **Looking for more words?** Words about drawing diagrams are defined in the [user guide](../../user/), and words about how SVGGod works inside in the [operator guide](../../operator/). Each book has its own glossary.

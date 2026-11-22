@@ -1,23 +1,24 @@
 # Configuration
 
-SVGDog reads an optional `svgdog.toml` that sets the rule profile, the target the drawings are checked against, the house style, per-rule severities and thresholds, and per-file overrides. Without a file, the `docs` profile and the catalogue defaults apply. A single element can also opt out of a rule with a `svgdog-disable` comment.
+SVGGod reads an optional `svggod.toml` that sets the rule profile, the target the drawings are checked against, the house style, per-rule severities and thresholds, and per-file overrides. Without a file, the `docs` profile and the catalogue defaults apply. A single element can also opt out of a rule with a `svggod-disable` comment.
 
 ## Discovery
 
-For each input file, SVGDog looks for `svgdog.toml` in the file's directory, then in each parent directory, and uses the first one found. Rules:
+For each input file, SVGGod looks for `svggod.toml` in the file's directory, then in each parent directory, and uses the first one found. Rules:
 
 - `--config PATH` uses that file for every input and skips discovery. `--no-config` ignores all config files. The two conflict.
 - For stdin (`-`) the search starts in the working directory.
-- Under `svgdog mcp`, the search stops at the server's root directory.
-- Each config that is read is logged to stderr as `svgdog: config <path>`; `--quiet` hides it.
+- Under `svggod mcp`, the search stops at the server's root directory.
+- Each config that is read is logged to stderr as `svggod: config <path>`; `--quiet` hides it.
 - Only `validate`, `render`, `edit`, `fix` and `preview` read a config. `inspect`, `schema` and `rules` do not.
 - Overrides match paths relative to the directory holding the config file.
+- A file named `svgdog.toml` (the name before the tool was renamed in 1.1.0) is still read when the same directory has no `svggod.toml`. Rename it when convenient.
 
 A config is parsed strictly. An unknown key is exit 3 with a did-you-mean hint (`unknown-field`), an unknown rule is `unknown-rule`, an unknown profile is `unknown-profile`, and any other invalid value is `invalid-config`.
 
 ```bash
-$ svgdog validate orders.svg --config bad.toml --format json
-{"tool":"svgdog","version":"1.0.0","command":"validate","ok":false,"error":{"code":"unknown-field","message":"bad.toml: unknown key 'profle'.","path":"profle","suggestion":"Did you mean 'profile'?"}}
+$ svggod validate orders.svg --config bad.toml --format json
+{"tool":"svggod","version":"1.0.0","command":"validate","ok":false,"error":{"code":"unknown-field","message":"bad.toml: unknown key 'profle'.","path":"profle","suggestion":"Did you mean 'profile'?"}}
 ```
 
 ## Keys
@@ -58,7 +59,7 @@ text-overflow = { severity = "warning", padding = 6 }  # severity plus a thresho
 ```
 
 - A severity is `off`, `info`, `warning` or `error`.
-- Threshold keys are specific to each rule and must be non-negative numbers; they are listed per rule in the [Rules catalogue](rules.md) and by `svgdog rules --explain ID`. An unknown threshold is `unknown-field`.
+- Threshold keys are specific to each rule and must be non-negative numbers; they are listed per rule in the [Rules catalogue](rules.md) and by `svggod rules --explain ID`. An unknown threshold is `unknown-field`.
 
 ## Overrides
 
@@ -109,17 +110,17 @@ files = ["sub/*.svg"]
 rules = { palette = "off" }
 ```
 
-The schema for this file is `svgdog schema config`.
+The schema for this file is `svggod schema config`.
 
 ## Suppressing a rule on one element
 
 A comment placed directly before an element silences the named rules for that element and everything inside it:
 
 ```xml
-<!-- svgdog-disable text-overlap: label sits on purpose over the legend swatch -->
+<!-- svggod-disable text-overlap: label sits on purpose over the legend swatch -->
 <text x="40" y="20">Legend</text>
 ```
 
-Format: `svgdog-disable <rule>[, <rule>...]: <reason>`. The reason is mandatory. Anything wrong with the comment is reported as an `invalid-suppression` error: no `:` or an empty reason, an unknown rule id (with a did-you-mean hint), no rule named, or no element directly after the comment (only whitespace may sit between them). `invalid-suppression` is not a catalogue rule, so it cannot be configured or suppressed.
+Format: `svggod-disable <rule>[, <rule>...]: <reason>`. The reason is mandatory. Anything wrong with the comment is reported as an `invalid-suppression` error: no `:` or an empty reason, an unknown rule id (with a did-you-mean hint), no rule named, or no element directly after the comment (only whitespace may sit between them). `invalid-suppression` is not a catalogue rule, so it cannot be configured or suppressed.
 
-Findings from geometry rules on an SVG that SVGDog did not draw are marked `approximate` in `measured` and are capped at `warning`, because positions in foreign files are estimated.
+Findings from geometry rules on an SVG that SVGGod did not draw are marked `approximate` in `measured` and are capped at `warning`, because positions in foreign files are estimated.

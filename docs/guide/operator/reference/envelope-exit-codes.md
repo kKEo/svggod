@@ -8,9 +8,9 @@ Every envelope starts with the same four fields.
 
 | Field | Type | Meaning |
 |---|---|---|
-| `tool` | string | Always `svgdog` |
-| `version` | string | The SVGDog version, for example `1.0.0` |
-| `command` | string | The command that ran (`svgdog` if the command could not be parsed) |
+| `tool` | string | Always `svggod` |
+| `version` | string | The SVGGod version, for example `1.0.0` |
+| `command` | string | The command that ran (`svggod` if the command could not be parsed) |
 | `ok` | boolean | `true` when the command succeeded and no finding reached the fail level |
 
 A successful `render`, `validate`, `edit`, `fix` or `preview` adds:
@@ -31,13 +31,13 @@ Some commands add fields:
 | `formatting` | `edit` on a spec | `preserved` (comments and layout kept) or `rewritten` |
 | `fixed` | `fix` | `[{"rule": "...", "count": N}]` |
 | `image` | `preview` | `width`, `height`, `scale`, `region`, `background`, `annotated` |
-| `file`, `viewBox`, `summary`, `elements` | `inspect` | The scene: see `svgdog schema scene` |
+| `file`, `viewBox`, `summary`, `elements` | `inspect` | The scene: see `svggod schema scene` |
 | `rules` or `rule` | `rules` | The list, or one rule explained |
 
 Example of a successful render:
 
 ```json
-{"tool":"svgdog","version":"1.0.0","command":"render","ok":true,"summary":{"files":1,"errors":0,"warnings":0,"info":0,"fixable":0,"truncated":false},"findings":[],"outputs":[{"path":"o.svg","bytes":3052}]}
+{"tool":"svggod","version":"1.0.0","command":"render","ok":true,"summary":{"files":1,"errors":0,"warnings":0,"info":0,"fixable":0,"truncated":false},"findings":[],"outputs":[{"path":"o.svg","bytes":3052}]}
 ```
 
 ### Findings
@@ -51,7 +51,7 @@ Example of a successful render:
 | `line` | Line number in the source |
 | `bbox` | Optional `[x, y, width, height]` in viewBox units |
 | `message` | Human-readable explanation |
-| `measured` | Optional measurements; includes `"approximate": true` for geometry findings on SVGs SVGDog did not draw |
+| `measured` | Optional measurements; includes `"approximate": true` for geometry findings on SVGs SVGGod did not draw |
 | `fix` | Optional autofix: `{"safe": true, "ops": [...]}`, with `safe` false for unsafe fixes. The ops are `edit --ops` operations; `safe` fixes are applied by `fix`, the others only with `--unsafe` |
 
 ### Errors
@@ -59,7 +59,7 @@ Example of a successful render:
 A command that cannot finish answers with `"ok": false` and an `error` object instead of findings.
 
 ```json
-{"tool":"svgdog","version":"1.0.0","command":"render","ok":false,"error":{"code":"unknown-reference","message":"edges[0].to names 'b', which is not defined.","path":"edges[0].to","suggestion":"Did you mean 'a'?"}}
+{"tool":"svggod","version":"1.0.0","command":"render","ok":false,"error":{"code":"unknown-reference","message":"edges[0].to names 'b', which is not defined.","path":"edges[0].to","suggestion":"Did you mean 'a'?"}}
 ```
 
 | Field | Meaning |
@@ -96,14 +96,14 @@ In text mode the same error is printed on stderr as `error[code]: message` follo
 | `file-not-found`, `file-not-readable`, `not-utf8`, `stdin-not-readable` | 3 | An input could not be read |
 | `malformed-spec`, `malformed-xml` | 3 | Input is not valid YAML/JSON or XML |
 | `invalid-spec`, `unknown-field`, `missing-field`, `invalid-value`, `duplicate-id`, `unknown-reference`, `group-cycle`, `group-overlap`, `at-outside-free`, `too-wide` | 3 | A spec failed validation; see [Spec reference](spec.md) |
-| `invalid-config`, `config-not-readable` | 3 | `svgdog.toml` is invalid or unreadable; see [Configuration](configuration.md) |
+| `invalid-config`, `config-not-readable` | 3 | `svggod.toml` is invalid or unreadable; see [Configuration](configuration.md) |
 | `invalid-op`, `unknown-op`, `conflicting-ops`, `edit-breaks-xml`, `no-match` | 3 | An edit operation is malformed, clashes with another, would break the XML, or its target matches nothing |
 | `not-renderable` | 3 | `preview` cannot rasterize the file |
-| `not-svgdog-output` | 3 | The file given to `render --previous` was not rendered by SVGDog |
+| `not-svggod-output` | 3 | The file given to `render --previous` was not rendered by SVGGod |
 | `outside-root`, `root-not-found` | 3 | MCP only: a path escapes the root, or the root is unusable |
 | `output-exists` | 4 | The output exists; add `--force` (render, preview), `--previous` with the same file (render) or choose a new path |
 | `layout-changed` | 4 | `render --previous` or `docs`: the boxes cannot stay where the earlier drawing has them. `error.details.reasons` says why; `--force` lays the diagram out afresh. See [Keeping the layout](commands.md#keeping-the-layout) |
 | `write-failed` | 4 | The file could not be written |
 | `internal-error` | 5 | A bug; report it with the command and the input |
 
-Writes are atomic: SVGDog writes a temporary file beside the target and renames it, so a failure never leaves half a file.
+Writes are atomic: SVGGod writes a temporary file beside the target and renames it, so a failure never leaves half a file.

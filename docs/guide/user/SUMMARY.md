@@ -22,7 +22,7 @@
   - [Timeline gallery](timeline-gallery.md)
   - [Compare gallery](compare-gallery.md)
   - [Free gallery](free-gallery.md)
-- [Using SVGDog with an AI agent](using-with-an-ai-agent.md)
+- [Using SVGGod with an AI agent](using-with-an-ai-agent.md)
 - [Use cases](use-cases.md)
 - [Trust and privacy](trust-and-privacy.md)
 - [FAQ and troubleshooting](faq.md)

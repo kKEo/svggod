@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Keeps the docs honest: relative links resolve, and every CLI command and MCP tool
-# appears in the operator book. Needs target/release/svgdog (cargo build --release).
+# appears in the operator book. Needs target/release/svggod (cargo build --release).
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
-bin="${SVGDOG:-$root/target/release/svgdog}"
+bin="${SVGGOD:-$root/target/release/svggod}"
 guide="$root/docs/guide"
 fail=0
 
@@ -28,10 +28,10 @@ PY
 
 ref="$guide/operator"
 for cmd in render validate inspect preview edit fix schema rules examples describe docs theme mcp; do
-  grep -rqw -- "svgdog $cmd" "$ref" || { echo "operator book never mentions: svgdog $cmd"; fail=1; }
+  grep -rqw -- "svggod $cmd" "$ref" || { echo "operator book never mentions: svggod $cmd"; fail=1; }
 done
 for tool in render validate inspect preview edit fix schema rules examples describe docs theme_list theme_init theme_check; do
-  grep -rq -- "svgdog_$tool" "$ref" || { echo "operator book never mentions MCP tool: svgdog_$tool"; fail=1; }
+  grep -rq -- "svggod_$tool" "$ref" || { echo "operator book never mentions MCP tool: svggod_$tool"; fail=1; }
 done
 if [ -x "$bin" ]; then
   while read -r id; do

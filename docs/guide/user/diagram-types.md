@@ -1,6 +1,6 @@
 # Diagram types
 
-SVGDog draws seven kinds of diagram. You choose one with the `diagram:` line of your spec. This page shows each one with a real example and says when to pick it.
+SVGGod draws seven kinds of diagram. You choose one with the `diagram:` line of your spec. This page shows each one with a real example and says when to pick it.
 
 | Type | Best for | You decide the positions? |
 |---|---|---|
@@ -12,17 +12,17 @@ SVGDog draws seven kinds of diagram. You choose one with the `diagram:` line of 
 | `timeline` | Things in time order: a plan, a history, a release schedule | No |
 | `compare` | Two versions side by side: before and after, option A and option B | No |
 
-In every type SVGDog places things on an 8-pixel grid, routes arrows around boxes, and keeps the result the same every time.
+In every type SVGGod places things on an 8-pixel grid, routes arrows around boxes, and keeps the result the same every time.
 
 ## Flow
 
-Use `flow` when you want to show how parts connect. SVGDog arranges the nodes in ranks from left to right (`direction: right`, the default) or from top to bottom (`direction: down`). Arrows that would form a loop are drawn so the main direction stays readable.
+Use `flow` when you want to show how parts connect. SVGGod arranges the nodes in ranks from left to right (`direction: right`, the default) or from top to bottom (`direction: down`). Arrows that would form a loop are drawn so the main direction stays readable.
 
 The [writing a spec](writing-a-spec.md) page shows a left-to-right flow. Here is a larger top-to-bottom one that uses every node kind, a nested group and a self-loop:
 
 ![A top-to-bottom diagram titled Checkout platform. A Shopper actor reaches a Web app, which calls an API gateway. The gateway verifies against an Auth service and places orders with an Order service. The Order service charges a Payment service that captures from an external Card processor, then stores orders in a database and publishes to an event bus, which feeds a Notification worker that renders an Invoice PDF and has a retry loop on itself.](images/checkout.svg)
 
-If the drawing would be wider than `max_width`, SVGDog first tries tighter spacing. If that still does not fit, it stops with advice instead of making an unreadable picture:
+If the drawing would be wider than `max_width`, SVGGod first tries tighter spacing. If that still does not fit, it stops with advice instead of making an unreadable picture:
 
 ```text
 error[too-wide]: The drawing is 2240 px wide even at the tightest spacing; max_width allows 960.
@@ -98,7 +98,7 @@ More examples to copy: [Sequence gallery](sequence-gallery.md).
 
 ## Free
 
-Use `free` when position carries meaning, such as which slot of a rack a machine sits in. You give each node an `at: [x, y]` position in pixels; SVGDog snaps it to the grid and still routes the arrows. `at` is allowed only in a `free` diagram, and SVGDog rejects it elsewhere.
+Use `free` when position carries meaning, such as which slot of a rack a machine sits in. You give each node an `at: [x, y]` position in pixels; SVGGod snaps it to the grid and still routes the arrows. `at` is allowed only in a `free` diagram, and SVGGod rejects it elsewhere.
 
 ```yaml
 version: 1
@@ -191,7 +191,7 @@ groups:
   - { id: after, label: After, members: [a-web, a-orders, a-pay] }
 ```
 
-When a node was renamed, tell SVGDog what it corresponds to with `match`: above, `Orders service` takes the row of `Monolith`. Ids must still be unique across both sides, so a prefix such as `b-` and `a-` helps. Arrows work as in a flow.
+When a node was renamed, tell SVGGod what it corresponds to with `match`: above, `Orders service` takes the row of `Monolith`. Ids must still be unique across both sides, so a prefix such as `b-` and `a-` helps. Arrows work as in a flow.
 
 ![A comparison titled Checkout before and after. On the left, in a frame labelled Before, a Web app calls a Monolith, which uses a Database. On the right, in a frame labelled After, the Web app calls an Orders service on the same row as the Monolith; a highlighted Payments service is new, and the Database is on the same row as before.](images/split.svg)
 

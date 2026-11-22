@@ -76,5 +76,5 @@ edges:
 ## Tips
 
 - List the groups from top to bottom in the order you want the bands.
-- Keep band labels short; a long label can collide with an arrow coming in from above, and SVGDog will tell you so.
+- Keep band labels short; a long label can collide with an arrow coming in from above, and SVGGod will tell you so.
 - Arrows may go between nodes of the same band, as from the firewall to the proxy.

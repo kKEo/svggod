@@ -1,10 +1,16 @@
-# SVGDog
+# SVGGod
 
 A single-binary command line tool that compiles a declarative diagram description
 to SVG and checks any SVG for correctness, legibility and portability. It is built
 for diagrams in technical documentation, and for two kinds of caller: AI agents
 that use it as a tool, and people or CI pipelines that lint diagrams in a
 documentation repository.
+
+> **Renamed from svgdog.** Version 1.1.0 renamed the tool from `svgdog` to `svggod`. Files made
+> for the old name keep working: `svgdog.toml` is read when no `svggod.toml` is beside it,
+> `<!-- svgdog-disable ... -->` comments and ` ```svgdog ` blocks are still recognised, SVGs
+> marked `data-svgdog` or carrying `svgdog-spec` metadata count as our own output, and the MCP
+> server answers the old `svgdog_*` tool names. New output uses only the new names.
 
 ## Documentation
 
@@ -17,19 +23,19 @@ Full documentation lives in [`docs/guide/`](docs/guide/index.html): a landing pa
 ## Install
 
 ```sh
-cargo install svgdog                 # from crates.io, builds from source
-cargo binstall svgdog                # prebuilt binary, needs cargo-binstall
-brew install kKEo/tap/svgdog         # Homebrew (macOS and Linux)
+cargo install svggod                 # from crates.io, builds from source
+cargo binstall svggod                # prebuilt binary, needs cargo-binstall
+brew install kKEo/tap/svggod         # Homebrew (macOS and Linux)
 ```
 
 Or download a tarball for Linux (x86_64 and arm64, static) or macOS (Apple silicon and
-Intel) from the [releases page](https://github.com/kKEo/svgdog/releases) and check it
+Intel) from the [releases page](https://github.com/kKEo/svggod/releases) and check it
 against `SHA256SUMS`.
 
 ## Build
 
 ```sh
-cargo build --release      # the binary is target/release/svgdog
+cargo build --release      # the binary is target/release/svggod
 cargo test                 # unit, command line and MCP tests
 ```
 
@@ -40,14 +46,14 @@ JetBrains Mono, both under the SIL Open Font License, see `fonts/`) are compiled
 
 `flow`, `layers`, `sequence` and `free` for structure; `state` for state machines,
 `timeline` for things in time order, and `compare` for two versions side by side.
-`svgdog examples` lists a small spec for each.
+`svggod examples` lists a small spec for each.
 
 ## Explaining, not only drawing
 
 A spec can carry the story as well as the structure: `steps` number a walk-through and
 list it under the drawing, `focus` dims everything else, `legend` and `caption` add the
 words a figure needs, and `detail` and `link` on any item give tooltips and links.
-`render --frames` writes one picture per step. `svgdog examples steps` shows all of it.
+`render --frames` writes one picture per step. `svggod examples steps` shows all of it.
 
 For readers on a web page there are two interactive versions, both the same drawing
 with something added: `--interactive css` is an SVG that highlights what a hovered box
@@ -56,10 +62,10 @@ Previous and Next buttons for the steps. The static SVG stays the default.
 
 ## In documentation
 
-`svgdog docs docs/` renders every `svgdog` code block in your Markdown pages to an SVG
+`svggod docs docs/` renders every `svggod` code block in your Markdown pages to an SVG
 next to the page and keeps an image line under the block pointing at it; `--check`
 fails when a picture is out of date. `--theme docs-auto` gives one file that follows
-the reader's light or dark mode. `svgdog describe` turns a diagram into words, and
+the reader's light or dark mode. `svggod describe` turns a diagram into words, and
 `render --embed-spec` stores the spec in the SVG so it can be read back.
 
 ## Themes
@@ -67,14 +73,14 @@ the reader's light or dark mode. `svgdog describe` turns a diagram into words, a
 A theme sets colours, font, text sizes, line widths and corner radii. Five are built
 in: `docs` (the default), `blueprint`, `paper`, `bold` and `cards`, each with a light, a dark
 (`-dark`) and an adaptive (`-auto`) variant. Name one with `--theme`, with `theme:` in
-a spec, or with `[style] theme` in `svgdog.toml`.
+a spec, or with `[style] theme` in `svggod.toml`.
 
 ```sh
-svgdog theme list                               # the built-in themes
-svgdog render fig/orders.yaml -o fig/orders.svg --theme paper-dark
-svgdog theme init themes/acme --from paper      # a theme of your own: one theme.toml
-svgdog theme check themes/acme                  # the file, contrast, and every example drawn with it
-svgdog render fig/orders.yaml -o fig/orders.svg --theme ./themes/acme
+svggod theme list                               # the built-in themes
+svggod render fig/orders.yaml -o fig/orders.svg --theme paper-dark
+svggod theme init themes/acme --from paper      # a theme of your own: one theme.toml
+svggod theme check themes/acme                  # the file, contrast, and every example drawn with it
+svggod render fig/orders.yaml -o fig/orders.svg --theme ./themes/acme
 ```
 
 Themes are read from disk only; nothing is downloaded.
@@ -82,18 +88,18 @@ Themes are read from disk only; nothing is downloaded.
 ## Changing a diagram
 
 A diagram that readers know should not rearrange itself when one box is added.
-`svgdog render orders.yaml -o orders.svg --previous orders.svg` keeps every box that
+`svggod render orders.yaml -o orders.svg --previous orders.svg` keeps every box that
 is in both versions where it was and puts new boxes into free room. When that cannot
 be done, the command stops with `layout-changed` and says why; `--force` lays the
-diagram out afresh. `svgdog docs` does the same for the pictures it already wrote.
+diagram out afresh. `svggod docs` does the same for the pictures it already wrote.
 
 ## The loop
 
 ```sh
-svgdog examples flow --format text      # a spec to start from (schema spec has every field)
-svgdog render orders.yaml -o orders.svg  # compile and check in one call
-svgdog fix orders.svg --in-place         # apply the safe fixes findings carry
-svgdog preview orders.svg -o orders.png --annotate   # look at it
+svggod examples flow --format text      # a spec to start from (schema spec has every field)
+svggod render orders.yaml -o orders.svg  # compile and check in one call
+svggod fix orders.svg --in-place         # apply the safe fixes findings carry
+svggod preview orders.svg -o orders.png --annotate   # look at it
 ```
 
 Repeat render (or fix) until the exit code is 0.
@@ -103,7 +109,7 @@ Repeat render (or fix) until the exit code is 0.
 | Command | Purpose |
 | --- | --- |
 | `render <spec> -o <out.svg>` | Compile a YAML or JSON spec to SVG and validate the result; `--previous` keeps an earlier layout |
-| `validate <file.svg>...` | Run the 39 rules on SVG files, including ones SVGDog did not make |
+| `validate <file.svg>...` | Run the 39 rules on SVG files, including ones SVGGod did not make |
 | `inspect <file.svg>` | List visible elements with their bounding boxes, as data |
 | `preview <file.svg> -o <out.png>` | Rasterize to PNG; `--annotate` outlines findings, `--crop` zooms in |
 | `edit <file> --set ... \| --ops ...` | Targeted changes to an SVG or a spec |
@@ -111,7 +117,7 @@ Repeat render (or fix) until the exit code is 0.
 | `schema spec\|config\|findings\|scene\|ops\|theme` | Print a JSON Schema |
 | `rules [--explain ID]` | List rules, or explain one with a failing and a passing example |
 | `examples [NAME]` | List the bundled example specs, or print one to start from |
-| `docs <path>... [--check]` | Render the `svgdog` blocks inside Markdown pages |
+| `docs <path>... [--check]` | Render the `svggod` blocks inside Markdown pages |
 | `describe <spec or svg>` | Say in words what a diagram shows |
 | `theme list \| init DIR \| check DIR` | List the built-in themes, start one of your own, check it |
 | `mcp --root-path DIR` | Serve the commands as Model Context Protocol tools over stdio |
@@ -147,12 +153,12 @@ notes:
   - {attach: db, text: Nightly backup}
 ```
 
-The author states structure; SVGDog chooses every coordinate. More examples are in
+The author states structure; SVGGod chooses every coordinate. More examples are in
 `tests/fixtures/`.
 
 ## Configuration
 
-One `svgdog.toml`, found by walking up from the input file:
+One `svggod.toml`, found by walking up from the input file:
 
 ```toml
 version = 1
@@ -176,20 +182,20 @@ A rule is silenced for one element with a comment directly before it; the reason
 is required:
 
 ```xml
-<!-- svgdog-disable shape-overlap: badge sits on the corner by design -->
+<!-- svggod-disable shape-overlap: badge sits on the corner by design -->
 ```
 
 ## MCP
 
 ```sh
-svgdog mcp --root-path ./docs
+svggod mcp --root-path ./docs
 ```
 
-- MCP Registry name: `mcp-name: io.github.kKEo/svgdog`
+- MCP Registry name: `mcp-name: io.github.kKEo/svggod`
 
-The server exposes `svgdog_render`, `svgdog_validate`, `svgdog_inspect`,
-`svgdog_preview`, `svgdog_edit`, `svgdog_fix`, `svgdog_schema`, `svgdog_rules`,
-`svgdog_docs`, `svgdog_describe`, `svgdog_examples` and three `svgdog_theme_*` tools. `svgdog_render` also takes the spec as text and can return the SVG
+The server exposes `svggod_render`, `svggod_validate`, `svggod_inspect`,
+`svggod_preview`, `svggod_edit`, `svggod_fix`, `svggod_schema`, `svggod_rules`,
+`svggod_docs`, `svggod_describe`, `svggod_examples` and three `svggod_theme_*` tools. `svggod_render` also takes the spec as text and can return the SVG
 and a PNG directly, so an agent needs no files to draw.
 Inputs mirror the flags and results are the same JSON envelope. Every path is
 relative to the root and paths outside it are refused. It serves both the
@@ -198,7 +204,7 @@ relative to the root and paths outside it are refused. It serves both the
 ## Development notes
 
 - `tests/golden/` holds expected output, compared byte for byte. After an intended
-  change, regenerate with `SVGDOG_UPDATE_GOLDEN=1 cargo test r8_output_matches`.
+  change, regenerate with `SVGGOD_UPDATE_GOLDEN=1 cargo test r8_output_matches`.
 - `.github/workflows/ci.yml` runs the tests on Linux and macOS; passing on
   both is the cross-platform determinism check. Windows is not built or tested.
 - `.github/workflows/release.yml` publishes a release when a version tag is pushed.
@@ -225,13 +231,13 @@ relative to the root and paths outside it are refused. It serves both the
      namespace, and the registry reads the `mcp-name:` line from the crates.io README,
      so the crate has to be published first.
   Other MCP directories (Smithery, Glama and similar) are listed by hand.
-- `svgdog rules --explain ID` examples are executed by the tests: each failing
+- `svggod rules --explain ID` examples are executed by the tests: each failing
   example must raise its rule, each passing one must not, and each fix must clear
   its finding.
 
 ## Known limits
 
-- Geometry findings on SVG files SVGDog did not render rest on heuristics; they are
+- Geometry findings on SVG files SVGGod did not render rest on heuristics; they are
   marked `approximate` and capped at warning.
 - Editing a YAML spec keeps comments and layout for field changes, renames and
   additions. Removing a node, group or edge rewrites the spec in canonical form;

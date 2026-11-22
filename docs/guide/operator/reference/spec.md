@@ -1,6 +1,6 @@
 # Spec reference
 
-A spec is a YAML or JSON file that describes a diagram; `svgdog render` compiles it to SVG. This page lists every key, its type and limit, the defaults, and the checks that reject a spec. The machine-readable form is `svgdog schema spec` (see [JSON Schemas](schemas.md)).
+A spec is a YAML or JSON file that describes a diagram; `svggod render` compiles it to SVG. This page lists every key, its type and limit, the defaults, and the checks that reject a spec. The machine-readable form is `svggod schema spec` (see [JSON Schemas](schemas.md)).
 
 Parsing is strict: an unknown key is an error with a did-you-mean hint, not silently ignored. Text that starts with `{` is read as JSON, anything else as YAML. YAML scalars such as `42` or `true` are accepted where text is expected and read as `"42"` and `"true"`.
 
@@ -13,8 +13,8 @@ Parsing is strict: an unknown key is an error with a did-you-mean hint, not sile
 | `title` | string | yes | | 1 to 120 characters |
 | `description` | string | no | generated | up to 500 characters; becomes the SVG `<desc>`. Without it the `<desc>` is the sentence `describe --short` prints |
 | `direction` | string | no | `right` | `right`, `down` |
-| `theme` | string | no | `[style] theme` in `svgdog.toml`, else `docs-light` | A built-in theme (`docs`, `blueprint`, `paper`, `bold`, `cards`, with `-light`, `-dark` or `-auto`) or a theme folder relative to the spec file, at most 200 characters; `render --theme` overrides it. See [Themes](themes.md) |
-| `effort` | string | no | `[render] effort` in `svgdog.toml`, else `normal` | `normal`, `high`, `max`: how hard to work at edges that cross; `render --effort` overrides it. See [Crossings and effort](../how-it-works/crossings.md) |
+| `theme` | string | no | `[style] theme` in `svggod.toml`, else `docs-light` | A built-in theme (`docs`, `blueprint`, `paper`, `bold`, `cards`, with `-light`, `-dark` or `-auto`) or a theme folder relative to the spec file, at most 200 characters; `render --theme` overrides it. See [Themes](themes.md) |
+| `effort` | string | no | `[render] effort` in `svggod.toml`, else `normal` | `normal`, `high`, `max`: how hard to work at edges that cross; `render --effort` overrides it. See [Crossings and effort](../how-it-works/crossings.md) |
 | `max_width` | integer | no | 960 | whole number from 200 to 2000 |
 | `nodes` | list | no | empty | may be omitted when edges or groups name the nodes; a spec needs at least one node either way |
 | `edges` | list | no | empty | |
@@ -154,11 +154,11 @@ Ids are unique across nodes, groups and edges together. After the shape is read,
 Examples:
 
 ```bash
-$ svgdog render bad.yaml -o out.svg --format json
-{"tool":"svgdog","version":"1.0.0","command":"render","ok":false,"error":{"code":"unknown-field","message":"Unknown field 'kynd' in nodes[0].","path":"nodes[0].kynd","suggestion":"Did you mean 'kind'?"}}
+$ svggod render bad.yaml -o out.svg --format json
+{"tool":"svggod","version":"1.0.0","command":"render","ok":false,"error":{"code":"unknown-field","message":"Unknown field 'kynd' in nodes[0].","path":"nodes[0].kynd","suggestion":"Did you mean 'kind'?"}}
 
-$ svgdog render bad2.yaml -o out.svg --format json
-{"tool":"svgdog","version":"1.0.0","command":"render","ok":false,"error":{"code":"unknown-reference","message":"edges[0].to names 'b', which is not defined.","path":"edges[0].to","suggestion":"Did you mean 'a'?"}}
+$ svggod render bad2.yaml -o out.svg --format json
+{"tool":"svggod","version":"1.0.0","command":"render","ok":false,"error":{"code":"unknown-reference","message":"edges[0].to names 'b', which is not defined.","path":"edges[0].to","suggestion":"Did you mean 'a'?"}}
 ```
 
 ## Examples

@@ -22,7 +22,7 @@ case "$mode" in write|--check) ;; *) echo "usage: $0 [--check]" >&2; exit 2;; es
 
 if [ "$mode" = write ]; then
   echo "drawing the pictures (golden test in update mode)"
-  (cd "$root" && SVGDOG_UPDATE_GOLDEN=1 cargo test --quiet --test cli r8_output_matches >/dev/null)
+  (cd "$root" && SVGGOD_UPDATE_GOLDEN=1 cargo test --quiet --test cli r8_output_matches >/dev/null)
 fi
 
 python3 -I - "$root" "$mode" <<'PY'

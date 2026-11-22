@@ -1,10 +1,10 @@
 # Known limits
 
-This page lists what SVGDog does not do, or does only approximately, so you can decide before you build a pipeline on it. Each item is a property of version 1.0.0 as read from the code and the README, not a bug list.
+This page lists what SVGGod does not do, or does only approximately, so you can decide before you build a pipeline on it. Each item is a property of version 1.0.0 as read from the code and the README, not a bug list.
 
 ## Checking
 
-- **Geometry findings on foreign SVGs are heuristic.** For a file SVGDog did not render, measurements such as overlap, clipping and text size rest on estimates. Those findings carry `"approximate": true` and are capped at warning severity. A clean result on a hand-made SVG is weaker evidence than on SVGDog output. See [The rule engine](../how-it-works/rules-engine.md#findings-that-cannot-be-exact).
+- **Geometry findings on foreign SVGs are heuristic.** For a file SVGGod did not render, measurements such as overlap, clipping and text size rest on estimates. Those findings carry `"approximate": true` and are capped at warning severity. A clean result on a hand-made SVG is weaker evidence than on SVGGod output. See [The rule engine](../how-it-works/rules-engine.md#findings-that-cannot-be-exact).
 - **Static SVG only.** There is no script execution, no animation and no external resources. The rules flag `<script>`, `<foreignObject>`, external references and animation rather than evaluate them.
 - **Output cap.** At most 50 findings are listed by default (`--max-findings` raises it); `summary.truncated` says when the list was cut.
 
@@ -13,9 +13,9 @@ This page lists what SVGDog does not do, or does only approximately, so you can 
 - **Interaction is limited to highlighting and stepping.** The `css` and `html` versions fade what is unrelated to a hovered node or a chosen step, and the page shows details. There is no pan and zoom, no collapsing of groups, and no animation. The `css` version needs a browser that supports the `:has()` selector; elsewhere it is the static drawing. The page script is tested against a stand-in document (`tests/player.test.js`, run by `cargo test` when Node is installed), not in a real browser.
 - **Seven diagram types:** `flow`, `layers`, `sequence`, `free`, `state`, `timeline` and `compare`. There is no class diagram, entity-relationship diagram, Gantt chart or free-hand drawing. A `timeline` takes no edges or notes, and a `compare` takes exactly two groups and no notes.
 - **Nine node kinds, three edge styles.** The kinds are `box`, `service`, `client`, `datastore`, `queue`, `actor`, `external`, `decision` and `document`; the styles are `sync`, `async` and `dependency`. Colours cannot be set per node, except through `emphasis`.
-- **Themes come from disk only, and cannot bring a font.** A theme is a built-in name or a folder with a `theme.toml`; SVGDog does not fetch themes from a URL or a git repository. A theme names font families but text is always measured with the bundled Inter or JetBrains Mono. A theme sets one fill per role, not per node kind, and does not change spacing.
+- **Themes come from disk only, and cannot bring a font.** A theme is a built-in name or a folder with a `theme.toml`; SVGGod does not fetch themes from a URL or a git repository. A theme names font families but text is always measured with the bundled Inter or JetBrains Mono. A theme sets one fill per role, not per node kind, and does not change spacing.
 - **No manual routing.** You cannot place a bend. Routes come from an automatic search; the levers you have are listed in [Edge routing](../how-it-works/routing.md).
-- **A crossing that is left is not proven necessary.** SVGDog keeps a crossing only when it found no drawing without it at the effort asked for, and it can prove a crossing unavoidable only for graphs with too many edges to be drawn flat. It does not test planarity. Dense diagrams can keep crossings at `normal` that `high` or `max` remove, and `max` can take several seconds on them. See [Crossings and effort](../how-it-works/crossings.md).
+- **A crossing that is left is not proven necessary.** SVGGod keeps a crossing only when it found no drawing without it at the effort asked for, and it can prove a crossing unavoidable only for graphs with too many edges to be drawn flat. It does not test planarity. Dense diagrams can keep crossings at `normal` that `high` or `max` remove, and `max` can take several seconds on them. See [Crossings and effort](../how-it-works/crossings.md).
 - **Keeping a layout keeps boxes, not lines.** With `render --previous`, boxes in both drawings stay; edges, edge labels and notes are placed again and may change near a new box. A renamed id is a new box. A drawing that has grown this way is less compact than a fresh one, and an edge may have to cross a frame to reach a new box (reported as a warning). `sequence`, `timeline` and `compare` are only compared with the earlier drawing, not steered by it.
 - **Width is the constraint.** A drawing wider than `max_width` (at most 2000) is first set more tightly and then rejected with `too-wide`. Height is unconstrained.
 - **Size limits on text:** titles up to 120 characters, labels 80, edge labels 40, group labels 60, notes 120.
@@ -32,19 +32,19 @@ This page lists what SVGDog does not do, or does only approximately, so you can 
 
 - **`preview` writes a PNG file, nothing else.** It is not a server: there is no port, no watching and no live reload. Re-run it after a change.
 - **Size caps:** the image is at most 2000 px wide and 4000 px high. A `--width` above 2000 is reduced and the text output says so. The minimum is 16.
-- **Bundled fonts only.** Text always renders in Inter or JetBrains Mono, so a preview shows what SVGDog measured, not what a viewer with other fonts will see. The 8 % width reserve on labels exists for that gap.
+- **Bundled fonts only.** Text always renders in Inter or JetBrains Mono, so a preview shows what SVGGod measured, not what a viewer with other fonts will see. The 8 % width reserve on labels exists for that gap.
 
 ## Running
 
-- **Single binary, no daemon.** There is no HTTP server and no background mode. `svgdog mcp` speaks stdio only, one JSON-RPC message per line.
+- **Single binary, no daemon.** There is no HTTP server and no background mode. `svggod mcp` speaks stdio only, one JSON-RPC message per line.
 - **The MCP server has not been run against a real client.** It is tested by the repository's own tests, which cover the handshake, the envelope, image content and path confinement.
 - **Standard input once.** `-` can be given only once per command.
 - **The `mcp` command cannot be started through an MCP tool call.**
 
 ## Project status
 
-- **No licence for SVGDog itself.** `Cargo.toml` has no `license`, `description` or `repository`, and there is no LICENSE file. The bundled fonts have their own licence files (SIL Open Font License) in `fonts/`.
+- **No licence for SVGGod itself.** `Cargo.toml` has no `license`, `description` or `repository`, and there is no LICENSE file. The bundled fonts have their own licence files (SIL Open Font License) in `fonts/`.
 - **No published releases yet.** The release workflow is written but not committed, and no tag exists; see [Release binaries](../install/release-binaries.md).
-- **The JSON Schemas use a placeholder domain.** The `$id` values in `schemas/*.json` start with `https://svgdog.example/schema/`, which does not resolve. Use `svgdog schema <name>` to get the schema rather than fetching the id.
+- **The JSON Schemas use a placeholder domain.** The `$id` values in `schemas/*.json` start with `https://svggod.example/schema/`, which does not resolve. Use `svggod schema <name>` to get the schema rather than fetching the id.
 - **The requirements document is not in the repository.** Tests and CI comments cite "R1 to R16" from a specification that is not tracked here.
 - **Cross-platform determinism rests on CI that has not yet been seen passing.** The golden-file test is designed to show it on Linux and macOS, and Windows is not built or tested at all; see [Determinism](../how-it-works/determinism.md).

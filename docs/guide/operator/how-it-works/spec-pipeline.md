@@ -1,6 +1,6 @@
 # From spec to validated spec
 
-Before anything is drawn, SVGDog reads the spec file, checks it strictly, and builds an in-memory diagram. This chapter describes that stage and the mistakes it stops, because most failures an operator sees on the create path happen here, with exit code 3.
+Before anything is drawn, SVGGod reads the spec file, checks it strictly, and builds an in-memory diagram. This chapter describes that stage and the mistakes it stops, because most failures an operator sees on the create path happen here, with exit code 3.
 
 The stage has three steps, all in `src/spec.rs`.
 
@@ -28,7 +28,7 @@ Every error carries a `path` into the spec (for example `nodes[2].label`) and, w
 
 ## 3. Build the diagram model
 
-The checked values become a `Spec` structure: nodes with kind, emphasis, optional fixed width and optional position; edges with style and arrow; groups with members; notes with a target and a side. The author states structure and SVGDog chooses every coordinate. The only place an author gives coordinates is `at` in a `free` diagram, and even those are snapped to the 8 px grid.
+The checked values become a `Spec` structure: nodes with kind, emphasis, optional fixed width and optional position; edges with style and arrow; groups with members; notes with a target and a side. The author states structure and SVGGod chooses every coordinate. The only place an author gives coordinates is `at` in a `free` diagram, and even those are snapped to the 8 px grid.
 
 ## Choosing a theme
 
@@ -36,8 +36,8 @@ The theme is resolved before rendering starts (`choose` in `src/render/theme.rs`
 
 ## What happens next
 
-A valid `Spec` goes to [layout](layout.md). If layout cannot fit the drawing in `max_width`, rendering fails with `too-wide` instead of producing an unreadable figure. After rendering, the SVG text is validated with the same rules as `svgdog validate`, unless `--no-validate` was given.
+A valid `Spec` goes to [layout](layout.md). If layout cannot fit the drawing in `max_width`, rendering fails with `too-wide` instead of producing an unreadable figure. After rendering, the SVG text is validated with the same rules as `svggod validate`, unless `--no-validate` was given.
 
 ## Editing a spec
 
-`svgdog edit` on a spec works on this same data. It changes the document, validates it again, re-renders it and reports findings on the drawing. To keep your comments and layout it patches the YAML text where it can, and keeps the patched text only if it reads back as exactly the intended data; otherwise it rewrites the spec in canonical form and says so with `"formatting": "rewritten"`. See [Known limits](../operations/known-limits.md).
+`svggod edit` on a spec works on this same data. It changes the document, validates it again, re-renders it and reports findings on the drawing. To keep your comments and layout it patches the YAML text where it can, and keeps the patched text only if it reads back as exactly the intended data; otherwise it rewrites the spec in canonical form and says so with `"formatting": "rewritten"`. See [Known limits](../operations/known-limits.md).

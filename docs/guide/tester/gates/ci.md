@@ -58,9 +58,9 @@ Two tests in `tests/cli.rs` carry the `r15` prefix and are the only timing check
 
 | Test | Budget in release builds | Budget in debug builds |
 |---|---|---|
-| `r15_cold_start_is_fast` | best of 5 runs of `svgdog --version` under 0.1 s | 1.0 s |
-| `r15_a_200_kb_file_validates_quickly` | best of 3 runs of `svgdog validate` on a generated 200 KB SVG under 1 s | 20 s |
+| `r15_cold_start_is_fast` | best of 5 runs of `svggod --version` under 0.1 s | 1.0 s |
+| `r15_a_200_kb_file_validates_quickly` | best of 3 runs of `svggod validate` on a generated 200 KB SVG under 1 s | 20 s |
 
 The best run counts, because the first start of a fresh binary pays a one-off operating-system cost. That is why the CI step uses `--release`: the debug budgets are deliberately loose, so only the release run is a real gate. On a developer laptop both tests finish in under a second together.
 
-If a timing test fails once on CI and passes on re-run, suspect a loaded runner. If it fails every time, something got slower: profile `svgdog validate` on the generated file.
+If a timing test fails once on CI and passes on re-run, suspect a loaded runner. If it fails every time, something got slower: profile `svggod validate` on the generated file.

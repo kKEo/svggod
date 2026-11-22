@@ -1,6 +1,6 @@
 # Layout and auto-fit
 
-SVGDog decides where every box goes. This chapter describes how the seven diagram types are placed, what the 8 px grid means, and how auto-fit tries to keep a drawing within `max_width` before giving up with `too-wide`. The code is in `src/render/layout.rs`, `src/render/sequence.rs` and `src/render/mod.rs`.
+SVGGod decides where every box goes. This chapter describes how the seven diagram types are placed, what the 8 px grid means, and how auto-fit tries to keep a drawing within `max_width` before giving up with `too-wide`. The code is in `src/render/layout.rs`, `src/render/sequence.rs` and `src/render/mod.rs`.
 
 ## The grid and the constants
 

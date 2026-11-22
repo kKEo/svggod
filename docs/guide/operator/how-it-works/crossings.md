@@ -1,6 +1,6 @@
 # Crossings and effort
 
-Two edges that cross make a reader stop and work out which line goes on. SVGDog therefore treats a crossing as the worst thing a route can do short of running through a box, and it keeps one only when it has found no drawing without it. This chapter says how crossings are counted, what is done to avoid them, what the `effort` setting changes, and what "unavoidable" can and cannot mean. The last part records the methods that were considered and where they come from.
+Two edges that cross make a reader stop and work out which line goes on. SVGGod therefore treats a crossing as the worst thing a route can do short of running through a box, and it keeps one only when it has found no drawing without it. This chapter says how crossings are counted, what is done to avoid them, what the `effort` setting changes, and what "unavoidable" can and cannot mean. The last part records the methods that were considered and where they come from.
 
 The code is in `src/render/cross.rs` (counting), `src/render/wire.rs` (routing again), `src/render/order.rs` (the order of boxes) and `src/render/effort.rs` (the budgets).
 
@@ -14,7 +14,7 @@ Two edges cross at a point where one passes from one side of the other to the ot
 
 A crossing exactly on a bend is counted once. The test looks at the four arms that leave the point, two per edge: the edges cross when the arms alternate round the point.
 
-The rule `edge-crossing` reports every pair of connectors that cross, with the number of crossings and their points. It is a note (`info`), because some drawings cannot be made without a crossing, and it has no automatic fix. It runs on any SVG, not only on SVGDog's own.
+The rule `edge-crossing` reports every pair of connectors that cross, with the number of crossings and their points. It is a note (`info`), because some drawings cannot be made without a crossing, and it has no automatic fix. It runs on any SVG, not only on SVGGod's own.
 
 ## What is done to avoid one
 
@@ -60,11 +60,11 @@ Three properties make the setting safe to raise:
 
 Set it in one of three places. The first that says something wins:
 
-1. `--effort high` on `svgdog render`, or `effort` on the `svgdog_render` tool.
+1. `--effort high` on `svggod render`, or `effort` on the `svggod_render` tool.
 2. `effort: high` at the top of the spec.
-3. `[render] effort = "high"` in `svgdog.toml`.
+3. `[render] effort = "high"` in `svggod.toml`.
 
-`render --check` and `docs --check` compare bytes, so they must run with the effort the drawing was made with. Putting the effort in the spec or in `svgdog.toml` takes care of that; a flag has to be repeated. `svgdog docs` has no flag and reads the spec and the config.
+`render --check` and `docs --check` compare bytes, so they must run with the effort the drawing was made with. Putting the effort in the spec or in `svggod.toml` takes care of that; a flag has to be repeated. `svggod docs` has no flag and reads the spec and the config.
 
 ### What it costs
 
@@ -81,12 +81,12 @@ The random graphs are far denser than a diagram written for a reader, and they a
 
 ## What "unavoidable" means
 
-SVGDog can say two different things about a crossing that is left, and they should not be confused.
+SVGGod can say two different things about a crossing that is left, and they should not be confused.
 
 - **Proven for the graph.** Some graphs cannot be drawn without a crossing, wherever the boxes go. A graph with `n` boxes that can be drawn flat has at most `3n - 6` edges, and at most `2n - 4` when no three boxes are all joined to each other; every edge beyond that costs at least one crossing (`cross::least`). Three boxes each joined to three others have 9 edges where 8 would fit, so one crossing is certain. When a drawing reaches this number the work stops, at any level, because nothing better exists.
 - **None better found.** In every other case a crossing that is left means only that this effort found no drawing without it. The bound above is often 0 for graphs that still need crossings, and a drawing also has to respect things the bound knows nothing about: the direction of the flow, the sides edges use, the groups, the width. Raising the effort may remove the crossing, and so may one of the levers below.
 
-SVGDog does not test a graph for planarity, so it cannot tell you that a drawing without crossings exists when it has not found one.
+SVGGod does not test a graph for planarity, so it cannot tell you that a drawing without crossings exists when it has not found one.
 
 ## What you can change from the spec
 
@@ -104,7 +104,7 @@ This section records what was looked at when the crossing work was designed, so 
 ### How much crossings matter
 
 - Purchase, "Which aesthetic has the greatest effect on human understanding?" (Graph Drawing 1997): reducing crossings matters more to readers than reducing bends or adding symmetry. *Reported.*
-- Huang, Eades and Hong, "Larger crossing angles make graphs easier to read" (Journal of Visual Languages and Computing, 2014), and their earlier eye-tracking work: crossings at close to a right angle disturb reading least. *Reported.* Every crossing SVGDog draws is at a right angle, which is why the real trade is between a crossing and a longer route with more bends.
+- Huang, Eades and Hong, "Larger crossing angles make graphs easier to read" (Journal of Visual Languages and Computing, 2014), and their earlier eye-tracking work: crossings at close to a right angle disturb reading least. *Reported.* Every crossing SVGGod draws is at a right angle, which is why the real trade is between a crossing and a longer route with more bends.
 
 ### How hard the problem is
 
@@ -116,20 +116,20 @@ This section records what was looked at when the crossing work was designed, so 
 
 - The sweep with medians and swaps of neighbours is the method of Graphviz dot (Gansner, Koutsofios, North and Vo, "A technique for drawing directed graphs", IEEE Transactions on Software Engineering, 1993). In dot's source the loop runs at most 24 iterations and gives up after 8 without a real gain, both scaled by the `mclimit` attribute (<https://graphviz.org/docs/attrs/mclimit/>). *Read.*
 - Sifting, moving one box through every place in its rank, is from Matuszewski, Schönfeld and Molitor (Graph Drawing 1999). *Reported.* It was the core of strong heuristic entries in the PACE 2024 challenge on one-sided crossing minimisation, for example Arcee (<https://arxiv.org/abs/2411.17596>), whose ablation also found that taking the better of the median and the mean beats either alone. *Read.*
-- Restarts as the effort control: ELK Layered's `thoroughness` (default 7) is the number of randomised restarts, with a fixed seed (<https://eclipse.dev/elk/reference/options/org-eclipse-elk-layered-thoroughness.html>); OGDF's `SugiyamaLayout` has `runs` (default 15) and `fails` (default 4) (<https://ogdf.github.io/doc/ogdf/classogdf_1_1_sugiyama_layout.html>). *Read.* Both count attempts and neither limits time, which is the model SVGDog follows.
+- Restarts as the effort control: ELK Layered's `thoroughness` (default 7) is the number of randomised restarts, with a fixed seed (<https://eclipse.dev/elk/reference/options/org-eclipse-elk-layered-thoroughness.html>); OGDF's `SugiyamaLayout` has `runs` (default 15) and `fails` (default 4) (<https://ogdf.github.io/doc/ogdf/classogdf_1_1_sugiyama_layout.html>). *Read.* Both count attempts and neither limits time, which is the model SVGGod follows.
 - Global sifting, which moves a long edge across all its ranks at once (Bachmaier, Brandenburg, Brunner and Hübner, Journal of Graph Algorithms and Applications, 2011), is reported to give 5 to 10 % fewer crossings than rank-by-rank methods. *Reported.* Not built: the stand-ins of a long edge are moved rank by rank.
 
 ### Routing
 
-- Routing edges one after another depends on the order. The classic answers are to route short edges first (Graphviz's orthogonal router sorts by length, read in `lib/ortho/ortho.c`), to rip up and reroute, and negotiated congestion, where every net is rerouted each round against a rising price for shared resources (McMurchie and Ebeling, PathFinder, FPGA 1995). *Read* for Graphviz and PathFinder's outline. SVGDog rips up and reroutes pairs and tries other orders. Full negotiation was not built: a diagram has tens of edges, not thousands of nets.
-- libavoid, the connector router of Adaptagrams, searches an orthogonal visibility graph with a cost of length and bends, has a `crossingPenalty` its documentation calls experimental, and separates parallel segments afterwards by "nudging" (Wybrow, Marriott and Stuckey, "Orthogonal Connector Routing", Graph Drawing 2009; <https://www.adaptagrams.org/documentation/namespaceAvoid.html>). *Read* for the options. SVGDog's grid search with a crossing cost is the same idea on a simpler graph.
-- ELK and Graphviz order the segments inside the channel between two ranks so that they do not cross; ELK weights each choice by the crossings it would cause. *Read* in their sources. SVGDog has no channels; the port trades in the reroute step do part of that job.
+- Routing edges one after another depends on the order. The classic answers are to route short edges first (Graphviz's orthogonal router sorts by length, read in `lib/ortho/ortho.c`), to rip up and reroute, and negotiated congestion, where every net is rerouted each round against a rising price for shared resources (McMurchie and Ebeling, PathFinder, FPGA 1995). *Read* for Graphviz and PathFinder's outline. SVGGod rips up and reroutes pairs and tries other orders. Full negotiation was not built: a diagram has tens of edges, not thousands of nets.
+- libavoid, the connector router of Adaptagrams, searches an orthogonal visibility graph with a cost of length and bends, has a `crossingPenalty` its documentation calls experimental, and separates parallel segments afterwards by "nudging" (Wybrow, Marriott and Stuckey, "Orthogonal Connector Routing", Graph Drawing 2009; <https://www.adaptagrams.org/documentation/namespaceAvoid.html>). *Read* for the options. SVGGod's grid search with a crossing cost is the same idea on a simpler graph.
+- ELK and Graphviz order the segments inside the channel between two ranks so that they do not cross; ELK weights each choice by the crossings it would cause. *Read* in their sources. SVGGod has no channels; the port trades in the reroute step do part of that job.
 
 ### Considered and left out
 
 - **Exact ordering.** One rank against a fixed neighbour can be solved exactly for some 20 boxes by dynamic programming over subsets, and the PACE 2024 exact track was won by branch and cut on a linear-ordering formulation (<https://arxiv.org/abs/2412.00292>). *Read* for the PACE result; the size limit is *reported*. Left out for now: it proves the best order for one pair of ranks, not for the drawing.
-- **Planarization.** Drawing a largest planar part and inserting the remaining edges one by one is described as the strongest known heuristic for the crossing number (Chimani and Gutwenger, 2012). *Reported.* It gives up ranks and flow direction, which is what makes SVGDog's diagrams readable, and it is a large implementation.
-- **Solvers.** Integer programming, SAT and semidefinite programming can prove optimal layered drawings of small graphs. They need a solver, and SVGDog stays a single binary with no heavy dependencies.
+- **Planarization.** Drawing a largest planar part and inserting the remaining edges one by one is described as the strongest known heuristic for the crossing number (Chimani and Gutwenger, 2012). *Reported.* It gives up ranks and flow direction, which is what makes SVGGod's diagrams readable, and it is a large implementation.
+- **Solvers.** Integer programming, SAT and semidefinite programming can prove optimal layered drawings of small graphs. They need a solver, and SVGGod stays a single binary with no heavy dependencies.
 - **Learning.** A reinforcement-learning approach to the crossing number reported by its own authors as performing poorly against classical methods on total crossings (Brand and others, Graph Drawing 2025 poster, <https://arxiv.org/abs/2509.06108>). *Read.* Nothing found suggests a learned method beats sweeps and sifting at this size.
 - **Line jumps.** Tools such as draw.io and JointJS draw a small arc or gap where one line passes over another. This makes a crossing that is left easier to read and may be added later; it removes none.
-- **Time limits.** yFiles offers a stop duration. A limit on time makes the output depend on the machine, which SVGDog's promise of identical bytes rules out.
+- **Time limits.** yFiles offers a stop duration. A limit on time makes the output depend on the machine, which SVGGod's promise of identical bytes rules out.

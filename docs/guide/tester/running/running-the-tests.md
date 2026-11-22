@@ -1,6 +1,6 @@
 # Running the tests
 
-This page takes about five minutes: it builds SVGDog, runs every test once, and shows how to run a single test.
+This page takes about five minutes: it builds SVGGod, runs every test once, and shows how to run a single test.
 
 ## Before you start
 
@@ -22,7 +22,7 @@ On version 1.0.0, `cargo test` prints three result blocks, all passing:
 |---|---|---|
 | `Running unittests src/main.rs` | `#[cfg(test)]` modules inside `src/` | 21 |
 | `Running tests/cli.rs` | `tests/cli.rs`, drives the real binary | 55 |
-| `Running tests/mcp.rs` | `tests/mcp.rs`, drives `svgdog mcp` over stdio | 7 |
+| `Running tests/mcp.rs` | `tests/mcp.rs`, drives `svggod mcp` over stdio | 7 |
 
 That is 83 tests. The `tests/cli.rs` block takes about nine seconds on a laptop in a debug build; the other two take well under a second. The release-mode command runs two tests (`r15_cold_start_is_fast` and `r15_a_200_kb_file_validates_quickly`) and finishes in under a second.
 
@@ -36,7 +36,7 @@ That is 83 tests. The `tests/cli.rs` block takes about nine seconds on a laptop 
 cargo test --test cli r4_exit_codes            # one test in tests/cli.rs
 cargo test --test cli preview                  # every test with "preview" in its name
 cargo test --test mcp                          # the whole MCP file
-cargo test --bin svgdog ops::                  # unit tests in src/ops.rs
+cargo test --bin svggod ops::                  # unit tests in src/ops.rs
 cargo test --test cli r8 -- --nocapture        # show output while it runs
 ```
 
@@ -48,7 +48,7 @@ cargo test -- --list                           # every test, grouped by binary
 
 ## How the tests run the program
 
-The tests in `tests/cli.rs` and `tests/mcp.rs` do not call Rust functions. They start the compiled `svgdog` binary (the `CARGO_BIN_EXE_svgdog` path that cargo provides), pass arguments, and parse the single JSON object printed on stdout. This is deliberate: the tests see what a user or an AI agent sees, including exit codes (`r4_exit_codes`) and the fact that no command waits for input (`r1_every_command_completes_without_stdin_or_terminal`).
+The tests in `tests/cli.rs` and `tests/mcp.rs` do not call Rust functions. They start the compiled `svggod` binary (the `CARGO_BIN_EXE_svggod` path that cargo provides), pass arguments, and parse the single JSON object printed on stdout. This is deliberate: the tests see what a user or an AI agent sees, including exit codes (`r4_exit_codes`) and the fact that no command waits for input (`r1_every_command_completes_without_stdin_or_terminal`).
 
 Many tests copy a fixture from `tests/fixtures/` into a temporary directory (`tempfile::tempdir`) and run the binary there, so a test never changes a file in the repository. The only exception is the golden-file test, which writes into `tests/golden/` only when you ask it to ([Golden files](../adding/golden-files.md)).
 

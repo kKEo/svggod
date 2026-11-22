@@ -1,8 +1,8 @@
 # Part IV: Operations
 
-This part is about the day-two work of running svgdog: wiring it into pipelines, reading what it reports, cutting releases and fixing failures. It follows the shape of the other operator guides in this documentation family, with one deliberate deviation that you should know about before you look for a missing chapter.
+This part is about the day-two work of running svggod: wiring it into pipelines, reading what it reports, cutting releases and fixing failures. It follows the shape of the other operator guides in this documentation family, with one deliberate deviation that you should know about before you look for a missing chapter.
 
-> **Deviation from the usual template.** Operator guides normally have a chapter on monitoring a running service: metrics, logs and alerts. SVGDog has no running service. It is a command-line tool that starts, does one job and exits, and the MCP server is a child process of the client that launched it. There is nothing to scrape and nothing to page on. The monitoring slot is therefore filled by [Monitoring and diagnostics](monitoring.md), which covers what a run can tell you: findings, exit codes and JSON output. If you operate SVGDog inside a larger system, the signals to watch are the exit code of each invocation and the `summary` block of its JSON result.
+> **Deviation from the usual template.** Operator guides normally have a chapter on monitoring a running service: metrics, logs and alerts. SVGGod has no running service. It is a command-line tool that starts, does one job and exits, and the MCP server is a child process of the client that launched it. There is nothing to scrape and nothing to page on. The monitoring slot is therefore filled by [Monitoring and diagnostics](monitoring.md), which covers what a run can tell you: findings, exit codes and JSON output. If you operate SVGGod inside a larger system, the signals to watch are the exit code of each invocation and the `summary` block of its JSON result.
 
 | Chapter | Read it when you need to… |
 | --- | --- |

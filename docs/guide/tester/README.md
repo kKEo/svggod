@@ -1,8 +1,8 @@
-# SVGDog tester guide
+# SVGGod tester guide
 
-This guide shows how every change to SVGDog is checked: how to run the tests, what blocks a merge or a release, how to add a test, and how to look for problems by hand.
+This guide shows how every change to SVGGod is checked: how to run the tests, what blocks a merge or a release, how to add a test, and how to look for problems by hand.
 
-This guide is for anyone who reviews or changes SVGDog code: testers, contributors and release managers. It assumes you can use a terminal, run `git`, and read a short Rust test. It does not assume you know the code base.
+This guide is for anyone who reviews or changes SVGGod code: testers, contributors and release managers. It assumes you can use a terminal, run `git`, and read a short Rust test. It does not assume you know the code base.
 
 ## Reading map
 
@@ -21,4 +21,4 @@ This guide is for anyone who reviews or changes SVGDog code: testers, contributo
 - "R1" to "R16" are the requirement numbers used in test names and CI comments. See [the glossary](appendix/glossary.md) for what they mean and for one important caveat about them.
 - **Tip.** On the maintainer's macOS setup, `cargo` comes from Homebrew's keg-only rustup and is not on the default PATH. If `cargo: command not found`, run `export PATH=/opt/homebrew/opt/rustup/bin:$PATH` first. Other machines do not need this.
 
-> **Looking for something else?** If you only want to draw and check diagrams, read the [user guide](../user/). If you install, configure or run SVGDog in your own pipeline, read the [operator guide](../operator/).
+> **Looking for something else?** If you only want to draw and check diagrams, read the [user guide](../user/). If you install, configure or run SVGGod in your own pipeline, read the [operator guide](../operator/).

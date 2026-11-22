@@ -1,6 +1,6 @@
 # Commands
 
-SVGDog has thirteen subcommands. This page lists each one with every flag, its default and an example. Global flags come first because they apply to all of them.
+SVGGod has thirteen subcommands. This page lists each one with every flag, its default and an example. Global flags come first because they apply to all of them.
 
 ## Global flags
 
@@ -9,10 +9,10 @@ They may be placed before or after the subcommand.
 | Flag | Meaning | Default |
 |---|---|---|
 | `--format json\|text` | Output form | `text` on a terminal, `json` otherwise |
-| `--config PATH` | Use this `svgdog.toml`; conflicts with `--no-config` | nearest `svgdog.toml` above the input file |
+| `--config PATH` | Use this `svggod.toml`; conflicts with `--no-config` | nearest `svggod.toml` above the input file |
 | `--no-config` | Ignore any config file | off |
 | `--profile NAME` | Rule profile: `minimal`, `docs` or `strict` | `docs`, or the config's `profile` |
-| `--quiet` | Suppress the stderr log line `svgdog: config <path>` | off |
+| `--quiet` | Suppress the stderr log line `svggod: config <path>` | off |
 | `--no-color` | Plain text output; the `NO_COLOR` variable is also honoured | off |
 | `--version`, `--help` | Print the version or help and exit 0 | |
 
@@ -25,18 +25,18 @@ Only `validate` has `--fail-on`. Every other command that checks a drawing (`ren
 Compiles a spec to SVG, then validates the result.
 
 ```bash
-svgdog render fig/orders.yaml -o fig/orders.svg
+svggod render fig/orders.yaml -o fig/orders.svg
 ```
 
 | Argument or flag | Meaning | Default |
 |---|---|---|
 | `SPEC` | Diagram spec, YAML or JSON; `-` reads stdin | required |
 | `-o OUT` | Output SVG; `-` writes the SVG to stdout in place of the report | required |
-| `--theme NAME\|DIR` | A built-in theme (`docs`, `blueprint`, `paper`, `bold`, `cards`; add `-dark`, or `-auto` to follow the reader's light or dark mode) or a theme folder (add `#dark` or `#auto`); see [theme](#theme) | the spec's `theme`, else `[style] theme` in `svgdog.toml`, else `docs-light` |
-| `--effort normal\|high\|max` | How hard to work at edges that cross. A higher level tries more routes and placements where crossings remain, never gives more crossings, and leaves a drawing without crossings exactly as it is. See [Crossings and effort](../how-it-works/crossings.md) | the spec's `effort`, else `[render] effort` in `svgdog.toml`, else `normal` |
+| `--theme NAME\|DIR` | A built-in theme (`docs`, `blueprint`, `paper`, `bold`, `cards`; add `-dark`, or `-auto` to follow the reader's light or dark mode) or a theme folder (add `#dark` or `#auto`); see [theme](#theme) | the spec's `theme`, else `[style] theme` in `svggod.toml`, else `docs-light` |
+| `--effort normal\|high\|max` | How hard to work at edges that cross. A higher level tries more routes and placements where crossings remain, never gives more crossings, and leaves a drawing without crossings exactly as it is. See [Crossings and effort](../how-it-works/crossings.md) | the spec's `effort`, else `[render] effort` in `svggod.toml`, else `normal` |
 | `--interactive none\|css\|html` | `css`: the same SVG with classes and one `<style>` block, so related things light up on hover and keyboard focus; no script. `html`: a self-contained page holding that SVG and a small script with step controls and a detail line. See [Interactive versions](#interactive-versions) | `none` |
 | `--frames` | Write one picture per entry of the spec's `steps`, named `OUT` with the step number before the extension (`orders.1.svg`, `orders.2.svg`, ...); `OUT` itself is not written | off |
-| `--embed-spec` | Store the spec in the SVG as `<metadata id="svgdog-spec">` (compact JSON), so `describe` can read the drawing back. The `editor-metadata` rule and its fix leave this element alone | off |
+| `--embed-spec` | Store the spec in the SVG as `<metadata id="svggod-spec">` (compact JSON), so `describe` can read the drawing back. The `editor-metadata` rule and its fix leave this element alone | off |
 | `--check` | Write nothing. Render in memory and compare with `OUT` byte for byte; exit 1 if it is missing or differs. Cannot be combined with `--force` or `-o -` | off |
 | `--previous SVG` | An SVG this tool rendered from an earlier version of the spec. Boxes that are in both drawings stay where they were; new boxes go into free room. `SVG` may be `OUT` itself, which is then replaced without `--force`. See [Keeping the layout](#keeping-the-layout) | off |
 | `--no-validate` | Skip the checks on the result (the envelope carries `"validated": false`) | off |
@@ -52,7 +52,7 @@ With `--check` the envelope has `checked` (the number of files compared) and `st
 Without `--previous`, every render places the boxes from nothing, and one new node can move all of them. With it, the earlier drawing says where the boxes were:
 
 ```bash
-svgdog render fig/orders.yaml -o fig/orders.svg --previous fig/orders.svg
+svggod render fig/orders.yaml -o fig/orders.svg --previous fig/orders.svg
 ```
 
 | Diagram | What `--previous` does |
@@ -61,13 +61,13 @@ svgdog render fig/orders.yaml -o fig/orders.svg --previous fig/orders.svg
 | `sequence`, `timeline`, `compare` | These follow the order of the spec, so the diagram is laid out as usual and then compared: if a box in both drawings moved against the others, the layout was not kept. Adding at the end keeps it; adding in the middle does not |
 | `free` | Positions come from `at`; the earlier drawing is read and has no effect |
 
-The earlier positions are read from the drawing's geometry (`node-<id>` and `group-<id>`), so any SVG rendered by SVGDog works, whatever flags it was rendered with. A file that SVGDog did not render is exit 3 (`not-svgdog-output`). Ids are how boxes are matched: a renamed node is a new box.
+The earlier positions are read from the drawing's geometry (`node-<id>` and `group-<id>`), so any SVG rendered by SVGGod works, whatever flags it was rendered with. A file that SVGGod did not render is exit 3 (`not-svggod-output`). Ids are how boxes are matched: a renamed node is a new box.
 
 When the layout cannot be kept, render stops with exit 4, error code `layout-changed`, and writes nothing. `error.details.reasons` lists each reason as `id` and `why`: a box changed size and no longer fits beside a neighbour, a box would sit inside a frame it is not in, two frames would overlap, there is no free room for a new box, or the drawing would be wider than `max_width`. With `--force` the diagram is laid out afresh and the reasons are in the report.
 
 The envelope has `layout`: `previous` (the file), `kept` (the number of boxes in both), `placed` and `gone` (ids only in the new and only in the earlier drawing), `relaid` (true when `--force` gave up the layout) and `reasons`. Rendering a spec over its own output gives the same bytes.
 
-Findings are listed up to 50. Exit 1 when an error-level finding remains. Writes are atomic (temporary file, then rename). `[style] fonts` in `svgdog.toml` sets the font-family list written into the SVG.
+Findings are listed up to 50. Exit 1 when an error-level finding remains. Writes are atomic (temporary file, then rename). `[style] fonts` in `svggod.toml` sets the font-family list written into the SVG.
 
 ### Interactive versions
 
@@ -75,7 +75,7 @@ Both versions are the static drawing with something added, never a different dra
 
 **`css`** adds, and only adds:
 
-- on the root: `data-interactive="css"` and a scope class `svgdog-<8 hex digits>`, a hash of the drawing, so two diagrams inlined in one page keep their rules apart;
+- on the root: `data-interactive="css"` and a scope class `svggod-<8 hex digits>`, a hash of the drawing, so two diagrams inlined in one page keep their rules apart;
 - on every node, edge, group and note: the class `it`, one `r-<id>` class per node or group it stays lit with (itself, what it is joined to, the frames around it), and `st-<N>` per step that shows it;
 - on every node: `tabindex="0"`, so the keyboard reaches it;
 - one `<style>` block: per node, a rule that fades everything unrelated while the node is hovered or focused (it uses `:has()`); per step, the same while that step's line in the list is hovered, or while the root carries `data-current="N"`.
@@ -89,7 +89,7 @@ Take those away and the file is the static output byte for byte, and `preview` d
 Runs the rules on one or more SVG files.
 
 ```bash
-svgdog validate 'docs/**/*.svg' --fail-on warning
+svggod validate 'docs/**/*.svg' --fail-on warning
 ```
 
 | Argument or flag | Meaning | Default |
@@ -107,7 +107,7 @@ Each file gets the config nearest to it, so one run can mix projects. A glob tha
 Describes an SVG's elements as data (the scene), with bounding boxes in viewBox units.
 
 ```bash
-svgdog inspect fig/orders.svg --select '#node-api' --fields id,tag,bbox,text
+svggod inspect fig/orders.svg --select '#node-api' --fields id,tag,bbox,text
 ```
 
 | Flag | Meaning | Default |
@@ -117,14 +117,14 @@ svgdog inspect fig/orders.svg --select '#node-api' --fields id,tag,bbox,text
 | `--depth N` | Deepest nesting level to return; the root `<svg>` is 0 | unlimited |
 | `--fields LIST` | Any of `id`, `tag`, `bbox`, `text`, `fill`, `stroke`, `refs` | `id,tag,bbox,text` |
 
-An unknown field is exit 2. The result is the scene envelope described by `svgdog schema scene`. `inspect` never reads a config and exits 0 when it succeeds.
+An unknown field is exit 2. The result is the scene envelope described by `svggod schema scene`. `inspect` never reads a config and exits 0 when it succeeds.
 
 ## preview
 
 Rasterizes an SVG to a PNG file with the bundled fonts. It writes a still image only; there is no server, watch mode or live reload.
 
 ```bash
-svgdog preview fig/orders.svg -o /tmp/orders.png --annotate
+svggod preview fig/orders.svg -o /tmp/orders.png --annotate
 ```
 
 | Flag | Meaning | Default |
@@ -145,15 +145,15 @@ Height is capped at 4000 px. The envelope reports `image` (width, height, scale,
 Applies targeted changes to an SVG, or to a diagram spec.
 
 ```bash
-svgdog edit fig/orders.svg --set '#node-api > rect.fill=#2563eb' --dry-run
-svgdog edit fig/orders.yaml --set '#api.label=Orders API' --in-place
+svggod edit fig/orders.svg --set '#node-api > rect.fill=#2563eb' --dry-run
+svggod edit fig/orders.yaml --set '#api.label=Orders API' --in-place
 ```
 
 | Flag | Meaning | Default |
 |---|---|---|
 | `FILE` | SVG or spec; any input not starting with `<` is a spec; `-` reads stdin | required |
 | `--set SELECTOR.attr=value` | Set one attribute on every matching element; repeatable | |
-| `--ops FILE\|-` | JSON operations: `set`, `remove`, `move`, `rename-id`, `add-node`, `add-edge` (see `svgdog schema ops`) | |
+| `--ops FILE\|-` | JSON operations: `set`, `remove`, `move`, `rename-id`, `add-node`, `add-edge` (see `svggod schema ops`) | |
 | `--dry-run` | Print the diff and resulting findings; write nothing | off |
 | `-o OUT` | Write the result to a new file; `-` writes the text to stdout | |
 | `--in-place` | Change the input file | off |
@@ -165,7 +165,7 @@ Give `--set` or `--ops`, not both, and exactly one destination (`--dry-run`, `-o
 Applies the autofixes that findings carry.
 
 ```bash
-svgdog fix fig/orders.svg --unsafe --dry-run
+svggod fix fig/orders.svg --unsafe --dry-run
 ```
 
 | Flag | Meaning | Default |
@@ -182,7 +182,7 @@ It repeats up to 30 rounds until a round changes nothing, because a fix can expo
 Serves the commands as Model Context Protocol tools over stdio.
 
 ```bash
-svgdog mcp --root-path ./docs
+svggod mcp --root-path ./docs
 ```
 
 `--root-path DIR` is required: the directory the server may read and write. See [MCP tools](mcp-tools.md).
@@ -192,7 +192,7 @@ svgdog mcp --root-path ./docs
 Prints an embedded JSON Schema.
 
 ```bash
-svgdog schema findings
+svggod schema findings
 ```
 
 The argument is one of `spec`, `config`, `findings`, `scene`, `ops`. See [JSON Schemas](schemas.md).
@@ -202,8 +202,8 @@ The argument is one of `spec`, `config`, `findings`, `scene`, `ops`. See [JSON S
 Lists the rules, or explains one.
 
 ```bash
-svgdog rules
-svgdog rules --explain text-overflow
+svggod rules
+svggod rules --explain text-overflow
 ```
 
 `--explain ID` prints the rationale, thresholds and a failing and passing example; an unknown id is exit 2 with a hint. The full catalogue is in [Rules catalogue](rules.md).
@@ -213,8 +213,8 @@ svgdog rules --explain text-overflow
 Renders the diagrams written inside Markdown pages.
 
 ```bash
-svgdog docs docs/
-svgdog docs docs/ README.md --check
+svggod docs docs/
+svggod docs docs/ README.md --check
 ```
 
 | Argument or flag | Meaning | Default |
@@ -226,10 +226,10 @@ svgdog docs docs/ README.md --check
 | `--force` | Lay a diagram out afresh when its boxes cannot stay where the picture on disk has them. Cannot be combined with `--check` | off (such a diagram gives exit 4) |
 | `--interactive none\|css\|html` | `css`: the pictures are the `css` version. `html`: the pictures stay static, a page `DIR/<page>-<name>.html` is written beside each, and the image line ends with a link to it, labelled "Interactive version" | `none` |
 
-A diagram is a fenced code block whose info word is `svgdog`, or, when the source should not be shown to readers, an HTML comment that opens with `<!-- svgdog` on its own line and closes with `-->` on its own line. An optional second word names the diagram.
+A diagram is a fenced code block whose info word is `svggod`, or, when the source should not be shown to readers, an HTML comment that opens with `<!-- svggod` on its own line and closes with `-->` on its own line. An optional second word names the diagram.
 
 ````markdown
-```svgdog request-path
+```svggod request-path
 version: 1
 diagram: flow
 title: Request path
@@ -257,8 +257,8 @@ A picture that is already there is the earlier drawing for its diagram, as with 
 Says in words what a diagram shows.
 
 ```bash
-svgdog describe fig/orders.yaml --format text
-svgdog describe fig/orders.svg --short --format text
+svggod describe fig/orders.yaml --format text
+svggod describe fig/orders.svg --short --format text
 ```
 
 | Argument or flag | Meaning | Default |
@@ -273,8 +273,8 @@ The envelope carries `title`, `short` (the sentence also used for a generated `<
 Lists the example specs bundled in the binary, or prints one.
 
 ```bash
-svgdog examples
-svgdog examples minimal --format text > first.yaml
+svggod examples
+svggod examples minimal --format text > first.yaml
 ```
 
 Without a name, each example is listed with its diagram type and one line about what it shows. With a name, the JSON envelope carries the spec text in `examples[0].spec`, and `--format text` prints the spec alone. An unknown name is exit 2 (`unknown-example`) with a hint. The tests render every example in both themes under the `strict` profile and require zero findings, so each one is a safe starting point.
@@ -284,9 +284,9 @@ Without a name, each example is listed with its diagram type and one line about 
 Lists the built-in themes, starts a theme folder, and checks one. A theme sets colours, font, text sizes, line widths and corner radii; the file format is in [Themes](themes.md).
 
 ```bash
-svgdog theme list
-svgdog theme init themes/acme --from paper
-svgdog theme check themes/acme
+svggod theme list
+svggod theme init themes/acme --from paper
+svggod theme check themes/acme
 ```
 
 | Subcommand | Argument or flag | Meaning | Default |

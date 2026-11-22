@@ -1,6 +1,6 @@
 # Part I: How it works
 
-This part explains what SVGDog does between reading a file and writing a result. Read it once from top to bottom if you are going to operate SVGDog seriously; later parts quote its terms without redefining them.
+This part explains what SVGGod does between reading a file and writing a result. Read it once from top to bottom if you are going to operate SVGGod seriously; later parts quote its terms without redefining them.
 
 | Chapter | What it tells you |
 | --- | --- |

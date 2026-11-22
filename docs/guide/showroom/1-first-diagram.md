@@ -1,6 +1,6 @@
 # 1. Your first diagram
 
-**Level: simplest.** You write a few lines of text, SVGDog draws and checks the picture, and you look at the result. Five minutes.
+**Level: simplest.** You write a few lines of text, SVGGod draws and checks the picture, and you look at the result. Five minutes.
 
 This is the base of everything else: a **spec** (a small YAML file) is the source, the **SVG** is a build product, and you never edit the SVG by hand.
 
@@ -15,7 +15,7 @@ hello.yaml  --render-->  hello.svg  --preview-->  hello.png
 
 Create `hello.yaml`. Every spec needs `version: 1`, a `diagram` type, a `title` and at least one node. The `description` is optional but worth writing: it becomes the text a screen reader speaks for the picture.
 
-```svgdog hello
+```svggod hello
 version: 1
 diagram: flow
 title: Hello pipeline
@@ -31,14 +31,14 @@ edges:
 
 ![Hello pipeline. A web app calls an API, which queries a database.](diagrams/1-first-diagram-hello.svg)
 
-The picture above was drawn from exactly that spec. You do not place anything: SVGDog lays the boxes out on a grid and routes the arrows around them.
+The picture above was drawn from exactly that spec. You do not place anything: SVGGod lays the boxes out on a grid and routes the arrows around them.
 
-> **Tip.** Not sure where to start? `svgdog examples` lists nine bundled specs that cover all seven diagram types, and `svgdog examples flow` prints one to copy.
+> **Tip.** Not sure where to start? `svggod examples` lists nine bundled specs that cover all seven diagram types, and `svggod examples flow` prints one to copy.
 
 ## 2. Render it
 
 ```bash
-svgdog --format text render hello.yaml -o hello.svg
+svggod --format text render hello.yaml -o hello.svg
 ```
 
 ```text
@@ -49,14 +49,14 @@ Wrote hello.svg (1790 bytes).
 
 `render` does two jobs in one call: it draws the diagram and **checks its own work** against the rules (contrast, text size, arrows that touch their boxes, accessibility text and more). The exit code is `0` when nothing is wrong and `1` when a finding reaches the fail level, so you can use it in a script without reading any output.
 
-The same spec always gives the same bytes. SVGDog does not overwrite a file unless you say so: a second run onto `hello.svg` stops with exit code 4 (`output-exists`). Add `--force` to replace it, and the file you get is byte for byte the one you had.
+The same spec always gives the same bytes. SVGGod does not overwrite a file unless you say so: a second run onto `hello.svg` stops with exit code 4 (`output-exists`). Add `--force` to replace it, and the file you get is byte for byte the one you had.
 
 ## 3. Look at it
 
 A check can pass and a picture can still be confusing, so look at it:
 
 ```bash
-svgdog --format text preview hello.svg -o hello.png
+svggod --format text preview hello.svg -o hello.png
 ```
 
 ```text
@@ -84,12 +84,12 @@ edges:
 Render again, replacing the old picture:
 
 ```bash
-svgdog --format text render hello.yaml -o hello.svg --force
+svggod --format text render hello.yaml -o hello.svg --force
 ```
 
 The result:
 
-<!-- svgdog hello-cache
+<!-- svggod hello-cache
 version: 1
 diagram: flow
 title: Hello pipeline with a cache
@@ -114,7 +114,7 @@ Because the spec is the source, you can keep it in Git and review the change as 
 | You did | With |
 |---|---|
 | Described a diagram as data | a YAML spec |
-| Drew and checked it in one step | `svgdog render` |
-| Saw the result | `svgdog preview` |
+| Drew and checked it in one step | `svggod render` |
+| Saw the result | `svggod preview` |
 
 **Next:** you now have a pipeline for diagrams you draw. [Workflow 2](2-check-any-svg.md) covers the opposite case: an SVG somebody else made.

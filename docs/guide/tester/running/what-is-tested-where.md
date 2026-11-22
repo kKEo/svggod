@@ -1,6 +1,6 @@
 # What is tested where
 
-This page maps each area of SVGDog to the test file and test names that cover it, so you can find the tests for a change, or notice that there are none.
+This page maps each area of SVGGod to the test file and test names that cover it, so you can find the tests for a change, or notice that there are none.
 
 ## The three test layers
 
@@ -8,7 +8,7 @@ This page maps each area of SVGDog to the test file and test names that cover it
 |---|---|---|---|
 | Unit | `src/ops.rs`, `src/yaml_patch.rs`, `src/preview.rs`, `src/diff.rs`, `src/mcp.rs`, `src/render/route.rs`, `src/svg/selector.rs` | small pure pieces: edit operations, YAML patching, selectors, routing, diff text, base64 | `#[cfg(test)]` modules, 21 tests |
 | Command line | `tests/cli.rs` | the whole binary: every command, exit codes, JSON shapes, determinism | spawns the binary, 55 tests |
-| MCP | `tests/mcp.rs` | the stdio server as a client would drive it | spawns `svgdog mcp --root-path DIR`, 7 tests |
+| MCP | `tests/mcp.rs` | the stdio server as a client would drive it | spawns `svggod mcp --root-path DIR`, 7 tests |
 
 The unit tests per file are: `ops.rs` 7, `preview.rs` 3, `yaml_patch.rs` 3, `diff.rs` 2, `mcp.rs` 2, `render/route.rs` 2, `svg/selector.rs` 2.
 
@@ -44,7 +44,7 @@ Crossings are also guarded from inside the binary: the unit test `edges_cross_no
 |---|---|
 | `handshake_lists_one_tool_per_command` | `initialize` and `tools/list` work and list the tools |
 | `tools_return_the_same_envelope_as_the_cli` | a tool call returns the same JSON envelope as the CLI, in text and structured content |
-| `preview_returns_the_png_as_image_content` | `svgdog_preview` without `output` returns the PNG as image content |
+| `preview_returns_the_png_as_image_content` | `svggod_preview` without `output` returns the PNG as image content |
 | `paths_outside_the_root_are_refused` | `..` and symlinks cannot escape `--root-path` |
 | `bad_calls_fail_clearly_and_the_server_keeps_going` | a bad call is an error result, not a crash |
 | `per_request_protocol_version_is_served_without_a_handshake` | the per-request protocol style works |

@@ -12,9 +12,9 @@ SVG             --edit--> one attribute changed by id (no spec needed)
 
 ## 1. Tell the story, not only the structure
 
-A spec can carry the explanation. `steps` number a walk-through and list it under the drawing, `focus` dims everything else, `legend` and `caption` add the words a figure needs, and `detail` and `link` give tooltips and links. This is the bundled `steps` example (`svgdog examples steps`), which uses all of them except `focus`:
+A spec can carry the explanation. `steps` number a walk-through and list it under the drawing, `focus` dims everything else, `legend` and `caption` add the words a figure needs, and `detail` and `link` give tooltips and links. This is the bundled `steps` example (`svggod examples steps`), which uses all of them except `focus`:
 
-```svgdog reset
+```svggod reset
 version: 1
 diagram: flow
 title: Password reset
@@ -41,7 +41,7 @@ steps:
 Three more outputs come from the same spec:
 
 ```bash
-svgdog render reset.yaml -o reset.svg --frames
+svggod render reset.yaml -o reset.svg --frames
 ```
 
 writes one picture per step (`reset.1.svg`, `reset.2.svg`, `reset.3.svg`), each with that step in focus, for slides or a tutorial. This is `reset.2.svg`:
@@ -49,17 +49,17 @@ writes one picture per step (`reset.1.svg`, `reset.2.svg`, `reset.3.svg`), each 
 ![Password reset, step 2 in focus: the accounts service and the arrow into it stand out, the rest is dimmed.](images/reset-step-2.svg)
 
 ```bash
-svgdog render reset.yaml -o reset.html --interactive html
+svggod render reset.yaml -o reset.html --interactive html
 ```
 
 writes a page with step controls, and `--interactive css` makes the SVG itself highlight on hover.
 
 ## 2. Say it in words
 
-Every diagram needs a text alternative, and one you write by hand drifts from the picture. Ask SVGDog to read the spec back:
+Every diagram needs a text alternative, and one you write by hand drifts from the picture. Ask SVGGod to read the spec back:
 
 ```bash
-svgdog --format text describe reset.yaml
+svggod --format text describe reset.yaml
 ```
 
 ```text
@@ -95,7 +95,7 @@ Flow diagram: User to Website (asks for a reset); Website to Accounts service (c
 First render the picture once. `--embed-spec` stores the spec inside the SVG:
 
 ```bash
-svgdog --format text render reset.yaml -o reset.svg --embed-spec
+svggod --format text render reset.yaml -o reset.svg --embed-spec
 ```
 
 Now add an audit log to `reset.yaml`: one node and one edge.
@@ -109,10 +109,10 @@ edges:
   - "accounts -> audit: record"
 ```
 
-A normal re-layout could shuffle every box; readers who know the old picture would have to learn it again. Hand SVGDog the previous picture and it keeps what was there:
+A normal re-layout could shuffle every box; readers who know the old picture would have to learn it again. Hand SVGGod the previous picture and it keeps what was there:
 
 ```bash
-svgdog --format text render reset.yaml -o reset.svg --previous reset.svg --embed-spec
+svggod --format text render reset.yaml -o reset.svg --previous reset.svg --embed-spec
 ```
 
 ```text
@@ -126,14 +126,14 @@ This is the file it wrote. The four original boxes keep the arrangement they hav
 
 ![Password reset with an audit log added above the mail provider; the four original boxes keep their order and spacing.](images/reset-with-audit.svg)
 
-Run it again with no change and the result is `Layout kept: 5 boxes in place.` Removing a box works the same way (`Layout kept: 3 boxes in place, 2 gone.`). If a change cannot be made without moving a box that is staying, SVGDog stops and says so; add `--force` to lay out afresh. Inside Markdown pages `svgdog docs` does this for you automatically.
+Run it again with no change and the result is `Layout kept: 5 boxes in place.` Removing a box works the same way (`Layout kept: 3 boxes in place, 2 gone.`). If a change cannot be made without moving a box that is staying, SVGGod stops and says so; add `--force` to lay out afresh. Inside Markdown pages `svggod docs` does this for you automatically.
 
 ## 4. Change one thing in an SVG
 
-Sometimes you just need a different colour on one box. No spec is needed: `edit` changes elements by the ids you saw in the findings or in `svgdog inspect`.
+Sometimes you just need a different colour on one box. No spec is needed: `edit` changes elements by the ids you saw in the findings or in `svggod inspect`.
 
 ```bash
-svgdog --format text edit reset.svg --set '#node-accounts > rect.stroke=#dc2626' --dry-run
+svggod --format text edit reset.svg --set '#node-accounts > rect.stroke=#dc2626' --dry-run
 ```
 
 ```diff
@@ -141,14 +141,14 @@ svgdog --format text edit reset.svg --set '#node-accounts > rect.stroke=#dc2626'
 +    <rect x="504" y="128" width="160" height="48" rx="8" fill="#2563eb" stroke="#dc2626" stroke-width="1.5"/>
 ```
 
-`--dry-run` shows the diff and the result of the checks without writing. Remove it and add `-o out.svg` (a copy) or `--in-place`. After every edit SVGDog runs the rules again, so you cannot quietly break the picture. For several changes at once, `--ops ops.json` takes a list of operations: set, remove, move, rename-id and add-node. `svgdog schema ops` prints the format.
+`--dry-run` shows the diff and the result of the checks without writing. Remove it and add `-o out.svg` (a copy) or `--in-place`. After every edit SVGGod runs the rules again, so you cannot quietly break the picture. For several changes at once, `--ops ops.json` takes a list of operations: set, remove, move, rename-id and add-node. `svggod schema ops` prints the format.
 
 > **Tip.** Prefer changing the spec when you have one: the next `render` would undo an edit made only to the SVG. Use `edit` for SVGs you did not generate, or when the file is the only source.
 
 ## 5. Know when a render is stale
 
 ```bash
-svgdog render reset.yaml -o reset.svg --embed-spec --check
+svggod render reset.yaml -o reset.svg --embed-spec --check
 ```
 
 `--check` writes nothing and exits `1` if the file is missing or is not what this spec renders now. Use the same flags you rendered with, or the file will correctly count as different.
@@ -159,8 +159,8 @@ svgdog render reset.yaml -o reset.svg --embed-spec --check
 |---|---|
 | Explained the diagram inside the diagram | `steps`, `caption`, `legend` |
 | Produced a step-by-step set, a page or a hover version | `--frames`, `--interactive` |
-| Generated alt text and a prose description | `svgdog describe` |
+| Generated alt text and a prose description | `svggod describe` |
 | Edited without a reshuffle | `render --previous` |
-| Made a one-off change safely | `svgdog edit` |
+| Made a one-off change safely | `svggod edit` |
 
 **Next:** all of this still depends on someone running the commands. [Workflow 5](5-agents-and-ci.md) hands them to your pipeline and to an AI agent, with house rules.

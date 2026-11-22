@@ -1,6 +1,6 @@
 # Themes
 
-A theme is the look of a rendered diagram as data: nine colours per variant, a font-family list, two text sizes, two line widths and two corner radii. The built-in themes and themes of your own use one format, a `theme.toml` file. This page is the reference for that file and for how a theme is found. The machine-readable form is `svgdog schema theme` (see [JSON Schemas](schemas.md)); the task-oriented page is [Making your own theme](../../user/making-a-theme.md) in the user guide.
+A theme is the look of a rendered diagram as data: nine colours per variant, a font-family list, two text sizes, two line widths and two corner radii. The built-in themes and themes of your own use one format, a `theme.toml` file. This page is the reference for that file and for how a theme is found. The machine-readable form is `svggod schema theme` (see [JSON Schemas](schemas.md)); the task-oriented page is [Making your own theme](../../user/making-a-theme.md) in the user guide.
 
 ## Built-in themes
 
@@ -12,7 +12,7 @@ A theme is the look of a rendered diagram as data: nine colours per variant, a f
 | `bold` | Inter | 16 / 13 | 2.5 / 1.5 | 10 / 4 | `themes/bold/theme.toml` |
 | `cards` | system-ui (measured with Inter) | 15 / 12.5 | 1 / 1 | 10 / 10 | `themes/cards/theme.toml` |
 
-The five files are compiled into the binary (`BUILTIN` in `src/render/theme.rs`) and parsed with the same code as a theme folder. Each has a light and a dark variant. `svgdog theme list` prints them as data, and the [Theme gallery](../../user/theme-gallery.md) in the user guide shows one diagram in all of them.
+The five files are compiled into the binary (`BUILTIN` in `src/render/theme.rs`) and parsed with the same code as a theme folder. Each has a light and a dark variant. `svggod theme list` prints them as data, and the [Theme gallery](../../user/theme-gallery.md) in the user guide shows one diagram in all of them.
 
 `cards` has hairline box outlines by design: `node_stroke` on `background` is 1.29:1 in the light variant and 1.44:1 in the dark one, below the 3:1 that `theme check` asks of a custom theme. A copy made with `theme init --from cards` therefore fails `theme check` on that pair until the outline is darkened.
 
@@ -32,13 +32,13 @@ Where the value comes from, in order of precedence, and what a relative folder i
 | Source | Relative to | An unknown name is |
 |---|---|---|
 | `--theme` | The working directory | exit 2 |
-| `theme` in the spec | The spec file; for `svgdog docs`, the Markdown page; for a spec on stdin or passed as text, the working directory | exit 3, `path: theme` |
-| `[style] theme` in `svgdog.toml` | The config file | exit 3 |
+| `theme` in the spec | The spec file; for `svggod docs`, the Markdown page; for a spec on stdin or passed as text, the working directory | exit 3, `path: theme` |
+| `[style] theme` in `svggod.toml` | The config file | exit 3 |
 | none of them | | `docs-light` is used |
 
-Under `svgdog mcp`, a theme folder that resolves outside the root is refused with `outside-root`, whichever of the three sources named it.
+Under `svggod mcp`, a theme folder that resolves outside the root is refused with `outside-root`, whichever of the three sources named it.
 
-`[style] fonts` in `svgdog.toml`, when set, replaces the theme's `font.family`.
+`[style] fonts` in `svggod.toml`, when set, replaces the theme's `font.family`.
 
 ## theme.toml
 
@@ -106,4 +106,4 @@ Rendering stays deterministic: the same spec, theme file and version give the sa
 | `theme-not-found` | 3 | The folder does not exist or holds no `theme.toml` |
 | `invalid-theme` | 3 | The file is not valid: unknown or missing key, value out of range, bad colour or name. `path` names the key |
 | `theme-no-dark` | 3 | A dark or adaptive variant was asked for and the theme has no `[dark]` |
-| `outside-root` | 3 | Under `svgdog mcp`, the folder is outside the root |
+| `outside-root` | 3 | Under `svggod mcp`, the folder is outside the root |

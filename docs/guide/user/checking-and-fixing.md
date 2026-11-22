@@ -1,14 +1,14 @@
 # Checking and fixing SVGs
 
-SVGDog can check any SVG file, including ones drawn in other tools, against 39 rules for correctness, readability, portability and accessibility. It can then repair most problems itself. This page takes about ten minutes and uses the broken example file from the repository.
+SVGGod can check any SVG file, including ones drawn in other tools, against 39 rules for correctness, readability, portability and accessibility. It can then repair most problems itself. This page takes about ten minutes and uses the broken example file from the repository.
 
 ## Check a file: validate
 
 ```bash
-svgdog --format text validate tests/fixtures/broken.svg
+svggod --format text validate tests/fixtures/broken.svg
 ```
 
-Each line is one finding: the line number in the file, how serious it is, the rule name, where it is, and a plain sentence. A `[fix]` tag means SVGDog can repair it safely; `[fix --unsafe]` means it can repair it but the repair changes how the picture looks. The first lines look like this:
+Each line is one finding: the line number in the file, how serious it is, the rule name, where it is, and a plain sentence. A `[fix]` tag means SVGGod can repair it safely; `[fix --unsafe]` means it can repair it but the repair changes how the picture looks. The first lines look like this:
 
 ```text
       3  warning  desc-missing        svg  The root <svg> has no <desc> saying what the diagram shows.
@@ -36,25 +36,25 @@ Check several files at once with several names or a pattern such as `"docs/**/*.
 ## Repair a file: fix
 
 ```bash
-svgdog --format text fix tests/fixtures/broken.svg --dry-run
+svggod --format text fix tests/fixtures/broken.svg --dry-run
 ```
 
 `--dry-run` shows the result and writes nothing. When you are happy, choose where the repaired file goes:
 
 ```bash
-svgdog --format text fix broken.svg --in-place     # replace the file
-svgdog --format text fix broken.svg -o fixed.svg   # write a new file
+svggod --format text fix broken.svg --in-place     # replace the file
+svggod --format text fix broken.svg -o fixed.svg   # write a new file
 ```
 
 On the example file, the safe repairs apply 9 fixes (for example `content-clipped`, `fixed-size`, `script-content` and `unused-def`) and write the file. Findings tagged `[fix --unsafe]` stay until you opt in:
 
 ```bash
-svgdog --format text fix broken.svg --in-place --unsafe
+svggod --format text fix broken.svg --in-place --unsafe
 ```
 
 That applies 6 more fixes: it renames a duplicate id, recolours text with too little contrast, moves a label off a line, and similar. The file you started with is left alone when you use `-o`, so you can compare.
 
-Some problems SVGDog cannot repair because only you know the answer: a missing `<title>`, a reference to something that does not exist (`dangling-reference`), or `<foreignObject>` content. These stay in the list. Note that `fix` ends with exit code 0 even when findings remain; run `validate` afterwards to get a pass or fail answer.
+Some problems SVGGod cannot repair because only you know the answer: a missing `<title>`, a reference to something that does not exist (`dangling-reference`), or `<foreignObject>` content. These stay in the list. Note that `fix` ends with exit code 0 even when findings remain; run `validate` afterwards to get a pass or fail answer.
 
 > **Warning.** `fix --unsafe` changes how the picture looks. Always run it with `--dry-run` first, or write to a new file with `-o`.
 
@@ -63,7 +63,7 @@ Some problems SVGDog cannot repair because only you know the answer: a missing `
 `edit` changes a single value without touching the rest of the file:
 
 ```bash
-svgdog --format text edit hello.svg --set '#node-api.fill=#ffeeaa' --dry-run
+svggod --format text edit hello.svg --set '#node-api.fill=#ffeeaa' --dry-run
 ```
 
 The output is a small before-and-after, like this:
@@ -82,7 +82,7 @@ For a spec file, `edit` changes the spec and redraws it; see [Writing a spec](wr
 `inspect` lists the elements of an SVG with their position and size as `[x y width height]`:
 
 ```bash
-svgdog --format text inspect hello.svg --select '#node-api'
+svggod --format text inspect hello.svg --select '#node-api'
 ```
 
 ```text
@@ -98,8 +98,8 @@ Use it to find an element's id before an `edit`, or to understand a finding that
 ## Learn about a rule: rules
 
 ```bash
-svgdog --format text rules                      # all 39 rules, grouped
-svgdog --format text rules --explain low-contrast   # one rule, with a failing and a passing example
+svggod --format text rules                      # all 39 rules, grouped
+svggod --format text rules --explain low-contrast   # one rule, with a failing and a passing example
 ```
 
 The rules are in four groups: structure (is the file valid), geometry (does everything fit and not collide), portability (will it look the same in other programs) and accessibility (can everyone read it). The full list with every setting is in the [Operator guide](../operator/).
@@ -109,11 +109,11 @@ The rules are in four groups: structure (is the file valid), geometry (does ever
 If a finding is wrong for one element, put a comment directly before it, with a reason:
 
 ```xml
-<!-- svgdog-disable shape-overlap: badge sits on the corner by design -->
+<!-- svggod-disable shape-overlap: badge sits on the corner by design -->
 ```
 
 The reason is required; a comment without one is itself reported as `invalid-suppression`.
 
 ## Files from other tools
 
-For an SVG that SVGDog did not draw, findings about positions and overlaps rest on estimates. SVGDog marks them `approximate` and never rates them above warning.
+For an SVG that SVGGod did not draw, findings about positions and overlaps rest on estimates. SVGGod marks them `approximate` and never rates them above warning.

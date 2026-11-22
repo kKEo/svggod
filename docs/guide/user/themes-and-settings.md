@@ -4,7 +4,7 @@ This page shows how to change how diagrams look and how to set house rules for a
 
 ## Themes
 
-A theme sets the whole look of a diagram: its colours, its font and text sizes, how thick the lines are and how round the corners. SVGDog has five built-in themes:
+A theme sets the whole look of a diagram: its colours, its font and text sizes, how thick the lines are and how round the corners. SVGGod has five built-in themes:
 
 | Theme | Look | Good for |
 |---|---|---|
@@ -17,7 +17,7 @@ A theme sets the whole look of a diagram: its colours, its font and text sizes, 
 List them, with their descriptions, at any time:
 
 ```bash
-svgdog --format text theme list
+svggod --format text theme list
 ```
 
 The [Theme gallery](theme-gallery.md) shows one diagram in every theme, light and dark. Three samples, in `blueprint-dark`, `paper` and `bold`:
@@ -38,7 +38,7 @@ Every built-in theme has three variants. Add the ending to the name:
 
 The default is `docs-light`.
 
-Use an `-auto` variant when the same page is read in light and dark mode, for example a README. It works wherever a browser shows the SVG, including as a plain image. A viewer that does not understand the rule shows the light version, and so does `svgdog preview`. To see the dark version, render once with the `-dark` variant.
+Use an `-auto` variant when the same page is read in light and dark mode, for example a README. It works wherever a browser shows the SVG, including as a plain image. A viewer that does not understand the rule shows the light version, and so does `svggod preview`. To see the dark version, render once with the `-dark` variant.
 
 ### Choosing a theme
 
@@ -47,7 +47,7 @@ There are three places to name a theme. The first one that is set wins:
 1. On the command line, for a single run:
 
    ```bash
-   svgdog --format text render hello.yaml -o hello.svg --theme paper-dark
+   svggod --format text render hello.yaml -o hello.svg --theme paper-dark
    ```
 
 2. In the spec, for one diagram:
@@ -56,14 +56,14 @@ There are three places to name a theme. The first one that is set wins:
    theme: blueprint
    ```
 
-3. In `svgdog.toml`, for every diagram in the project that does not name one:
+3. In `svggod.toml`, for every diagram in the project that does not name one:
 
    ```toml
    [style]
    theme = "paper-auto"
    ```
 
-A theme with larger or wider text makes larger boxes. If a diagram no longer fits its `max_width`, SVGDog says so; shorten a label, use `direction: down` or raise `max_width`. When you change the theme of a picture that already exists, add `--previous` to keep the boxes where they were (see [Changing a diagram without moving it](changing-a-diagram.md)).
+A theme with larger or wider text makes larger boxes. If a diagram no longer fits its `max_width`, SVGGod says so; shorten a label, use `direction: down` or raise `max_width`. When you change the theme of a picture that already exists, add `--previous` to keep the boxes where they were (see [Changing a diagram without moving it](changing-a-diagram.md)).
 
 To match your own house style, write a theme of your own: see [Making your own theme](making-a-theme.md).
 
@@ -72,14 +72,14 @@ To match your own house style, write a theme of your own: see [Making your own t
 By default the picture keeps its text as real text, so it can be searched, selected and read by screen readers. If you need the picture to look exactly the same in programs that lack the Inter font, ask for outlines:
 
 ```bash
-svgdog --format text render hello.yaml -o hello.svg --text-as-paths
+svggod --format text render hello.yaml -o hello.svg --text-as-paths
 ```
 
 The result looks the same everywhere but the words can no longer be searched or read aloud, so prefer the default.
 
-## House rules: svgdog.toml
+## House rules: svggod.toml
 
-A project can keep its settings in one file called `svgdog.toml`. SVGDog looks for it in the folder of the file you check, then in each folder above it, and uses the nearest one. When it finds one, it prints a line such as `svgdog: config /path/to/svgdog.toml` to the error output.
+A project can keep its settings in one file called `svggod.toml`. SVGGod looks for it in the folder of the file you check, then in each folder above it, and uses the nearest one. When it finds one, it prints a line such as `svggod: config /path/to/svggod.toml` to the error output.
 
 ```toml
 version = 1
@@ -106,7 +106,7 @@ What the parts mean:
 - `[style]`: `theme` is the project's theme (see above). `palette`, `stroke_widths` and `grid` are the colours, line widths and grid your project allows; colours outside the palette are reported. When you set a palette, list the colours of your theme in it.
 - `[rules]`: switch a rule `"off"`, or change its severity or limits.
 
-To ignore the file for one run, add `--no-config`. To use a specific file, add `--config path/to/svgdog.toml`. Every setting is described in the [Operator guide](../operator/).
+To ignore the file for one run, add `--no-config`. To use a specific file, add `--config path/to/svggod.toml`. Every setting is described in the [Operator guide](../operator/).
 
 ## Profiles: how strict to be
 
@@ -116,4 +116,4 @@ To ignore the file for one run, add `--no-config`. To use a specific file, add `
 | `docs` | Everything, at each rule's normal severity | The default; good for documentation |
 | `strict` | Everything, with every level raised one step: info becomes warning, warning becomes error | Releases and shared style libraries |
 
-Set a profile in `svgdog.toml` or per run with `--profile strict`. On the broken example file the three profiles report 3 errors (`minimal`), 7 errors (`docs`) and 10 errors (`strict`).
+Set a profile in `svggod.toml` or per run with `--profile strict`. On the broken example file the three profiles report 3 errors (`minimal`), 7 errors (`docs`) and 10 errors (`strict`).

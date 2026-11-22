@@ -2,10 +2,10 @@
 
 This page shows three sequence diagrams, each with the spec that draws it, and then one of them in two other themes. Copy the one closest to your case and change the names. It takes about five minutes. For the full rules, see [Diagram types](diagram-types.md#sequence).
 
-Every picture here is drawn with `svgdog render`, for example:
+Every picture here is drawn with `svggod render`, for example:
 
 ```bash
-svgdog render cache.yaml -o cache.svg
+svggod render cache.yaml -o cache.svg
 ```
 
 ## A request that may skip a step
@@ -111,8 +111,8 @@ steps:
 Only the theme changes. The card payment from above, in `paper` and in `blueprint-dark`:
 
 ```bash
-svgdog render payment.yaml -o payment.svg --theme paper
-svgdog render payment.yaml -o payment.svg --theme blueprint-dark
+svggod render payment.yaml -o payment.svg --theme paper
+svggod render payment.yaml -o payment.svg --theme blueprint-dark
 ```
 
 ![The card payment diagram in the paper theme: warm off-white background and softly rounded boxes.](images/sequence-payment-paper.svg)

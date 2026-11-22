@@ -1,18 +1,18 @@
 # Part II: Install and deploy
 
-SVGDog is one self-contained executable. There is nothing to configure on a server, no service to start and no runtime to install: installing it means putting one file on the machines that need it. This part covers the two ways to get that file and the one piece of wiring that needs care, the MCP server.
+SVGGod is one self-contained executable. There is nothing to configure on a server, no service to start and no runtime to install: installing it means putting one file on the machines that need it. This part covers the two ways to get that file and the one piece of wiring that needs care, the MCP server.
 
 | Chapter | Read it when you need to… |
 | --- | --- |
 | [Build from source](build-from-source.md) | Get a binary today. This is the only install path that works right now. |
 | [Release binaries](release-binaries.md) | Use prebuilt archives, once the first `v*` release exists. |
-| [Setting up the MCP server](mcp-setup.md) | Let an AI agent client call SVGDog as a set of tools. |
+| [Setting up the MCP server](mcp-setup.md) | Let an AI agent client call SVGGod as a set of tools. |
 
 ## What you are deploying
 
 - **A binary of about 9 MB** (the 1.0.0 release build on macOS arm64 is 9,357,216 bytes). The two fonts are inside it.
-- **No network use.** SVGDog never opens a connection, so it runs in an air-gapped build.
-- **No required files.** An optional `svgdog.toml` next to your diagrams changes which rules apply; see [Configuration](../reference/configuration.md).
+- **No network use.** SVGGod never opens a connection, so it runs in an air-gapped build.
+- **No required files.** An optional `svggod.toml` next to your diagrams changes which rules apply; see [Configuration](../reference/configuration.md).
 - **Four supported targets** in the release workflow: Linux x86_64 and arm64 (static), and macOS Apple silicon and Intel. CI runs the test suite on Linux and macOS. Windows is not built or tested.
 
 ## Choosing a path

@@ -1,6 +1,6 @@
 # Free gallery
 
-Two free-form diagrams with the specs that draw them. You place every node with `at: [x, y]` in pixels; SVGDog snaps it to the grid and still routes the arrows. For the rules, see [Diagram types](diagram-types.md#free).
+Two free-form diagrams with the specs that draw them. You place every node with `at: [x, y]` in pixels; SVGGod snaps it to the grid and still routes the arrows. For the rules, see [Diagram types](diagram-types.md#free).
 
 ## An office network
 
