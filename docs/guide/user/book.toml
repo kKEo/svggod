@@ -1,6 +1,6 @@
 [book]
-title = "SVGDog User guide"
-description = "Plain-language guide to describing, checking and previewing diagrams with SVGDog."
+title = "SVGGod User guide"
+description = "Plain-language guide to describing, checking and previewing diagrams with SVGGod."
 language = "en"
 src = "."
 
@@ -9,5 +9,5 @@ build-dir = "../../../site/user"
 create-missing = false
 
 [output.html]
-site-url = "/svgdog/user/"
-git-repository-url = "https://github.com/kKEo/svgdog"
+site-url = "/svggod/user/"
+git-repository-url = "https://github.com/kKEo/svggod"

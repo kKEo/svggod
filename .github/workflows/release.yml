@@ -66,16 +66,16 @@ jobs:
       - name: Package
         shell: bash
         run: |
-          name="svgdog-${{ needs.version.outputs.version }}-${{ matrix.target }}"
+          name="svggod-${{ needs.version.outputs.version }}-${{ matrix.target }}"
           mkdir -p "dist/$name"
           cp README.md "dist/$name/"
           cd dist
-          cp "../target/${{ matrix.target }}/release/svgdog" "$name/"
+          cp "../target/${{ matrix.target }}/release/svggod" "$name/"
           tar -czf "$name.tar.gz" "$name"
           rm -r "$name"
       - uses: actions/upload-artifact@v4
         with:
-          name: svgdog-${{ matrix.target }}
+          name: svggod-${{ matrix.target }}
           path: dist/*
           if-no-files-found: error
 
@@ -93,7 +93,7 @@ jobs:
           merge-multiple: true
       - name: Checksums
         working-directory: dist
-        run: sha256sum svgdog-* > SHA256SUMS
+        run: sha256sum svggod-* > SHA256SUMS
       - name: Create the release
         working-directory: dist
         env:
@@ -104,7 +104,7 @@ jobs:
           if [[ "$GITHUB_REF_NAME" == *-* ]]; then flags+=(--prerelease); fi
           gh release create "$GITHUB_REF_NAME" ./* \
             --repo "$GITHUB_REPOSITORY" \
-            --title "svgdog ${{ needs.version.outputs.version }}" \
+            --title "svggod ${{ needs.version.outputs.version }}" \
             --generate-notes --verify-tag "${flags[@]}"
 
   # Publishes the crate with crates.io Trusted Publishing (no stored token).
@@ -151,11 +151,11 @@ jobs:
           gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern SHA256SUMS
       - name: Write the formula
         run: |
-          sum() { grep "svgdog-$VERSION-$1.tar.gz" SHA256SUMS | cut -d' ' -f1; }
-          url() { echo "https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION/svgdog-$VERSION-$1.tar.gz"; }
+          sum() { grep "svggod-$VERSION-$1.tar.gz" SHA256SUMS | cut -d' ' -f1; }
+          url() { echo "https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION/svggod-$VERSION-$1.tar.gz"; }
           mkdir -p tap/Formula
-          cat > tap/Formula/svgdog.rb <<RUBY
-          class Svgdog < Formula
+          cat > tap/Formula/svggod.rb <<RUBY
+          class Svggod < Formula
             desc "Compile declarative diagram descriptions to SVG and check any SVG"
             homepage "https://github.com/$GITHUB_REPOSITORY"
             version "$VERSION"
@@ -182,15 +182,15 @@ jobs:
             end
 
             def install
-              bin.install "svgdog"
+              bin.install "svggod"
             end
 
             test do
-              assert_match version.to_s, shell_output("#{bin}/svgdog --version")
+              assert_match version.to_s, shell_output("#{bin}/svggod --version")
             end
           end
           RUBY
-          cat tap/Formula/svgdog.rb
+          cat tap/Formula/svggod.rb
       - name: Push the formula to the tap
         env:
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
@@ -201,13 +201,13 @@ jobs:
           fi
           git clone --depth 1 "https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/$TAP.git" checkout
           mkdir -p checkout/Formula
-          cp tap/Formula/svgdog.rb checkout/Formula/svgdog.rb
+          cp tap/Formula/svggod.rb checkout/Formula/svggod.rb
           cd checkout
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Formula/svgdog.rb
+          git add Formula/svggod.rb
           if git diff --cached --quiet; then echo "Formula already up to date."; exit 0; fi
-          git commit -m "svgdog $VERSION"
+          git commit -m "svggod $VERSION"
           git push
 
   # Lists the server in the official MCP Registry (registry.modelcontextprotocol.io).

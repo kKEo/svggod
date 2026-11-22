@@ -1,6 +1,6 @@
 [book]
-title = "SVGDog Tester guide"
-description = "How every SVGDog change is checked: running, reading and adding tests."
+title = "SVGGod Tester guide"
+description = "How every SVGGod change is checked: running, reading and adding tests."
 language = "en"
 src = "."
 
@@ -9,5 +9,5 @@ build-dir = "../../../site/tester"
 create-missing = false
 
 [output.html]
-site-url = "/svgdog/tester/"
-git-repository-url = "https://github.com/kKEo/svgdog"
+site-url = "/svggod/tester/"
+git-repository-url = "https://github.com/kKEo/svggod"

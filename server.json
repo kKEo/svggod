@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.kKEo/svgdog",
-  "title": "SVGDog",
+  "name": "io.github.kKEo/svggod",
+  "title": "SVGGod",
   "description": "Render declarative diagram specs to SVG and check any SVG for correctness, legibility and portability.",
   "repository": {
-    "url": "https://github.com/kKEo/svgdog",
+    "url": "https://github.com/kKEo/svggod",
     "source": "github"
   },
-  "version": "1.0.4",
+  "version": "1.1.0",
   "packages": [
     {
       "registryType": "cargo",
-      "identifier": "svgdog",
-      "version": "1.0.4",
+      "identifier": "svggod",
+      "version": "1.1.0",
       "transport": {
         "type": "stdio"
       },

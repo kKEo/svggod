@@ -69,7 +69,7 @@ bump: ## Bump the version (BUMP=patch|minor|major), commit and tag vX.Y.Z (does 
 	jq --arg v "$$new" '.version = $$v | .packages[].version = $$v' server.json > server.json.tmp; \
 	mv server.json.tmp server.json; \
 	$(CARGO) update --workspace --quiet; \
-	SVGDOG_UPDATE_GOLDEN=1 $(CARGO) test --locked --quiet --test cli r8_ >/dev/null; \
+	SVGGOD_UPDATE_GOLDEN=1 $(CARGO) test --locked --quiet --test cli r8_ >/dev/null; \
 	$(CARGO) test --locked --quiet; \
 	git commit -qam "Bump version to $$new"; \
 	git tag "v$$new"; \
