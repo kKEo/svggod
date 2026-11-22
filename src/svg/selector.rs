@@ -142,13 +142,21 @@ fn matches_compound(c: &Compound, n: Node, nth_of: &dyn Fn(Node) -> usize) -> bo
 
 /// The selector a finding uses for an element: its id where it has one, otherwise
 /// a child path from the nearest ancestor that does.
+/// Where an element stands among the siblings with its name, found by looking at them all.
+pub fn place(n: Node) -> (usize, bool) {
+    let name = n.tag_name().name();
+    let same = |s: &Node| s.is_element() && s.tag_name().name() == name;
+    (nth_of_type(n), n.prev_siblings().skip(1).any(|s| same(&s)) || n.next_siblings().skip(1).any(|s| same(&s)))
+}
+
 #[cfg(test)]
 pub fn target(node: Node) -> String {
-    target_with(node, &|_| true)
+    target_with(node, &|_| true, &place)
 }
 
 /// `usable` says whether an element's id addresses it alone; a later duplicate's does not.
-pub fn target_with(node: Node, usable: &dyn Fn(Node) -> bool) -> String {
+/// `place` gives an element's number among the siblings with its name, from 1, and whether it has any.
+pub fn target_with(node: Node, usable: &dyn Fn(Node) -> bool, place: &dyn Fn(Node) -> (usize, bool)) -> String {
     if !node.is_element() {
         return ":root".into();
     }
@@ -164,10 +172,9 @@ pub fn target_with(node: Node, usable: &dyn Fn(Node) -> bool) -> String {
             break;
         }
         let name = n.tag_name().name();
-        let same = |s: &Node| s.is_element() && s.tag_name().name() == name;
-        let twins = n.prev_siblings().skip(1).any(|s| same(&s)) || n.next_siblings().skip(1).any(|s| same(&s));
+        let (nth, twins) = place(n);
         if twins && n.parent_element().is_some() {
-            parts.push(format!("{name}:nth-of-type({})", nth_of_type(n)));
+            parts.push(format!("{name}:nth-of-type({nth})"));
         } else {
             parts.push(name.to_string());
         }

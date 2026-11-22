@@ -9,7 +9,7 @@ use crate::config::{Loader, Profile, RuleSel};
 use crate::envelope::{AppError, EXIT_OK, EXIT_OUTPUT, Output};
 use crate::rules::{self, bbox_json};
 use crate::svg::selector::Selector;
-use crate::svg::{self, Scene};
+use crate::svg::Scene;
 use crate::util::{Rgba, fmt};
 use crate::preview;
 
@@ -32,7 +32,7 @@ pub fn run(file: &str, output: &str, width: Option<u32>, page: Page, annotate: b
         Some(n) => at_step(&src, n, file)?,
         None => src,
     };
-    let doc = roxmltree::Document::parse_with_options(&src, svg::parse_options()).map_err(|e| AppError::input("malformed-xml", format!("{file} is not well-formed XML: {e}.")).path(file))?;
+    let doc = crate::svg::parse(&src).map_err(|e| AppError::input("malformed-xml", format!("{file} is not well-formed XML: {e}.")).path(file))?;
     let scene = Scene::build(&doc);
 
     // --crop shows the matched elements with some of their surroundings.
@@ -105,7 +105,7 @@ use kurbo::Rect;
 /// The drawing as it looks with one step of its walk-through chosen: what the step
 /// does not show is faded, as the interactive versions fade it.
 fn at_step(src: &str, step: usize, file: &str) -> Result<String, AppError> {
-    let doc = roxmltree::Document::parse_with_options(src, svg::parse_options()).map_err(|e| AppError::input("malformed-xml", format!("{file} is not well-formed XML: {e}.")).path(file))?;
+    let doc = crate::svg::parse(src).map_err(|e| AppError::input("malformed-xml", format!("{file} is not well-formed XML: {e}.")).path(file))?;
     let mut fades: Vec<(usize, &str)> = Vec::new();
     let mut found = false;
     for n in doc.descendants().filter(|n| n.is_element()) {
@@ -136,7 +136,7 @@ fn at_step(src: &str, step: usize, file: &str) -> Result<String, AppError> {
 
 /// A plain picture of an SVG at the default width, for callers that already hold the text.
 pub fn picture(src: &str) -> Result<preview::Shot, AppError> {
-    let doc = roxmltree::Document::parse_with_options(src, svg::parse_options()).map_err(|e| AppError::input("malformed-xml", format!("The drawing is not well-formed XML: {e}.")))?;
+    let doc = crate::svg::parse(src).map_err(|e| AppError::input("malformed-xml", format!("The drawing is not well-formed XML: {e}.")))?;
     let canvas = Scene::build(&doc).canvas;
     preview::rasterize(src, canvas, None, preview::DEFAULT_WIDTH, Rgba::WHITE, None)
 }

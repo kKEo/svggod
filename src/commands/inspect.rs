@@ -4,7 +4,7 @@ use super::read_input;
 use crate::envelope::{AppError, EXIT_OK, Output, head};
 use crate::rules::bbox_json;
 use crate::svg::selector::Selector;
-use crate::svg::{self, Kind, Scene};
+use crate::svg::{Kind, Scene};
 use crate::util::{did_you_mean, fmt};
 
 const FIELDS: &[&str] = &["id", "tag", "bbox", "text", "fill", "stroke", "refs"];
@@ -24,7 +24,7 @@ pub fn run(file: &str, select: Option<&str>, depth: Option<usize>, fields: &[Str
     };
 
     let src = read_input(file)?;
-    let doc = roxmltree::Document::parse_with_options(&src, svg::parse_options())
+    let doc = crate::svg::parse(&src)
         .map_err(|e| AppError::input("malformed-xml", format!("{file} is not well-formed XML: {e}.")).path(file))?;
     let scene = Scene::build(&doc);
 

@@ -29,8 +29,70 @@ pub fn line_of(doc: &Document, node: Node) -> u32 {
     doc.text_pos_at(node.range().start).row
 }
 
-pub fn parse_options<'i>() -> roxmltree::ParsingOptions<'i> {
+/// Where each line of a text ends, so the line of a place is a search and not a scan
+/// of the whole text: with thousands of findings the scan made validation quadratic.
+pub struct Lines(Vec<usize>);
+
+impl Lines {
+    pub fn of(text: &str) -> Lines {
+        Lines(text.bytes().enumerate().filter(|(_, b)| *b == b'\n').map(|(i, _)| i).collect())
+    }
+
+    /// The line a byte offset is on, from 1.
+    pub fn at(&self, offset: usize) -> u32 {
+        self.0.partition_point(|end| *end < offset) as u32 + 1
+    }
+}
+
+fn parse_options<'i>() -> roxmltree::ParsingOptions<'i> {
     roxmltree::ParsingOptions { allow_dtd: true, ..Default::default() }
+}
+
+/// Elements may be nested this deep. The scene is built by walking the tree, one
+/// call per level, so a file nested without limit would run the stack out. An
+/// unoptimised build spends about 9 KB a level, so this fits a 1 MB thread stack;
+/// drawing tools nest a few dozen levels at most.
+pub const MAX_DEPTH: usize = 100;
+
+/// Why a text could not be read as an XML document.
+#[derive(Debug)]
+pub struct ParseError {
+    pub message: String,
+    /// The line the problem is on, from 1.
+    pub line: u32,
+}
+
+impl std::fmt::Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.message)
+    }
+}
+
+/// Read XML text. Every reader in the crate goes through here, so the limits hold everywhere.
+pub fn parse(src: &str) -> Result<Document<'_>, ParseError> {
+    let doc = Document::parse_with_options(src, parse_options()).map_err(|e| ParseError { line: e.pos().row, message: e.to_string() })?;
+    // Walk the tree without recursion, counting how deep each element is.
+    let (mut node, mut depth) = (doc.root(), 0usize);
+    loop {
+        if let Some(child) = node.first_child() {
+            (node, depth) = (child, depth + 1);
+            if depth > MAX_DEPTH {
+                return Err(ParseError { line: line_of(&doc, node), message: format!("elements are nested more than {MAX_DEPTH} deep") });
+            }
+            continue;
+        }
+        // No child: the next sibling, or the nearest ancestor's next sibling.
+        loop {
+            if let Some(next) = node.next_sibling() {
+                node = next;
+                break;
+            }
+            match node.parent() {
+                Some(parent) => (node, depth) = (parent, depth - 1),
+                None => return Ok(doc),
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -107,6 +169,9 @@ pub struct Scene<'a, 'i> {
     pub css: Css<'a>,
     pub ids: BTreeMap<&'a str, Vec<Node<'a, 'i>>>,
     pub elems: Vec<Elem<'a, 'i>>,
+    lines: Lines,
+    /// Each element's number among the siblings with its name, and whether it has any; made when first asked for.
+    places: std::cell::OnceCell<std::collections::HashMap<usize, (usize, bool)>>,
 }
 
 fn affine(value: &str) -> Option<Affine> {
@@ -522,7 +587,7 @@ impl<'a, 'i> Scene<'a, 'i> {
                 }
             }
         }
-        Scene { doc, root, lenient_ns, viewbox, canvas, svggod_output, css, ids, elems }
+        Scene { doc, root, lenient_ns, viewbox, canvas, svggod_output, css, ids, elems, lines: Lines::of(doc.input_text()), places: Default::default() }
     }
 
     pub fn is_svg(&self, node: Node) -> bool {
@@ -533,12 +598,34 @@ impl<'a, 'i> Scene<'a, 'i> {
     }
 
     pub fn line(&self, node: Node) -> u32 {
-        line_of(self.doc, node)
+        self.lines.at(node.range().start)
+    }
+
+    fn place(&self, node: Node) -> (usize, bool) {
+        let places = self.places.get_or_init(|| {
+            let mut out = std::collections::HashMap::new();
+            for parent in self.doc.descendants().filter(|n| n.has_children()) {
+                let mut seen: std::collections::HashMap<&str, usize> = Default::default();
+                let kids = || parent.children().filter(|c| c.is_element());
+                for c in kids() {
+                    *seen.entry(c.tag_name().name()).or_default() += 1;
+                }
+                let mut nth: std::collections::HashMap<&str, usize> = Default::default();
+                for c in kids() {
+                    let name = c.tag_name().name();
+                    let n = nth.entry(name).or_default();
+                    *n += 1;
+                    out.insert(c.id().get_usize(), (*n, seen[name] > 1));
+                }
+            }
+            out
+        });
+        places.get(&node.id().get_usize()).copied().unwrap_or_else(|| selector::place(node))
     }
 
     /// The selector for an element. Only the first element with a given id is addressed by it.
     pub fn target(&self, node: Node) -> String {
-        selector::target_with(node, &|n| n.attribute("id").and_then(|id| self.ids.get(id)).is_some_and(|v| v.first() == Some(&n)))
+        selector::target_with(node, &|n| n.attribute("id").and_then(|id| self.ids.get(id)).is_some_and(|v| v.first() == Some(&n)), &|n| self.place(n))
     }
 
     /// Factor from viewBox units to px at the page width the diagram is shown at.

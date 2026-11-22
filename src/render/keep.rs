@@ -62,7 +62,7 @@ fn box_of_shape(e: &svg::Elem, bbox: Rect) -> Rect {
 
 /// Read the boxes and frames of a rendered drawing.
 pub fn read(text: &str, name: &str) -> Result<Previous, AppError> {
-    let doc = roxmltree::Document::parse_with_options(text, svg::parse_options()).map_err(|e| AppError::input("malformed-xml", format!("{name} is not well-formed XML: {e}.")).path(name))?;
+    let doc = crate::svg::parse(text).map_err(|e| AppError::input("malformed-xml", format!("{name} is not well-formed XML: {e}.")).path(name))?;
     let scene = Scene::build(&doc);
     if !scene.svggod_output {
         return Err(AppError::input("not-svggod-output", format!("{name} was not rendered by svggod, so its layout cannot be read.")).path(name).suggest(Some("Pass the SVG that 'svggod render' wrote for the earlier spec, or drop --previous.".into())));

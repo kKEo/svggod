@@ -283,7 +283,7 @@ pub struct Image {
 /// or is not something the renderer can draw.
 #[cfg(feature = "preview")]
 pub fn rasterize(svg: &str, width: u32) -> Result<Image, AppError> {
-    let doc = roxmltree::Document::parse_with_options(svg, crate::svg::parse_options()).map_err(|e| AppError::input("malformed-xml", format!("The SVG is not well-formed XML: {e}.")))?;
+    let doc = crate::svg::parse(svg).map_err(|e| AppError::input("malformed-xml", format!("The SVG is not well-formed XML: {e}.")))?;
     let canvas = crate::svg::Scene::build(&doc).canvas;
     let shot = crate::preview::rasterize(svg, canvas, None, width.max(1), crate::util::Rgba::WHITE, None)?;
     Ok(Image { png: shot.png, width: shot.width, height: shot.height })

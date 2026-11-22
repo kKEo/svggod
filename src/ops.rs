@@ -9,7 +9,7 @@ use serde_json::Value;
 
 use crate::envelope::AppError;
 use crate::svg::selector::Selector;
-use crate::svg::{self, style::url_id};
+use crate::svg::style::url_id;
 use crate::util::{did_you_mean, fmt};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -625,7 +625,7 @@ pub fn apply(src: &str, ops: &[Op]) -> Result<Applied, AppError> {
 /// Apply groups of operations; a group lands whole or not at all. With `strict`
 /// off, a group that fails to resolve or collides with an earlier one is dropped.
 pub fn apply_groups(src: &str, groups: &[Vec<Op>], strict: bool) -> Result<Applied, AppError> {
-    let doc = Document::parse_with_options(src, svg::parse_options()).map_err(|e| AppError::input("malformed-xml", format!("The file is not well-formed XML: {e}.")))?;
+    let doc = crate::svg::parse(src).map_err(|e| AppError::input("malformed-xml", format!("The file is not well-formed XML: {e}.")))?;
     let ids = id_index(&doc);
     let mut per_group: Vec<Option<Vec<Patch>>> = Vec::new();
     let mut index = 0;
@@ -698,7 +698,7 @@ pub fn apply_groups(src: &str, groups: &[Vec<Op>], strict: bool) -> Result<Appli
     text.push_str(&src[pos..]);
 
     if text != src
-        && let Err(e) = Document::parse_with_options(&text, svg::parse_options())
+        && let Err(e) = crate::svg::parse(&text)
     {
         return Err(AppError::input("edit-breaks-xml", format!("The change would leave the file malformed ({e}); nothing was written.")));
     }

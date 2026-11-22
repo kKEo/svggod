@@ -16,7 +16,7 @@ use serde_json::{Map, Value, json};
 use crate::catalogue::{self, Group, INVALID_SUPPRESSION};
 use crate::config::Settings;
 use crate::envelope::{Finding, Fix, Severity};
-use crate::svg::{self, Scene};
+use crate::svg::Scene;
 use crate::util::num;
 
 pub struct Raw<'a, 'i> {
@@ -86,7 +86,7 @@ fn suppressions<'a, 'i>(scene: &Scene<'a, 'i>, file: &str, findings: &mut Vec<Fi
                 severity: Severity::Error,
                 file: file.to_string(),
                 target: ":root".into(),
-                line: scene.doc.text_pos_at(c.range().start).row,
+                line: scene.line(c),
                 bbox: None,
                 message,
                 measured: None,
@@ -141,7 +141,7 @@ fn suppressions<'a, 'i>(scene: &Scene<'a, 'i>, file: &str, findings: &mut Vec<Fi
 /// Validate one source text. Findings come back sorted by line, then rule id.
 pub fn analyze(file: &str, src: &str, set: &Settings) -> Vec<Finding> {
     let mut findings = Vec::new();
-    let doc = match roxmltree::Document::parse_with_options(src, svg::parse_options()) {
+    let doc = match crate::svg::parse(src) {
         Ok(d) => d,
         Err(e) => {
             if let Some(sev) = set.severity("xml-well-formed") {
@@ -150,7 +150,7 @@ pub fn analyze(file: &str, src: &str, set: &Settings) -> Vec<Finding> {
                     severity: sev,
                     file: file.to_string(),
                     target: ":root".into(),
-                    line: e.pos().row,
+                    line: e.line,
                     bbox: None,
                     message: format!("The file is not well-formed XML: {e}."),
                     measured: None,

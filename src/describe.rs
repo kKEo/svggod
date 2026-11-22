@@ -149,7 +149,7 @@ pub fn full(spec: &Spec) -> String {
 
 /// The spec a drawing was rendered from, when it was rendered with the spec embedded.
 pub fn embedded(svg: &str) -> Option<String> {
-    let doc = roxmltree::Document::parse_with_options(svg, crate::svg::parse_options()).ok()?;
+    let doc = crate::svg::parse(svg).ok()?;
     let node = doc.descendants().find(|n| n.is_element() && n.tag_name().name() == "metadata" && is_embed_id(n.attribute("id")))?;
     node.text().map(|t| t.trim().to_string()).filter(|t| !t.is_empty())
 }

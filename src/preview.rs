@@ -26,6 +26,9 @@ pub fn options() -> usvg::Options<'static> {
     db.set_fantasy_family("Inter");
     db.set_monospace_family("JetBrains Mono");
     opt.font_family = "Inter".into();
+    // Pictures inside the file (data: URLs) are drawn; a path or a URL is never
+    // opened, so a drawing cannot pull in a file from elsewhere on the disk.
+    opt.image_href_resolver = usvg::ImageHrefResolver { resolve_data: usvg::ImageHrefResolver::default_data_resolver(), resolve_string: Box::new(|_, _| None) };
     opt
 }
 
@@ -198,12 +201,12 @@ mod tests {
             let src = std::fs::read_to_string(root.join(f)).unwrap();
             // Give every drawn element without an id one of its own.
             let tagged = {
-                let doc = roxmltree::Document::parse_with_options(&src, crate::svg::parse_options()).unwrap();
+                let doc = crate::svg::parse(&src).unwrap();
                 let scene = Scene::build(&doc);
                 let list: Vec<Op> = scene.elems.iter().enumerate().filter(|(_, e)| e.node.attribute("id").is_none()).map(|(i, e)| Op::SetAttr { target: scene.target(e.node), attr: "id".into(), value: format!("probe-{i}") }).collect();
                 ops::apply(&src, &list).unwrap().text
             };
-            let doc = roxmltree::Document::parse_with_options(&tagged, crate::svg::parse_options()).unwrap();
+            let doc = crate::svg::parse(&tagged).unwrap();
             let scene = Scene::build(&doc);
             let tree = usvg::Tree::from_str(&tagged, &options()).unwrap();
             for e in scene.elems.iter().filter(|e| e.is_leaf()) {

@@ -92,3 +92,59 @@ fn the_types_cross_threads() {
     shared::<Error>();
     shared::<svggod::Finding>();
 }
+
+// Hardening: input that is hostile, not merely wrong.
+
+fn nested(levels: usize) -> String {
+    format!("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 9 9\"><title>t</title>{}<rect width=\"5\" height=\"5\"/>{}</svg>", "<g>".repeat(levels), "</g>".repeat(levels))
+}
+
+#[test]
+fn deep_nesting_is_refused_and_does_not_run_the_stack_out() {
+    // Run on a small stack, as a caller's worker thread may have.
+    std::thread::Builder::new()
+        .stack_size(1024 * 1024)
+        .spawn(|| {
+            assert!(svggod::validate("ok.svg", &nested(90)).iter().all(|f| f.rule != "xml-well-formed"));
+            for levels in [150, 5_000, 100_000] {
+                let svg = nested(levels);
+                let found = svggod::validate("deep.svg", &svg);
+                assert_eq!(found.len(), 1, "{levels}");
+                assert_eq!(found[0].rule, "xml-well-formed");
+                assert!(found[0].message.contains("nested more than 100"), "{}", found[0].message);
+                assert_eq!(Validator::new().fix("deep.svg", &svg, true).unwrap().svg, svg);
+                #[cfg(feature = "preview")]
+                assert_eq!(svggod::rasterize(&svg, 100).unwrap_err().code, "malformed-xml");
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[cfg(feature = "preview")]
+#[test]
+fn rasterize_never_opens_a_file_the_svg_points_to() {
+    let dir = tempfile::tempdir().unwrap();
+    let secret = dir.path().join("secret.png");
+    std::fs::write(&secret, svggod::rasterize(&svggod::render(SPEC).unwrap(), 64).unwrap().png).unwrap();
+    let with = |href: &str| format!("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><image href=\"{href}\" width=\"100\" height=\"100\"/></svg>");
+    let blank = svggod::rasterize(&with(""), 64).unwrap().png;
+    let path = secret.to_string_lossy().into_owned();
+    for href in [path.clone(), format!("file://{path}")] {
+        assert_eq!(svggod::rasterize(&with(&href), 64).unwrap().png, blank, "{href}");
+    }
+    // A picture carried inside the file is still drawn.
+    use std::fmt::Write as _;
+    let bytes = std::fs::read(&secret).unwrap();
+    const A: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut b64 = String::new();
+    for c in bytes.chunks(3) {
+        let n = (c[0] as u32) << 16 | (*c.get(1).unwrap_or(&0) as u32) << 8 | *c.get(2).unwrap_or(&0) as u32;
+        for i in 0..4 {
+            let ch = if i <= c.len() { A[(n >> (18 - 6 * i) & 63) as usize] as char } else { '=' };
+            write!(b64, "{ch}").unwrap();
+        }
+    }
+    assert_ne!(svggod::rasterize(&with(&format!("data:image/png;base64,{b64}")), 64).unwrap().png, blank);
+}
