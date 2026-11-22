@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "svggod",
+  "description": "Skills for SVGGod: install the CLI, draw diagrams from a spec, and check or repair existing SVG files",
+  "owner": {
+    "name": "Krzysztof Maziarz"
+  },
+  "plugins": [
+    {
+      "name": "svggod",
+      "description": "Install SVGGod, draw diagrams for documentation from a short YAML spec, and check or repair any SVG file",
+      "source": "./plugins/svggod",
+      "category": "Development"
+    }
+  ]
+}

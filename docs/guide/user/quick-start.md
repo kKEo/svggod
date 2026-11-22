@@ -6,6 +6,8 @@ You need a terminal and the Rust toolchain (the `cargo` command). SVGGod has no 
 
 > **Note.** SVGGod is built from source today. Ready-made downloads are planned for releases tagged `v1.0.0` and later; until one exists, use the steps below.
 
+> **Using Claude Code?** You can skip the typing. Add the SVGGod skills with `claude plugin marketplace add kKEo/svggod` and `claude plugin install svggod@svggod`, then ask Claude to install SVGGod and draw a diagram. See [Claude Code skills](using-with-an-ai-agent.md#claude-code-skills). The steps below are still worth reading once, to know what Claude does on your behalf.
+
 ## 1. Build SVGGod
 
 Get the source from the [repository](https://github.com/kKEo/svggod), then build it:

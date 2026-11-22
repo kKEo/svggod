@@ -114,6 +114,31 @@ h2 { font: 600 1.6rem/1.2 var(--serif); margin: 0 0 8px; }
 .book li { margin: 4px 0; }
 .book .go { display: inline-block; margin-top: auto; padding-top: 16px; font-weight: 600; color: var(--accent); }
 
+/* Claude Code skills: the same ruled frame, with the install commands as its bottom row. */
+.agent { margin-top: 64px; }
+.skills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--paper);
+  overflow: hidden;
+}
+.skill { padding: 20px 24px; border-left: 2px solid var(--ink); min-width: 0; }
+.skill:first-child { border-left: 0; }
+.skill h3 { font: 600 1.05rem/1.3 var(--mono); margin: 0 0 8px; overflow-wrap: anywhere; }
+.skill p { margin: 0; color: var(--muted); }
+.skills pre {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 16px 24px;
+  border-top: 2px solid var(--ink);
+  background: var(--sheet);
+  font: 14px/1.6 var(--mono);
+  overflow-x: auto;
+}
+.agent .more { margin: 16px 0 0; }
+
 /* Footer styled as a drawing title block. */
 footer { margin: 64px 0 40px; }
 .block {
@@ -136,6 +161,9 @@ dl { margin: 0; }
   .books { grid-template-columns: 1fr; }
   .book { border-left: 0; border-top: 2px solid var(--ink); }
   .book:first-child { border-top: 0; }
+  .skills { grid-template-columns: 1fr; }
+  .skill { border-left: 0; border-top: 2px solid var(--ink); }
+  .skill:first-child { border-top: 0; }
   .block { grid-template-columns: 1fr; }
   .block > div { border-left: 0; border-top: 1px solid var(--ink); }
   .block > div:first-child { border-top: 0; }
@@ -203,6 +231,28 @@ dl { margin: 0; }
           <span class="go">Open the tester guide</span>
         </a>
       </div>
+    </section>
+
+    <section class="agent" aria-labelledby="agent-h">
+      <h2 id="agent-h">Let Claude Code draw it for you</h2>
+      <p class="books-intro">This repository is also a Claude Code plugin marketplace. Add it once, then ask for a diagram in plain words: Claude writes the spec, renders it, reads the report and looks at the picture before it answers.</p>
+      <div class="skills">
+        <div class="skill">
+          <h3>svggod:install</h3>
+          <p>Puts the <code>svggod</code> program on your machine and confirms that it works.</p>
+        </div>
+        <div class="skill">
+          <h3>svggod:draw</h3>
+          <p>Makes or changes a diagram from a spec, in any of the seven types, in pages, with themes and walk-throughs.</p>
+        </div>
+        <div class="skill">
+          <h3>svggod:check</h3>
+          <p>Checks, repairs and edits SVG files you already have, including ones from other tools.</p>
+        </div>
+        <pre><code>claude plugin marketplace add kKEo/svggod
+claude plugin install svggod@svggod</code></pre>
+      </div>
+      <p class="more"><a class="link" href="user/using-with-an-ai-agent.html">How to use the skills</a></p>
     </section>
   </main>
 

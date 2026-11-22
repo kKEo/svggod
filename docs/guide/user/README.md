@@ -19,6 +19,7 @@ This guide is for people who want diagrams in their documentation or pages and d
 | See finished diagrams of every type to copy | [Galleries](galleries.md) |
 | Use your own colours, font and line style | [Making your own theme](making-a-theme.md) |
 | Let an AI assistant drive SVGGod | [Using SVGGod with an AI agent](using-with-an-ai-agent.md) |
+| Have Claude Code install SVGGod and draw for you | [Claude Code skills](using-with-an-ai-agent.md#claude-code-skills) |
 | See what people use it for | [Use cases](use-cases.md) |
 | Know what it will and will not do to your files | [Trust and privacy](trust-and-privacy.md) |
 | Fix an error message | [FAQ and troubleshooting](faq.md) |

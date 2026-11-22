@@ -238,6 +238,20 @@ Inputs mirror the flags and results are the same JSON envelope. Every path is
 relative to the root and paths outside it are refused. It serves both the
 `initialize` handshake and the per-request protocol style of MCP 2026-07-28.
 
+## Claude Code skills
+
+This repository is also a Claude Code plugin marketplace. The `svggod` plugin gives
+Claude three skills: `svggod:install` (put the binary on the machine), `svggod:draw`
+(write a spec, render it, look at the result) and `svggod:check` (check, repair or
+edit SVG files that already exist).
+
+```sh
+claude plugin marketplace add kKEo/svggod      # or the path of a checkout
+claude plugin install svggod@svggod
+```
+
+The skills live in [`plugins/svggod/`](plugins/svggod/README.md).
+
 ## Development notes
 
 - `tests/golden/` holds expected output, compared byte for byte. After an intended
