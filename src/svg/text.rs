@@ -1,5 +1,8 @@
 //! Text measurement with the bundled fonts, so results match on every machine.
 
+use harfrust::font::glyph::outline::{DrawMemory, DrawOptions, PathSink};
+use harfrust::{Buffer, Font, GlyphInfo, GlyphPosition, ShapeOptions, ShaperFont};
+
 static INTER: &[u8] = include_bytes!("../../fonts/Inter-Regular.ttf");
 static INTER_BOLD: &[u8] = include_bytes!("../../fonts/Inter-Bold.ttf");
 static MONO: &[u8] = include_bytes!("../../fonts/JetBrainsMono-Regular.ttf");
@@ -11,16 +14,16 @@ pub enum Class {
 }
 
 struct Fonts {
-    sans: rustybuzz::Face<'static>,
-    bold: rustybuzz::Face<'static>,
-    mono: rustybuzz::Face<'static>,
+    sans: Font,
+    bold: Font,
+    mono: Font,
 }
 
 thread_local! {
     static FONTS: Fonts = Fonts {
-        sans: rustybuzz::Face::from_slice(INTER, 0).expect("bundled Inter Regular"),
-        bold: rustybuzz::Face::from_slice(INTER_BOLD, 0).expect("bundled Inter Bold"),
-        mono: rustybuzz::Face::from_slice(MONO, 0).expect("bundled JetBrains Mono"),
+        sans: Font::new(INTER, 0).expect("bundled Inter Regular"),
+        bold: Font::new(INTER_BOLD, 0).expect("bundled Inter Bold"),
+        mono: Font::new(MONO, 0).expect("bundled JetBrains Mono"),
     };
 }
 
@@ -30,13 +33,24 @@ pub fn bundled() -> [&'static [u8]; 3] {
 }
 
 impl Fonts {
-    fn face(&self, class: Class, bold: bool) -> &rustybuzz::Face<'static> {
+    fn face(&self, class: Class, bold: bool) -> &Font {
         match (class, bold) {
             (Class::Mono, _) => &self.mono,
             (Class::Sans, true) => &self.bold,
             (Class::Sans, false) => &self.sans,
         }
     }
+}
+
+/// Shapes one line of text in font units, left to right.
+fn shape(face: &Font, text: &str) -> Vec<(GlyphInfo, GlyphPosition)> {
+    let mut buf = Buffer::new();
+    buf.push_str(text);
+    buf.guess_segment_properties();
+    // Shaping fails only for a malformed font or an unset direction; the fonts are bundled and
+    // the direction was just guessed.
+    harfrust::shape(&ShaperFont::new(face), &mut buf, ShapeOptions::new()).expect("shaping a bundled font");
+    buf.glyph_infos().iter().copied().zip(buf.glyph_positions().iter().copied()).collect()
 }
 
 pub struct Measured {
@@ -52,12 +66,10 @@ pub fn measure(text: &str, class: Class, bold: bool) -> Measured {
     }
     FONTS.with(|f| {
         let face = f.face(class, bold);
-        let mut buf = rustybuzz::UnicodeBuffer::new();
-        buf.push_str(text);
-        let out = rustybuzz::shape(face, &[], buf);
+        let glyphs = shape(face, text);
         let upem = face.units_per_em() as f64;
-        let adv: i64 = out.glyph_positions().iter().map(|p| p.x_advance as i64).sum();
-        let missing = out.glyph_infos().iter().any(|g| g.glyph_id == 0);
+        let adv: i64 = glyphs.iter().map(|(_, p)| p.x_advance as i64).sum();
+        let missing = glyphs.iter().any(|(g, _)| g.glyph_id == 0);
         Measured { width: adv as f64 / upem, missing }
     })
 }
@@ -67,7 +79,8 @@ pub fn vmetrics(class: Class, bold: bool) -> (f64, f64) {
     FONTS.with(|f| {
         let face = f.face(class, bold);
         let upem = face.units_per_em() as f64;
-        (face.ascender() as f64 / upem, -(face.descender() as f64) / upem)
+        let line = face.metrics().h_line().unwrap_or_default();
+        (line.ascender.to_f32() as f64 / upem, -(line.descender.to_f32() as f64) / upem)
     })
 }
 
@@ -113,7 +126,7 @@ impl Outline {
     }
 }
 
-impl rustybuzz::ttf_parser::OutlineBuilder for Outline {
+impl PathSink for Outline {
     fn move_to(&mut self, x: f32, y: f32) {
         self.d.push_str(&format!("M{}", self.pt(x, y)));
     }
@@ -135,15 +148,16 @@ impl rustybuzz::ttf_parser::OutlineBuilder for Outline {
 pub fn outline(text: &str, class: Class, size: f64, x: f64, baseline: f64) -> String {
     FONTS.with(|f| {
         let face = f.face(class, false);
-        let mut buf = rustybuzz::UnicodeBuffer::new();
-        buf.push_str(text);
-        let shaped = rustybuzz::shape(face, &[], buf);
         let scale = size / face.units_per_em() as f64;
+        let glyphs = face.outline_glyphs();
         let mut pen = 0.0;
         let mut d = String::new();
-        for (info, pos) in shaped.glyph_infos().iter().zip(shaped.glyph_positions()) {
+        for (info, pos) in shape(face, text) {
             let mut o = Outline { d: String::new(), x: x + (pen + pos.x_offset as f64) * scale, y: baseline - pos.y_offset as f64 * scale, scale };
-            face.outline_glyph(rustybuzz::ttf_parser::GlyphId(info.glyph_id as u16), &mut o);
+            if let Some(glyph) = glyphs.get(harfrust::GlyphId::new(info.glyph_id)) {
+                // Font units, unhinted. A glyph that fails to draw is left out, as before.
+                let _ = glyph.draw(&DrawOptions::new(), DrawMemory::Scratch, &mut o);
+            }
             d.push_str(&o.d);
             pen += pos.x_advance as f64;
         }
