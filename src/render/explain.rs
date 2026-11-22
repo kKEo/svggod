@@ -56,8 +56,8 @@ pub fn grow_for_badges(spec: &Spec, d: &mut Drawn) {
     for (i, n) in spec.nodes.iter().enumerate() {
         add(node_badges(n.kind, d.geo.nodes[i], spec.steps_of(Ref::Node(i)).len()));
     }
-    for g in 0..spec.groups.len() {
-        add(group_badges(d.geo.groups[g], spec.steps_of(Ref::Group(g)).len()));
+    for (g, &rect) in d.geo.groups.iter().enumerate().take(spec.groups.len()) {
+        add(group_badges(rect, spec.steps_of(Ref::Group(g)).len()));
     }
     let Some(b) = all else { return };
     const KEEP: f64 = 8.0;

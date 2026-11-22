@@ -16,8 +16,8 @@ struct Unit {
 
 fn units(spec: &Spec) -> Vec<Unit> {
     let mut out: Vec<Unit> = Vec::new();
-    for i in 0..spec.nodes.len() {
-        match spec.node_parent[i] {
+    for (i, &parent) in spec.node_parent.iter().enumerate().take(spec.nodes.len()) {
+        match parent {
             Some(g) => match out.iter_mut().find(|u| u.group == Some(g)) {
                 Some(u) => u.nodes.push(i),
                 None => out.push(Unit { group: Some(g), nodes: vec![i] }),

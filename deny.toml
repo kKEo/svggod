@@ -8,7 +8,10 @@ all-features = true
 [advisories]
 # Any advisory against a crate in Cargo.lock fails the check; unmaintained crates too.
 unmaintained = "workspace"
-ignore = []
+ignore = [
+    # rustybuzz is unmaintained; the maintained successor is harfrust. Remove once migrated.
+    { id = "RUSTSEC-2026-0206", reason = "rustybuzz unmaintained, migration to harfrust planned" },
+]
 
 [licenses]
 # Every licence a dependency may carry. All are permissive and compatible with
