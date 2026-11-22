@@ -27,6 +27,8 @@ allow = [
     "Unicode-3.0",
 ]
 confidence-threshold = 0.9
+# SVGGod itself is MPL-2.0; only its dependencies must be permissive.
+exceptions = [{ crate = "svggod", allow = ["MPL-2.0"] }]
 
 [bans]
 # Two versions of one crate cost build time, not safety.
