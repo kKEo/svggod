@@ -8,7 +8,7 @@ use std::process::{Command, Stdio};
 
 use serde_json::Value;
 
-const BIN: &str = env!("CARGO_BIN_EXE_svgdog");
+const BIN: &str = env!("CARGO_BIN_EXE_svggod");
 
 struct Run {
     code: i32,
@@ -77,7 +77,7 @@ fn every_rule_example_fails_and_passes_as_documented() {
         let dir = tempfile::tempdir().unwrap();
         let cfg = rule["example_config"].as_str().unwrap();
         if !cfg.is_empty() {
-            fs::write(dir.path().join("svgdog.toml"), cfg).unwrap();
+            fs::write(dir.path().join("svggod.toml"), cfg).unwrap();
         }
         fs::write(dir.path().join("fail.svg"), rule["fail"].as_str().unwrap()).unwrap();
         fs::write(dir.path().join("pass.svg"), rule["pass"].as_str().unwrap()).unwrap();
@@ -161,7 +161,7 @@ fn r2_output_validates_against_the_published_schemas() {
 #[test]
 fn r3_stdout_is_json_with_and_without_quiet_and_has_no_ansi() {
     let dir = tempfile::tempdir().unwrap();
-    fs::write(dir.path().join("svgdog.toml"), "version = 1\n").unwrap();
+    fs::write(dir.path().join("svggod.toml"), "version = 1\n").unwrap();
     fs::copy(Path::new(env!("CARGO_MANIFEST_DIR")).join(BROKEN), dir.path().join("b.svg")).unwrap();
     let loud = run_in(dir.path(), &["validate", "b.svg"], None);
     let quiet = run_in(dir.path(), &["validate", "b.svg", "--quiet"], None);
@@ -226,7 +226,7 @@ fn r6_help_is_short_and_has_an_example() {
         assert!(lines <= 40, "{args:?} help is {lines} lines");
         assert!(r.stdout.contains("Example:"), "{args:?} help has no example");
     }
-    assert!(run(&["--version"]).stdout.starts_with("svgdog "));
+    assert!(run(&["--version"]).stdout.starts_with("svggod "));
 }
 
 // ------------------------------------------------------------ R7: strict input
@@ -258,7 +258,7 @@ fn r7_misspellings_fail_loudly_with_a_suggestion() {
     ];
     for (toml, code, hint) in cases {
         let dir = tempfile::tempdir().unwrap();
-        fs::write(dir.path().join("svgdog.toml"), toml).unwrap();
+        fs::write(dir.path().join("svggod.toml"), toml).unwrap();
         fs::write(dir.path().join("a.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\"/>").unwrap();
         let r = run_in(dir.path(), &["validate", "a.svg"], None);
         assert_eq!(r.code, 3, "{toml}");
@@ -355,7 +355,7 @@ fn inspect_select_depth_and_fields() {
 
 fn project(toml: &str) -> tempfile::TempDir {
     let dir = tempfile::tempdir().unwrap();
-    fs::write(dir.path().join("svgdog.toml"), toml).unwrap();
+    fs::write(dir.path().join("svggod.toml"), toml).unwrap();
     fs::create_dir_all(dir.path().join("docs/fig")).unwrap();
     fs::create_dir_all(dir.path().join("legacy")).unwrap();
     let broken = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(BROKEN)).unwrap();
@@ -426,8 +426,8 @@ fn suppression_needs_a_reason_and_silences_one_element() {
         )
     };
     fs::write(dir.path().join("plain.svg"), svg("")).unwrap();
-    fs::write(dir.path().join("ok.svg"), svg("<!-- svgdog-disable shape-overlap: badge sits on the corner by design -->")).unwrap();
-    fs::write(dir.path().join("bare.svg"), svg("<!-- svgdog-disable shape-overlap -->")).unwrap();
+    fs::write(dir.path().join("ok.svg"), svg("<!-- svggod-disable shape-overlap: badge sits on the corner by design -->")).unwrap();
+    fs::write(dir.path().join("bare.svg"), svg("<!-- svggod-disable shape-overlap -->")).unwrap();
     let args = |f: &'static str| vec!["validate", f, "--rules", "shape-overlap"];
     assert_eq!(rules_of(&run_in(dir.path(), &args("plain.svg"), None).json()), vec!["shape-overlap"]);
     assert!(rules_of(&run_in(dir.path(), &args("ok.svg"), None).json()).is_empty());
@@ -529,7 +529,7 @@ fn r5_applying_a_findings_ops_clears_it() {
         let dir = tempfile::tempdir().unwrap();
         let cfg = rule["example_config"].as_str().unwrap();
         if !cfg.is_empty() {
-            fs::write(dir.path().join("svgdog.toml"), cfg).unwrap();
+            fs::write(dir.path().join("svggod.toml"), cfg).unwrap();
         }
         fs::write(dir.path().join("fail.svg"), rule["fail"].as_str().unwrap()).unwrap();
         let before = run_in(dir.path(), &["validate", "fail.svg", "--rules", id, "--quiet"], None).json();
@@ -811,7 +811,7 @@ fn every_node_kind_renders_clean_in_both_directions() {
         spec.push_str("  - {from: n-box, to: n-queue, label: skip}\n  - {from: n-decision, to: n-service, label: back}\n");
         let dir = tempfile::tempdir().unwrap();
         // A wide drawing shrinks on the page; this test is about geometry, not rendered size.
-        fs::write(dir.path().join("svgdog.toml"), "[target]\nrender_width = 2000\n").unwrap();
+        fs::write(dir.path().join("svggod.toml"), "[target]\nrender_width = 2000\n").unwrap();
         fs::write(dir.path().join("k.yaml"), &spec).unwrap();
         let r = run_in(dir.path(), &["render", "k.yaml", "-o", "k.svg"], None);
         let v = r.json();
@@ -961,7 +961,7 @@ fn render_output_rules() {
 #[test]
 fn config_fonts_and_long_labels() {
     let dir = tempfile::tempdir().unwrap();
-    fs::write(dir.path().join("svgdog.toml"), "[style]\nfonts = [\"Inter\", \"Helvetica\", \"sans-serif\"]\n").unwrap();
+    fs::write(dir.path().join("svggod.toml"), "[style]\nfonts = [\"Inter\", \"Helvetica\", \"sans-serif\"]\n").unwrap();
     fs::write(dir.path().join("s.yaml"), "version: 1\ndiagram: flow\ntitle: Wrap\ndescription: d\nnodes:\n  - {id: a, label: \"A service with quite a long descriptive name\"}\n  - {id: b, label: \"Two\\nlines & <more>\"}\nedges:\n  - {from: a, to: b}\n").unwrap();
     let r = run_in(dir.path(), &["render", "s.yaml", "-o", "s.svg"], None);
     assert_eq!(r.json()["findings"], serde_json::json!([]), "{}", r.stdout);
@@ -1138,11 +1138,11 @@ fn findings_on_drawn_elements_carry_a_box() {
 /// R8: same input, config and version give byte-identical output. The files in
 /// tests/golden were produced on one machine; CI runs this test on Linux, macOS
 /// and Windows, so a pass on all three is the cross-platform comparison.
-/// Regenerate with SVGDOG_UPDATE_GOLDEN=1 after an intended change.
+/// Regenerate with SVGGOD_UPDATE_GOLDEN=1 after an intended change.
 #[test]
 fn r8_output_matches_the_golden_files() {
     let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/golden");
-    let update = std::env::var_os("SVGDOG_UPDATE_GOLDEN").is_some();
+    let update = std::env::var_os("SVGGOD_UPDATE_GOLDEN").is_some();
     let dir = tempfile::tempdir().unwrap();
     let mut produced: Vec<(String, Vec<u8>)> = Vec::new();
     for name in ["orders", "checkout", "tiers", "rack", "login", "walkthrough", "states", "migration", "split"] {
@@ -1218,8 +1218,8 @@ fn r8_output_matches_the_golden_files() {
             fs::write(&path, &bytes).unwrap();
             continue;
         }
-        let want = fs::read(&path).unwrap_or_else(|_| panic!("{} is missing; run with SVGDOG_UPDATE_GOLDEN=1", path.display()));
-        assert!(want == bytes, "{name} differs from tests/golden/{name} ({} vs {} bytes). If the change is intended, regenerate with SVGDOG_UPDATE_GOLDEN=1.", bytes.len(), want.len());
+        let want = fs::read(&path).unwrap_or_else(|_| panic!("{} is missing; run with SVGGOD_UPDATE_GOLDEN=1", path.display()));
+        assert!(want == bytes, "{name} differs from tests/golden/{name} ({} vs {} bytes). If the change is intended, regenerate with SVGGOD_UPDATE_GOLDEN=1.", bytes.len(), want.len());
     }
 }
 
@@ -1266,7 +1266,7 @@ fn sequence_diagrams_put_lifelines_in_order_and_messages_top_to_bottom() {
 }
 
 /// Editing a YAML spec keeps its comments and layout; only what cannot be placed
-/// in the text makes svgdog rewrite the file, and it says so.
+/// in the text makes svggod rewrite the file, and it says so.
 #[test]
 fn spec_edits_keep_yaml_comments() {
     let dir = tempfile::tempdir().unwrap();
@@ -1680,7 +1680,7 @@ fn an_embedded_spec_can_be_read_back() {
     let r = run_in(dir.path(), &["render", "s.yaml", "-o", "s.svg", "--embed-spec", "--profile", "strict", "--no-config"], None);
     assert_eq!((r.code, r.json()["findings"].as_array().unwrap().len()), (0, 0), "the embedded spec is not editor metadata: {}", r.stdout);
     let svg = fs::read_to_string(dir.path().join("s.svg")).unwrap();
-    assert!(svg.contains("<metadata id=\"svgdog-spec\">{"));
+    assert!(svg.contains("<metadata id=\"svggod-spec\">{"));
     // the drawing describes itself, and gives the spec back exactly
     let d = run_in(dir.path(), &["describe", "s.svg"], None).json();
     assert_eq!(d["spec"], serde_yaml_ng::from_str::<Value>(&spec).unwrap());
@@ -1754,14 +1754,14 @@ fn the_adaptive_theme_is_the_light_drawing_with_a_dark_override() {
     assert_eq!(fs::read(dir.path().join("auto.png")).unwrap(), fs::read(dir.path().join("light.png")).unwrap());
 }
 
-const PAGE: &str = "# Page\n\nWords.\n\n```svgdog request-path\nversion: 1\ndiagram: flow\ntitle: Request path\nedges:\n  - \"browser -> api: request\"\n```\nMore words.\n\n```yaml\nnot: ours\n```\n\n<!-- svgdog\nversion: 1\ndiagram: timeline\ntitle: Plan\ndescription: Two [milestones].\nnodes:\n  - { id: a, label: Start, when: Jan }\n  - { id: b, label: Finish, when: Mar }\n-->\n\nThe end.\n";
+const PAGE: &str = "# Page\n\nWords.\n\n```svggod request-path\nversion: 1\ndiagram: flow\ntitle: Request path\nedges:\n  - \"browser -> api: request\"\n```\nMore words.\n\n```yaml\nnot: ours\n```\n\n<!-- svggod\nversion: 1\ndiagram: timeline\ntitle: Plan\ndescription: Two [milestones].\nnodes:\n  - { id: a, label: Start, when: Jan }\n  - { id: b, label: Finish, when: Mar }\n-->\n\nThe end.\n";
 
 #[test]
 fn docs_renders_the_diagrams_inside_markdown_pages() {
     let dir = tempfile::tempdir().unwrap();
     fs::create_dir_all(dir.path().join("guide/deep")).unwrap();
     fs::write(dir.path().join("guide/page.md"), PAGE).unwrap();
-    fs::write(dir.path().join("guide/deep/Other.md"), "~~~svgdog\nversion: 1\ndiagram: flow\ntitle: Other\nedges: [\"a -> b\"]\n~~~").unwrap();
+    fs::write(dir.path().join("guide/deep/Other.md"), "~~~svggod\nversion: 1\ndiagram: flow\ntitle: Other\nedges: [\"a -> b\"]\n~~~").unwrap();
     fs::write(dir.path().join("guide/plain.md"), "# No diagrams here\n").unwrap();
 
     // check first: everything is missing, nothing is written
@@ -1804,12 +1804,12 @@ fn docs_renders_the_diagrams_inside_markdown_pages() {
     assert!(fs::read_to_string(dir.path().join("guide/deep/img/other-1.svg")).unwrap().contains("prefers-color-scheme"));
     assert_eq!(run_in(dir.path(), &["docs", "guide", "--assets", "../out"], None).code, 2);
     assert_eq!(run_in(dir.path(), &["docs", "nowhere"], None).code, 3);
-    fs::write(dir.path().join("bad.md"), "text\n\n```svgdog\nversion: 1\ndiagram: flwo\ntitle: T\n```\n").unwrap();
+    fs::write(dir.path().join("bad.md"), "text\n\n```svggod\nversion: 1\ndiagram: flwo\ntitle: T\n```\n").unwrap();
     let e = run_in(dir.path(), &["docs", "bad.md"], None);
     let err = e.json()["error"].clone();
     assert_eq!((e.code, err["code"].as_str()), (3, Some("invalid-value")));
     assert!(err["message"].as_str().unwrap().starts_with("bad.md, diagram starting on line 4: ") && err["suggestion"] == "Did you mean 'flow'?", "{err:#}");
-    fs::write(dir.path().join("twice.md"), "```svgdog a\nversion: 1\ndiagram: flow\ntitle: T\nedges: [\"a -> b\"]\n```\n\n```svgdog a\nversion: 1\ndiagram: flow\ntitle: T\nedges: [\"a -> b\"]\n```\n").unwrap();
+    fs::write(dir.path().join("twice.md"), "```svggod a\nversion: 1\ndiagram: flow\ntitle: T\nedges: [\"a -> b\"]\n```\n\n```svggod a\nversion: 1\ndiagram: flow\ntitle: T\nedges: [\"a -> b\"]\n```\n").unwrap();
     assert_eq!(run_in(dir.path(), &["docs", "twice.md"], None).json()["error"]["code"], "duplicate-id");
 }
 
@@ -1845,7 +1845,7 @@ fn the_css_version_is_the_static_drawing_plus_classes_and_one_style_block() {
             bare = without_attr(&bare, attr);
         }
         // classes: the scope on the root and the relations on each thing; the adaptive theme's own classes stay
-        let scoped: Vec<String> = bare.split(" class=\"").skip(1).map(|c| c.split('"').next().unwrap().to_string()).filter(|c| c.starts_with("svgdog-") || c.starts_with("it")).collect();
+        let scoped: Vec<String> = bare.split(" class=\"").skip(1).map(|c| c.split('"').next().unwrap().to_string()).filter(|c| c.starts_with("svggod-") || c.starts_with("it")).collect();
         for c in scoped {
             bare = bare.replacen(&format!(" class=\"{c}\""), "", 1);
         }
@@ -2046,7 +2046,7 @@ fn a_layout_that_cannot_be_kept_stops_the_render_unless_forced() {
     // an earlier drawing that is not ours cannot be read for its layout
     fs::copy(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/broken.svg"), dir.path().join("other.svg")).unwrap();
     let o = run_in(dir.path(), &["render", "c.yaml", "-o", "x.svg", "--previous", "other.svg"], None);
-    assert_eq!((o.code, o.json()["error"]["code"].as_str().map(|s| s.to_string())), (3, Some("not-svgdog-output".into())));
+    assert_eq!((o.code, o.json()["error"]["code"].as_str().map(|s| s.to_string())), (3, Some("not-svggod-output".into())));
     assert_eq!(run_in(dir.path(), &["render", "c.yaml", "-o", "x.svg", "--previous", "missing.svg"], None).code, 3);
 
     // nothing in common is nothing to keep: a plain layout, not a failure
@@ -2082,7 +2082,7 @@ fn layouts_that_follow_the_spec_order_are_compared_with_the_earlier_drawing() {
     assert_eq!(run_in(dir.path(), &["render", rack.to_str().unwrap(), "-o", "rack2.svg", "--previous", "rack.svg"], None).code, 0);
 }
 
-const LIVING: &str = "# Page\n\n```svgdog path\nversion: 1\ndiagram: flow\ntitle: Request path\ndirection: down\nedges:\n  - \"browser -> api: request\"\n  - \"api -> db: query\"\n```\n";
+const LIVING: &str = "# Page\n\n```svggod path\nversion: 1\ndiagram: flow\ntitle: Request path\ndirection: down\nedges:\n  - \"browser -> api: request\"\n  - \"api -> db: query\"\n```\n";
 
 #[test]
 fn docs_keeps_the_boxes_of_a_picture_that_is_already_there() {
@@ -2237,8 +2237,8 @@ fn a_theme_of_your_own_comes_from_a_folder() {
     run_in(dir.path(), &["render", "fig/themed.yaml", "-o", "won.svg", "--theme", "docs-dark", "--no-config"], None);
     assert!(fs::read_to_string(at("won.svg")).unwrap().contains("fill=\"#0d1117\""));
 
-    // named in svgdog.toml, it is the project default, found from where the config is
-    fs::write(at("svgdog.toml"), "version = 1\n[style]\ntheme = \"themes/acme\"\n").unwrap();
+    // named in svggod.toml, it is the project default, found from where the config is
+    fs::write(at("svggod.toml"), "version = 1\n[style]\ntheme = \"themes/acme\"\n").unwrap();
     let r = run_in(&at("fig"), &["render", "orders.yaml", "-o", "cfg.svg"], None);
     assert_eq!(r.code, 0, "{}", r.stdout);
     assert_eq!(fs::read_to_string(at("fig/cfg.svg")).unwrap(), svg);
@@ -2250,7 +2250,7 @@ fn a_theme_of_your_own_comes_from_a_folder() {
 
     // pages take a theme folder too, relative to the page
     fs::create_dir_all(at("docs")).unwrap();
-    fs::write(at("docs/page.md"), "# P\n\n```svgdog\nversion: 1\ndiagram: flow\ntitle: T\ntheme: ../themes/acme#dark\nedges: [\"a -> b\"]\n```\n").unwrap();
+    fs::write(at("docs/page.md"), "# P\n\n```svggod\nversion: 1\ndiagram: flow\ntitle: T\ntheme: ../themes/acme#dark\nedges: [\"a -> b\"]\n```\n").unwrap();
     let r = run_in(dir.path(), &["docs", "docs", "--no-config"], None);
     assert_eq!(r.code, 0, "{}", r.stdout);
     assert!(fs::read_to_string(at("docs/diagrams/page-1.svg")).unwrap().contains("fill=\"#26221e\""));
@@ -2307,11 +2307,11 @@ fn theme_mistakes_say_what_is_wrong_and_where() {
     // unknown names: a usage error on the flag, an input error in the spec and in the config
     let (code, v) = draw("x", None, "papr");
     assert_eq!((code, v["error"]["suggestion"].as_str()), (2, Some("Did you mean 'paper'?")), "{v:#}");
-    fs::write(dir.path().join("svgdog.toml"), "[style]\ntheme = \"neon\"\n").unwrap();
+    fs::write(dir.path().join("svggod.toml"), "[style]\ntheme = \"neon\"\n").unwrap();
     fs::write(dir.path().join("plain.yaml"), "version: 1\ndiagram: flow\ntitle: T\nedges: [\"a -> b\"]\n").unwrap();
     let r = run_in(dir.path(), &["render", "plain.yaml", "-o", "x.svg", "--force"], None);
     let v = r.json();
-    assert!(r.code == 3 && v["error"]["code"] == "unknown-theme" && v["error"]["message"].as_str().unwrap().contains("svgdog.toml"), "{v:#}");
+    assert!(r.code == 3 && v["error"]["code"] == "unknown-theme" && v["error"]["message"].as_str().unwrap().contains("svggod.toml"), "{v:#}");
 
     // check reports colours that are too close to read, and fails
     let faint = good.replace("text = \"#111111\"", "text = \"#dddddd\"");
@@ -2334,7 +2334,7 @@ fn theme_list_and_schema_describe_the_built_in_themes() {
         assert!(t["variants"] == serde_json::json!(["light", "dark", "auto"]) && !t["description"].as_str().unwrap().is_empty() && t["light"]["background"].is_string(), "{t:#}");
     }
     let text = run(&["--format", "text", "theme", "list"]).stdout;
-    assert!(THEMES.iter().all(|n| text.contains(n)) && text.contains("svgdog theme init"), "{text}");
+    assert!(THEMES.iter().all(|n| text.contains(n)) && text.contains("svggod theme init"), "{text}");
     // the bundled theme files are valid by the published schema
     let schema: Value = serde_json::from_str(&run(&["schema", "theme"]).stdout).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
@@ -2444,7 +2444,7 @@ fn effort_comes_from_the_flag_then_the_spec_then_the_config() {
     // the flag wins over the spec
     assert_eq!(render("keen.yaml", "flag.svg", &["--no-config", "--effort", "normal"]), normal);
     // the config speaks for specs that do not say
-    fs::write(at("svgdog.toml"), "[render]\neffort = \"high\"\n").unwrap();
+    fs::write(at("svggod.toml"), "[render]\neffort = \"high\"\n").unwrap();
     assert_eq!(render("plain.yaml", "config.svg", &[]), high);
 
     // values that are not levels are refused where they are written
@@ -2453,7 +2453,39 @@ fn effort_comes_from_the_flag_then_the_spec_then_the_config() {
     fs::write(at("bad.yaml"), format!("{K33}effort: lots\n")).unwrap();
     let spec = run_in(dir.path(), &["render", "bad.yaml", "-o", "-", "--no-config"], None).json();
     assert_eq!((spec["error"]["code"].as_str(), spec["error"]["path"].as_str()), (Some("invalid-value"), Some("effort")));
-    fs::write(at("svgdog.toml"), "[render]\neffort = \"lots\"\n").unwrap();
+    fs::write(at("svggod.toml"), "[render]\neffort = \"lots\"\n").unwrap();
     let config = run_in(dir.path(), &["render", "plain.yaml", "-o", "-"], None).json();
     assert!(config["error"]["message"].as_str().unwrap().contains("not an effort"), "{config:#}");
+}
+
+#[test]
+fn files_written_under_the_old_name_svgdog_still_work() {
+    let dir = tempfile::tempdir().unwrap();
+    let at = |f: &str| dir.path().join(f);
+    fs::copy(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/orders.yaml"), at("o.yaml")).unwrap();
+    assert_eq!(run_in(dir.path(), &["render", "o.yaml", "-o", "new.svg", "--embed-spec", "--no-config"], None).code, 0);
+    let new = fs::read_to_string(at("new.svg")).unwrap();
+    assert!(new.contains("data-svggod=\"1\"") && new.contains("id=\"svggod-spec\""));
+    fs::write(at("old.svg"), new.replace("data-svggod", "data-svgdog").replace("svggod-spec", "svgdog-spec")).unwrap();
+
+    // an old drawing is still our own output: its layout and its embedded spec can be read
+    assert_eq!(run_in(dir.path(), &["render", "o.yaml", "-o", "again.svg", "--previous", "old.svg", "--no-config"], None).code, 0);
+    assert_eq!(run_in(dir.path(), &["describe", "old.svg"], None).code, 0);
+
+    // svgdog-disable comments still silence a rule
+    let svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 100\">\n<title>t</title>\n<rect x=\"20\" y=\"20\" width=\"90\" height=\"40\" fill=\"#dbeafe\"/>\n<!-- svgdog-disable shape-overlap: on purpose -->\n<rect x=\"90\" y=\"40\" width=\"90\" height=\"40\" fill=\"#dbeafe\"/>\n</svg>";
+    fs::write(at("s.svg"), svg).unwrap();
+    assert!(rules_of(&run_in(dir.path(), &["validate", "s.svg", "--rules", "shape-overlap", "--no-config"], None).json()).is_empty());
+
+    // a ```svgdog fence is still a diagram block
+    fs::write(at("page.md"), "```svgdog\nversion: 1\ndiagram: flow\ntitle: Old\nedges: [\"a -> b\"]\n```\n").unwrap();
+    let c = run_in(dir.path(), &["docs", "page.md", "--check", "--no-config"], None);
+    assert_eq!((c.code, c.json()["stale"].as_array().unwrap().len()), (1, 2), "{}", c.stdout);
+
+    // an svgdog.toml is found and read when there is no svggod.toml
+    fs::write(at("svgdog.toml"), "profile = \"dcs\"\n").unwrap();
+    let r = run_in(dir.path(), &["validate", "s.svg"], None);
+    assert!(r.stdout.contains("unknown-profile"), "{}", r.stdout);
+    fs::write(at("svggod.toml"), "version = 1\n").unwrap();
+    assert_eq!(run_in(dir.path(), &["validate", "s.svg", "--rules", "shape-overlap"], None).code, 0, "svggod.toml wins over svgdog.toml");
 }

@@ -1,4 +1,4 @@
-//! `svgdog docs`: diagrams written inside Markdown pages. Each `svgdog` block is
+//! `svggod docs`: diagrams written inside Markdown pages. Each `svggod` block is
 //! rendered to an SVG file next to the page, and an image line after the block is
 //! kept pointing at it.
 
@@ -28,8 +28,8 @@ fn name_of(rest: &str) -> Option<String> {
     ok.then(|| word.to_lowercase())
 }
 
-/// Find the diagram blocks of a page: fenced code with the info word `svgdog`, and
-/// comments that open with `<!-- svgdog`, for a source the reader does not see.
+/// Find the diagram blocks of a page: fenced code with the info word `svggod`, and
+/// comments that open with `<!-- svggod`, for a source the reader does not see.
 fn blocks(lines: &[&str]) -> Vec<Block> {
     let mut out = Vec::new();
     let mut i = 0;
@@ -41,13 +41,13 @@ fn blocks(lines: &[&str]) -> Vec<Block> {
             let info = t[ticks.len()..].trim();
             let close = (i + 1..lines.len()).find(|k| lines[*k].trim_start().starts_with(&ticks) && lines[*k].trim() == ticks);
             let Some(end) = close else { break };
-            if info.split_whitespace().next() == Some("svgdog") {
-                out.push(Block { line: i + 2, name: name_of(info.trim_start_matches("svgdog")), spec: lines[i + 1..end].join("\n") + "\n", end });
+            if let Some(word @ ("svggod" | "svgdog")) = info.split_whitespace().next() {
+                out.push(Block { line: i + 2, name: name_of(info.trim_start_matches(word)), spec: lines[i + 1..end].join("\n") + "\n", end });
             }
             i = end + 1;
             continue;
         }
-        if let Some(rest) = t.strip_prefix("<!-- svgdog")
+        if let Some(rest) = t.strip_prefix("<!-- svggod").or_else(|| t.strip_prefix("<!-- svgdog"))
             && (rest.is_empty() || rest.starts_with(char::is_whitespace))
             && let Some(end) = (i + 1..lines.len()).find(|k| lines[*k].trim() == "-->")
         {
@@ -246,7 +246,7 @@ pub fn run(paths: &[String], check: bool, assets: &str, theme: Option<&str>, for
         for s in &stale {
             text.push_str(&format!("{}: {}.\n", s["path"].as_str().unwrap_or(""), s["reason"].as_str().unwrap_or("")));
         }
-        text.push_str(if stale.is_empty() { "Everything is up to date.\n" } else { "Run 'svgdog docs' without --check to update.\n" });
+        text.push_str(if stale.is_empty() { "Everything is up to date.\n" } else { "Run 'svggod docs' without --check to update.\n" });
         if !stale.is_empty() {
             r.json.insert("ok".into(), json!(false));
         }

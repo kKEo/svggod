@@ -902,7 +902,7 @@ fn draw(spec: &Spec, opt: &Options, prev: Option<&keep::Previous>) -> Result<(St
     let family = theme.family.join(", ");
     let mut wr = Writer { out: String::new(), as_paths: opt.text_as_paths, class: theme.class, width: theme.width, small };
     let font_attr = if opt.text_as_paths { String::new() } else { format!(" font-family=\"{}\"", esc_attr(&family)) };
-    wr.out.push_str(&format!("<svg xmlns=\"{SVG_NS}\" viewBox=\"0 0 {} {}\" data-svgdog=\"1\"{font_attr}>\n", fmt(w), fmt(h)));
+    wr.out.push_str(&format!("<svg xmlns=\"{SVG_NS}\" viewBox=\"0 0 {} {}\" data-svggod=\"1\"{font_attr}>\n", fmt(w), fmt(h)));
     wr.out.push_str(&format!("  <title>{}</title>\n", esc(&spec.title)));
     // Without a description of its own, the drawing says in a sentence what it shows.
     let desc = spec.description.clone().unwrap_or_else(|| crate::describe::short(spec));

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://svgdog.example/schema/findings-1.json",
-  "title": "svgdog result envelope",
+  "$id": "https://svggod.example/schema/findings-1.json",
+  "title": "svggod result envelope",
   "type": "object",
   "required": [
     "tool",
@@ -11,7 +11,7 @@
   ],
   "properties": {
     "tool": {
-      "const": "svgdog"
+      "const": "svggod"
     },
     "version": {
       "type": "string"

@@ -1,13 +1,13 @@
 [package]
-name = "svgdog"
+name = "svggod"
 version = "1.0.4"
 edition = "2024"
 rust-version = "1.85"
 description = "Compile declarative diagram descriptions to SVG and check any SVG for correctness, legibility and portability"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/kKEo/svgdog"
-homepage = "https://github.com/kKEo/svgdog"
-documentation = "https://kkeo.github.io/svgdog/"
+repository = "https://github.com/kKEo/svggod"
+homepage = "https://github.com/kKEo/svggod"
+documentation = "https://kkeo.github.io/svggod/"
 readme = "README.md"
 keywords = ["svg", "diagram", "lint", "cli", "mcp"]
 categories = ["command-line-utilities", "visualization", "development-tools"]
@@ -22,10 +22,10 @@ include = [
     "/LICENSE-APACHE",
 ]
 
-# Prebuilt binaries from the GitHub release, used by `cargo binstall svgdog`.
+# Prebuilt binaries from the GitHub release, used by `cargo binstall svggod`.
 [package.metadata.binstall]
-pkg-url = "{ repo }/releases/download/v{ version }/svgdog-{ version }-{ target }.tar.gz"
-bin-dir = "svgdog-{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-url = "{ repo }/releases/download/v{ version }/svggod-{ version }-{ target }.tar.gz"
+bin-dir = "svggod-{ version }-{ target }/{ bin }{ binary-ext }"
 pkg-fmt = "tgz"
 
 [dependencies]

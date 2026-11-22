@@ -1,4 +1,4 @@
-//! `svgdog examples`: small, tested specs to start from.
+//! `svggod examples`: small, tested specs to start from.
 
 use serde_json::{Value, json};
 
@@ -40,7 +40,7 @@ pub fn run(name: Option<&str>) -> Result<Output, AppError> {
             m.insert("examples".into(), Value::Array(EXAMPLES.iter().map(|e| entry(e, false)).collect()));
             let w = EXAMPLES.iter().map(|(n, _)| n.len()).max().unwrap_or(0);
             let mut out: String = EXAMPLES.iter().map(|(n, t)| format!("{n:<w$}  {}\n", about(t))).collect();
-            out.push_str("\nPrint one with: svgdog examples NAME --format text\n");
+            out.push_str("\nPrint one with: svggod examples NAME --format text\n");
             out
         }
         Some(n) => {

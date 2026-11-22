@@ -1,4 +1,4 @@
-//! `svgdog describe`: a diagram as plain text, from its spec or from a drawing that carries one.
+//! `svggod describe`: a diagram as plain text, from its spec or from a drawing that carries one.
 
 use serde_json::{Value, json};
 
@@ -14,7 +14,7 @@ pub fn source(file: &str, text: &str) -> Result<String, AppError> {
     describe::embedded(text).ok_or_else(|| {
         AppError::input("no-spec", format!("{file} is an SVG without an embedded spec, so there is nothing to read it back from."))
             .path(file)
-            .suggest(Some("Describe the spec file, or render with --embed-spec. For any SVG, 'svgdog inspect' lists what is drawn.".into()))
+            .suggest(Some("Describe the spec file, or render with --embed-spec. For any SVG, 'svggod inspect' lists what is drawn.".into()))
     })
 }
 

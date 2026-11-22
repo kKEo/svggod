@@ -55,13 +55,13 @@ pub struct RuleMeta {
     pub autofix_note: &'static str,
     pub rationale: &'static str,
     pub options: &'static [Opt],
-    /// svgdog.toml content the examples assume; empty when the defaults apply.
+    /// svggod.toml content the examples assume; empty when the defaults apply.
     pub example_config: &'static str,
     pub fail: &'static str,
     pub pass: &'static str,
 }
 
-/// Raised for a malformed `svgdog-disable` comment. Not part of the catalogue and not configurable.
+/// Raised for a malformed `svggod-disable` comment. Not part of the catalogue and not configurable.
 pub const INVALID_SUPPRESSION: &str = "invalid-suppression";
 
 macro_rules! doc {
@@ -323,7 +323,7 @@ pub static RULES: &[RuleMeta] = &[
         autofix: A::None,
         fails_when: "Two connectors cross",
         autofix_note: "None",
-        rationale: "Crossed lines are the layout fault that slows a reader most: the eye has to work out which line goes on. Connectors that only meet at an end, or touch without passing through each other, are not reported. Some drawings cannot be made without a crossing, so this is a note, not an error; in a drawing svgdog made, raising the effort may remove it.",
+        rationale: "Crossed lines are the layout fault that slows a reader most: the eye has to work out which line goes on. Connectors that only meet at an end, or touch without passing through each other, are not reported. Some drawings cannot be made without a crossing, so this is a note, not an error; in a drawing svggod made, raising the effort may remove it.",
         options: &[],
         example_config: "",
         fail: doc!("  <defs>\n    <marker id=\"arrow\" markerWidth=\"6\" markerHeight=\"6\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0 0L6 3L0 6z\"/></marker>\n  </defs>\n  <rect x=\"10\" y=\"10\" width=\"40\" height=\"30\" fill=\"#dbeafe\"/>\n  <rect x=\"150\" y=\"10\" width=\"40\" height=\"30\" fill=\"#dbeafe\"/>\n  <rect x=\"10\" y=\"60\" width=\"40\" height=\"30\" fill=\"#dbeafe\"/>\n  <rect x=\"150\" y=\"60\" width=\"40\" height=\"30\" fill=\"#dbeafe\"/>\n  <path d=\"M50 25 L100 25 L100 75 L150 75\" fill=\"none\" stroke=\"#1f2937\" marker-end=\"url(#arrow)\"/>\n  <path d=\"M50 75 L80 75 L80 50 L120 50 L120 25 L150 25\" fill=\"none\" stroke=\"#1f2937\" marker-end=\"url(#arrow)\"/>"),

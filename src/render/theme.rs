@@ -208,7 +208,7 @@ pub fn parse(text: &str, shown: &str) -> Result<Family, AppError> {
         }
         if let Some(rest) = msg.strip_prefix("missing field `") {
             let name = rest.split('`').next().unwrap_or("");
-            return AppError::input("invalid-theme", format!("{shown}: '{name}' is missing.")).path(name.to_string()).suggest(Some("A theme needs a name and a [light] table with all nine colours; 'svgdog theme init' writes a complete file.".into()));
+            return AppError::input("invalid-theme", format!("{shown}: '{name}' is missing.")).path(name.to_string()).suggest(Some("A theme needs a name and a [light] table with all nine colours; 'svggod theme init' writes a complete file.".into()));
         }
         AppError::input("invalid-theme", format!("{shown}: {msg}"))
     })?;
@@ -303,7 +303,7 @@ pub fn load(dir: &Path, shown: &str) -> Result<Family, AppError> {
     let file: PathBuf = if dir.is_dir() { dir.join(FILE) } else { dir.to_path_buf() };
     if !file.is_file() {
         let why = if dir.is_dir() { format!("{shown} has no {FILE}") } else { format!("{shown} is not a folder") };
-        return Err(AppError::input("theme-not-found", format!("Cannot find the theme: {why}.")).path(shown.to_string()).suggest(Some(format!("A theme is a folder that holds a {FILE}; 'svgdog theme init DIR' writes one to start from."))));
+        return Err(AppError::input("theme-not-found", format!("Cannot find the theme: {why}.")).path(shown.to_string()).suggest(Some(format!("A theme is a folder that holds a {FILE}; 'svggod theme init DIR' writes one to start from."))));
     }
     let text = std::fs::read_to_string(&file).map_err(|e| AppError::input("theme-not-found", format!("Cannot read {}: {e}.", file.display())).path(shown.to_string()))?;
     parse(&text, &format!("{}/{FILE}", shown.trim_end_matches(['/', '\\'])))
@@ -365,7 +365,7 @@ pub fn choose(c: &Choice) -> Result<Resolved, AppError> {
     }
     if let Some((v, dir)) = c.config {
         return resolve(v, dir, c.ceiling).map_err(|mut e| {
-            e.message = format!("svgdog.toml, [style] theme: {}", e.message);
+            e.message = format!("svggod.toml, [style] theme: {}", e.message);
             e
         });
     }

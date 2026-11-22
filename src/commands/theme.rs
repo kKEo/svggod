@@ -1,4 +1,4 @@
-//! `svgdog theme`: list the built-in themes, start one of your own, and check it.
+//! `svggod theme`: list the built-in themes, start one of your own, and check it.
 
 use std::path::Path;
 
@@ -39,7 +39,7 @@ pub fn list() -> Result<Output, AppError> {
     m.insert("themes".into(), Value::Array(all.iter().map(family_json).collect()));
     let w = all.iter().map(|f| f.name.len()).max().unwrap_or(0);
     let mut text: String = all.iter().map(|f| format!("{:<w$}  {}\n", f.name, f.description)).collect();
-    text.push_str(&format!("\nUse one with --theme NAME, or 'theme: NAME' in a spec; add -dark or -auto for the dark or the adaptive variant.\nThe default is {}. Start your own with: svgdog theme init DIR --from NAME\n", theme::DEFAULT));
+    text.push_str(&format!("\nUse one with --theme NAME, or 'theme: NAME' in a spec; add -dark or -auto for the dark or the adaptive variant.\nThe default is {}. Start your own with: svggod theme init DIR --from NAME\n", theme::DEFAULT));
     Ok(Output { json: Value::Object(m), text, exit: EXIT_OK, raw: None })
 }
 
@@ -66,7 +66,7 @@ pub fn init(dir: &str, from: &str, force: bool) -> Result<Output, AppError> {
     let mut text = String::new();
     for (i, line) in source.lines().enumerate() {
         if i == 0 && line.starts_with('#') {
-            text.push_str(&format!("# A theme for SVGDog, started from the built-in '{from}'. Check it with: svgdog theme check {dir}\n"));
+            text.push_str(&format!("# A theme for SVGGod, started from the built-in '{from}'. Check it with: svggod theme check {dir}\n"));
         } else if line.starts_with("name = ") {
             text.push_str(&format!("name = \"{name}\"\n"));
         } else if line.starts_with("description = ") {
@@ -83,7 +83,7 @@ pub fn init(dir: &str, from: &str, force: bool) -> Result<Output, AppError> {
     m.insert("outputs".into(), json!([{ "path": shown, "bytes": text.len() }]));
     m.insert("name".into(), json!(name));
     let how = if theme::is_path(dir) { dir.to_string() } else { format!("./{dir}") };
-    let out = format!("Wrote {shown} ({} bytes), a copy of '{from}' named '{name}'.\nChange it, then check it with: svgdog theme check {dir}\nUse it with: --theme {how}\n", text.len());
+    let out = format!("Wrote {shown} ({} bytes), a copy of '{from}' named '{name}'.\nChange it, then check it with: svggod theme check {dir}\nUse it with: --theme {how}\n", text.len());
     Ok(Output { json: Value::Object(m), text: out, exit: EXIT_OK, raw: None })
 }
 

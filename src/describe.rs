@@ -149,8 +149,15 @@ pub fn full(spec: &Spec) -> String {
 /// The spec a drawing was rendered from, when it was rendered with the spec embedded.
 pub fn embedded(svg: &str) -> Option<String> {
     let doc = roxmltree::Document::parse_with_options(svg, crate::svg::parse_options()).ok()?;
-    let node = doc.descendants().find(|n| n.is_element() && n.tag_name().name() == "metadata" && n.attribute("id") == Some(EMBED_ID))?;
+    let node = doc.descendants().find(|n| n.is_element() && n.tag_name().name() == "metadata" && is_embed_id(n.attribute("id")))?;
     node.text().map(|t| t.trim().to_string()).filter(|t| !t.is_empty())
 }
 
-pub const EMBED_ID: &str = "svgdog-spec";
+pub const EMBED_ID: &str = "svggod-spec";
+/// The id older releases (named svgdog) gave the embedded spec; still read.
+pub const LEGACY_EMBED_ID: &str = "svgdog-spec";
+
+/// Whether a metadata id marks an embedded spec, under the current or the old name.
+pub fn is_embed_id(id: Option<&str>) -> bool {
+    id == Some(EMBED_ID) || id == Some(LEGACY_EMBED_ID)
+}

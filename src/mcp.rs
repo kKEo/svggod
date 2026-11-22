@@ -1,4 +1,4 @@
-//! `svgdog mcp`: the same commands as Model Context Protocol tools over stdio.
+//! `svggod mcp`: the same commands as Model Context Protocol tools over stdio.
 //!
 //! The server adds no behaviour. A tool call is turned into the command line it
 //! mirrors, run in process, and answered with the JSON envelope. Every path is
@@ -24,7 +24,7 @@ const LEGACY: &[&str] = &["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"
 const META_VERSION: &str = "io.modelcontextprotocol/protocolVersion";
 const META_CAPS: &str = "io.modelcontextprotocol/clientCapabilities";
 const META_SERVER: &str = "io.modelcontextprotocol/serverInfo";
-const INSTRUCTIONS: &str = "SVGDog compiles diagram specs to SVG and checks any SVG. Typical loop: svgdog_examples for a spec to start from (svgdog_schema, name: spec, has every field), then svgdog_render with the spec as text and preview: true, read the findings and look at the image, svgdog_fix for those marked fixable or change the spec, repeat until there are no errors; svgdog_preview with annotate for a look. All paths are relative to the server's root directory.";
+const INSTRUCTIONS: &str = "SVGGod compiles diagram specs to SVG and checks any SVG. Typical loop: svggod_examples for a spec to start from (svggod_schema, name: spec, has every field), then svggod_render with the spec as text and preview: true, read the findings and look at the image, svggod_fix for those marked fixable or change the spec, repeat until there are no errors; svggod_preview with annotate for a look. All paths are relative to the server's root directory.";
 
 #[derive(Clone, Copy, PartialEq)]
 enum Kind {
@@ -64,26 +64,26 @@ struct Tool {
 
 const CONFIG_ARGS: &[Arg] = &[
     arg("profile", Kind::Str, Some("--profile"), false, "Rule profile: minimal, docs or strict"),
-    arg("config", Kind::Path, Some("--config"), false, "Config file to use instead of the nearest svgdog.toml"),
+    arg("config", Kind::Path, Some("--config"), false, "Config file to use instead of the nearest svggod.toml"),
     arg("no_config", Kind::Bool, Some("--no-config"), false, "Ignore any config file"),
 ];
 
 const TOOLS: &[Tool] = &[
     Tool {
-        name: "svgdog_render",
+        name: "svggod_render",
         command: "render",
         about: "Compile a diagram spec (YAML or JSON) to SVG and validate the result. Give the spec as text in 'spec' or as a path in 'file'. Without 'output' the SVG comes back in the envelope's 'svg' field; with it, the file is written. Returns the envelope with findings.",
         read_only: false,
         config: true,
         args: &[
-            arg("spec", Kind::Text, None, false, "The diagram spec itself, as YAML or JSON text (see svgdog_examples)"),
+            arg("spec", Kind::Text, None, false, "The diagram spec itself, as YAML or JSON text (see svggod_examples)"),
             arg("file", Kind::Path, None, false, "Diagram spec file, in place of 'spec'"),
             arg("output", Kind::Path, Some("-o"), false, "Where to write the SVG; omit to get it back in the result"),
             arg("preview", Kind::Bool, None, false, "Also return a PNG image of the result, to look at"),
-            arg("theme", Kind::Str, Some("--theme"), false, "Built-in theme: docs, blueprint, paper, bold or cards; add -dark, or -auto to follow the reader's light or dark mode. Or a theme folder inside the root, such as ./themes/acme (add #dark or #auto). svgdog_theme_list describes them. Default: the spec's, else svgdog.toml's, else docs-light"),
-            arg("effort", Kind::Str, Some("--effort"), false, "How hard to work at edges that cross: normal, high or max. Raise it when the result reports edge-crossing. Default: the spec's, else svgdog.toml's, else normal"),
+            arg("theme", Kind::Str, Some("--theme"), false, "Built-in theme: docs, blueprint, paper, bold or cards; add -dark, or -auto to follow the reader's light or dark mode. Or a theme folder inside the root, such as ./themes/acme (add #dark or #auto). svggod_theme_list describes them. Default: the spec's, else svggod.toml's, else docs-light"),
+            arg("effort", Kind::Str, Some("--effort"), false, "How hard to work at edges that cross: normal, high or max. Raise it when the result reports edge-crossing. Default: the spec's, else svggod.toml's, else normal"),
             arg("interactive", Kind::Str, Some("--interactive"), false, "css: one SVG that highlights related things on hover and focus. html: a self-contained page with step controls and details. Default none"),
-            arg("embed_spec", Kind::Bool, Some("--embed-spec"), false, "Store the spec inside the SVG, so svgdog_describe can read the drawing back"),
+            arg("embed_spec", Kind::Bool, Some("--embed-spec"), false, "Store the spec inside the SVG, so svggod_describe can read the drawing back"),
             arg("check", Kind::Bool, Some("--check"), false, "Write nothing; report whether 'output' is what the spec renders now"),
             arg("frames", Kind::Bool, Some("--frames"), false, "Write one picture per step of the spec's 'steps', each with its step in focus; needs 'output'"),
             arg("previous", Kind::Path, Some("--previous"), false, "The SVG rendered from the earlier spec: boxes in both stay where they were, new ones go into free room. May be the same file as 'output'. Fails with layout-changed when boxes cannot stay"),
@@ -93,7 +93,7 @@ const TOOLS: &[Tool] = &[
         ],
     },
     Tool {
-        name: "svgdog_validate",
+        name: "svggod_validate",
         command: "validate",
         about: "Run the rule catalogue on one or more SVG files. Returns the envelope with findings; fixable ones carry a fix.",
         read_only: true,
@@ -107,7 +107,7 @@ const TOOLS: &[Tool] = &[
         ],
     },
     Tool {
-        name: "svgdog_inspect",
+        name: "svggod_inspect",
         command: "inspect",
         about: "Describe an SVG's visible elements as data, each with its bounding box in viewBox units. Returns scene JSON.",
         read_only: true,
@@ -120,7 +120,7 @@ const TOOLS: &[Tool] = &[
         ],
     },
     Tool {
-        name: "svgdog_preview",
+        name: "svggod_preview",
         command: "preview",
         about: "Rasterize an SVG to PNG. Without output the PNG is returned as image content; with output it is written there.",
         read_only: false,
@@ -137,7 +137,7 @@ const TOOLS: &[Tool] = &[
         ],
     },
     Tool {
-        name: "svgdog_edit",
+        name: "svggod_edit",
         command: "edit",
         about: "Apply targeted changes to an SVG or a diagram spec. Give set or ops, and one of dry_run, output or in_place. Returns the envelope with a diff.",
         read_only: false,
@@ -145,14 +145,14 @@ const TOOLS: &[Tool] = &[
         args: &[
             arg("file", Kind::Path, None, true, "SVG or spec file"),
             arg("set", Kind::StrList, Some("--set"), false, "Changes of the form SELECTOR.attr=value"),
-            arg("ops", Kind::Json, None, false, "Operations as JSON: an array, or a finding's fix object (see svgdog_schema, name: ops)"),
+            arg("ops", Kind::Json, None, false, "Operations as JSON: an array, or a finding's fix object (see svggod_schema, name: ops)"),
             arg("dry_run", Kind::Bool, Some("--dry-run"), false, "Report the diff and resulting findings; write nothing"),
             arg("output", Kind::Path, Some("-o"), false, "Write the result to a new file"),
             arg("in_place", Kind::Bool, Some("--in-place"), false, "Change the input file"),
         ],
     },
     Tool {
-        name: "svgdog_fix",
+        name: "svggod_fix",
         command: "fix",
         about: "Apply the autofixes that findings carry. Give one of dry_run, output or in_place. Returns the envelope with a diff.",
         read_only: false,
@@ -167,7 +167,7 @@ const TOOLS: &[Tool] = &[
         ],
     },
     Tool {
-        name: "svgdog_schema",
+        name: "svggod_schema",
         command: "schema",
         about: "Print the JSON Schema of a format: spec, config, findings, scene or ops.",
         read_only: true,
@@ -175,7 +175,7 @@ const TOOLS: &[Tool] = &[
         args: &[arg("name", Kind::Str, None, true, "spec, config, findings, scene or ops")],
     },
     Tool {
-        name: "svgdog_rules",
+        name: "svggod_rules",
         command: "rules",
         about: "List every rule with its severity and autofix status, or explain one rule with its thresholds and a failing and a passing example.",
         read_only: true,
@@ -183,9 +183,9 @@ const TOOLS: &[Tool] = &[
         args: &[arg("explain", Kind::Str, Some("--explain"), false, "Rule id to explain")],
     },
     Tool {
-        name: "svgdog_docs",
+        name: "svggod_docs",
         command: "docs",
-        about: "Render the diagrams written inside Markdown pages (fenced blocks with the info word svgdog) to SVG files next to each page, and keep the image line after each block pointing at its picture. With check, write nothing and report what is out of date.",
+        about: "Render the diagrams written inside Markdown pages (fenced blocks with the info word svggod) to SVG files next to each page, and keep the image line after each block pointing at its picture. With check, write nothing and report what is out of date.",
         read_only: false,
         config: true,
         args: &[
@@ -198,7 +198,7 @@ const TOOLS: &[Tool] = &[
         ],
     },
     Tool {
-        name: "svgdog_describe",
+        name: "svggod_describe",
         command: "describe",
         about: "Say in words what a diagram shows: its nodes, connections, notes and steps. Takes a spec file, or an SVG rendered with embed_spec; the answer also carries the spec itself.",
         read_only: true,
@@ -206,23 +206,23 @@ const TOOLS: &[Tool] = &[
         args: &[arg("file", Kind::Path, None, true, "Diagram spec, or an SVG rendered with embed_spec"), arg("short", Kind::Bool, Some("--short"), false, "One or two sentences, as for alt text")],
     },
     Tool {
-        name: "svgdog_theme_list",
+        name: "svggod_theme_list",
         command: "theme list",
-        about: "List the built-in themes with their colours, fonts, sizes and line styles. Use a name as 'theme' in svgdog_render or in a spec.",
+        about: "List the built-in themes with their colours, fonts, sizes and line styles. Use a name as 'theme' in svggod_render or in a spec.",
         read_only: true,
         config: false,
         args: &[],
     },
     Tool {
-        name: "svgdog_theme_init",
+        name: "svggod_theme_init",
         command: "theme init",
-        about: "Start a theme of your own: write a theme.toml, copied from a built-in theme, into a folder. Change the file, check it with svgdog_theme_check, and use the folder as 'theme' (for example ./themes/acme).",
+        about: "Start a theme of your own: write a theme.toml, copied from a built-in theme, into a folder. Change the file, check it with svggod_theme_check, and use the folder as 'theme' (for example ./themes/acme).",
         read_only: false,
         config: false,
         args: &[arg("dir", Kind::Path, None, true, "Folder for the theme; created when missing"), arg("from", Kind::Str, Some("--from"), false, "Built-in theme to copy: docs, blueprint, paper, bold or cards; default docs"), arg("force", Kind::Bool, Some("--force"), false, "Replace a theme.toml that is already there")],
     },
     Tool {
-        name: "svgdog_theme_check",
+        name: "svggod_theme_check",
         command: "theme check",
         about: "Check a theme folder: that its theme.toml is valid, that colours which sit on each other have enough contrast, and that the bundled examples drawn with it have no findings.",
         read_only: true,
@@ -230,7 +230,7 @@ const TOOLS: &[Tool] = &[
         args: &[arg("dir", Kind::Path, None, true, "Folder that holds the theme.toml")],
     },
     Tool {
-        name: "svgdog_examples",
+        name: "svggod_examples",
         command: "examples",
         about: "List the bundled example specs, or return one in full to start from. Each is small and renders without findings.",
         read_only: true,
@@ -317,7 +317,7 @@ fn call(root: &Path, tool: &Tool, args: &Map<String, Value>) -> Result<crate::en
             return Err(AppError::usage("unknown-field", format!("Unknown argument '{k}' for {}.", tool.name)).path(k.clone()).suggest(did_you_mean(k, all_args(tool).map(|a| a.name))));
         }
     }
-    let mut argv: Vec<String> = vec!["svgdog".into(), "--format".into(), "json".into(), "--quiet".into()];
+    let mut argv: Vec<String> = vec!["svggod".into(), "--format".into(), "json".into(), "--quiet".into()];
     // A tool for a subcommand names both words.
     argv.extend(tool.command.split(' ').map(String::from));
     let mut inline_ops = None;
@@ -327,7 +327,7 @@ fn call(root: &Path, tool: &Tool, args: &Map<String, Value>) -> Result<crate::en
     if render {
         match (given("spec"), given("file")) {
             (true, true) => return Err(AppError::usage("argument-conflict", "Give 'spec' (the text) or 'file' (a path), not both.")),
-            (false, false) => return Err(AppError::usage("missing-argument", "svgdog_render needs 'spec' (the text) or 'file' (a path).").suggest(Some("svgdog_examples returns specs to start from.".into()))),
+            (false, false) => return Err(AppError::usage("missing-argument", "svggod_render needs 'spec' (the text) or 'file' (a path).").suggest(Some("svggod_examples returns specs to start from.".into()))),
             _ => {}
         }
     }
@@ -417,8 +417,10 @@ let text = value.as_str().ok_or_else(|| bad(a.name, "text"))?;
 }
 
 fn tool_result(root: &Path, name: &str, args: &Map<String, Value>) -> Option<Value> {
+    // Tools were named svgdog_* before the rename; old clients may still call them so.
+    let name = name.strip_prefix("svgdog_").map(|rest| format!("svggod_{rest}")).unwrap_or_else(|| name.to_string());
     let tool = TOOLS.iter().find(|t| t.name == name)?;
-    let outcome = std::panic::catch_unwind(|| call(root, tool, args)).unwrap_or_else(|_| Err(AppError::new(EXIT_INTERNAL, "internal-error", "svgdog hit a bug while running this tool. Please report it with the arguments and the input file.")));
+    let outcome = std::panic::catch_unwind(|| call(root, tool, args)).unwrap_or_else(|_| Err(AppError::new(EXIT_INTERNAL, "internal-error", "svggod hit a bug while running this tool. Please report it with the arguments and the input file.")));
     Some(match outcome {
         Ok(out) => {
             let mut content = Vec::new();
@@ -444,7 +446,7 @@ fn rpc_error(id: Value, code: i64, message: &str, data: Option<Value>) -> Value 
 }
 
 fn server_info() -> Value {
-    json!({ "name": "svgdog", "version": VERSION })
+    json!({ "name": "svggod", "version": VERSION })
 }
 
 /// Answer one message; `None` for notifications, which get no reply.

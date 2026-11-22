@@ -69,7 +69,7 @@ fn scope(svg: &str) -> String {
     for b in svg.bytes() {
         h = (h ^ b as u32).wrapping_mul(0x01000193);
     }
-    format!("svgdog-{h:08x}")
+    format!("svggod-{h:08x}")
 }
 
 /// Add the scope class to the root and the style block after the description.
@@ -88,7 +88,7 @@ pub fn style(svg: &str, spec: &Spec, accent: &str) -> String {
         }
         css.push_str(&format!("{s}[data-current=\"{k}\"] #steps>g:not(#step-{k}){{opacity:.45}}"));
     }
-    let mut out = svg.replacen(" data-svgdog=\"1\"", &format!(" data-svgdog=\"1\" data-interactive=\"css\" class=\"{name}\""), 1);
+    let mut out = svg.replacen(" data-svggod=\"1\"", &format!(" data-svggod=\"1\" data-interactive=\"css\" class=\"{name}\""), 1);
     // After the description, and after the dark-mode rule if the theme added one.
     let at = out.find("</style>\n").map(|i| i + 9).or_else(|| out.find("</desc>\n").map(|i| i + 8)).unwrap_or(0);
     out.insert_str(at, &format!("  <style>{css}</style>\n"));

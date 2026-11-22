@@ -1,4 +1,4 @@
-//! svgdog.toml: discovery, strict parsing, profiles and precedence.
+//! svggod.toml: discovery, strict parsing, profiles and precedence.
 
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
@@ -11,7 +11,9 @@ use crate::envelope::{AppError, Severity};
 use crate::render::effort::Effort;
 use crate::util::{Rgba, did_you_mean};
 
-pub const CONFIG_NAME: &str = "svgdog.toml";
+pub const CONFIG_NAME: &str = "svggod.toml";
+/// The config name older releases (named svgdog) used; read when no svggod.toml is beside it.
+pub const LEGACY_CONFIG_NAME: &str = "svgdog.toml";
 pub const PROFILES: &[&str] = &["minimal", "docs", "strict"];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -462,8 +464,7 @@ impl Loader {
         let mut dir = Some(start.as_path());
         let mut found = None;
         while let Some(d) = dir {
-            let candidate = d.join(CONFIG_NAME);
-            if candidate.is_file() {
+            if let Some(candidate) = [CONFIG_NAME, LEGACY_CONFIG_NAME].iter().map(|n| d.join(n)).find(|p| p.is_file()) {
                 found = Some(candidate);
                 break;
             }

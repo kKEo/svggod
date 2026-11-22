@@ -123,7 +123,7 @@ pub fn run(ctx: &mut Ctx) {
             })
             .count();
         // The spec a drawing was rendered from is its source, not an editor's leftovers.
-        let own = |n: &roxmltree::Node| n.attribute("id") == Some(crate::describe::EMBED_ID);
+        let own = |n: &roxmltree::Node| crate::describe::is_embed_id(n.attribute("id"));
         let metadata = scene.doc.descendants().filter(|n| n.is_element() && n.tag_name().name() == "metadata" && !own(n)).count();
         if !namespaces.is_empty() || comments > 0 || metadata > 0 {
             let mut parts = Vec::new();

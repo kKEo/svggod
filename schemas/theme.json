@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://svgdog.example/schema/theme-1.json",
+  "$id": "https://svggod.example/schema/theme-1.json",
   "title": "theme.toml",
-  "description": "A theme for SVGDog: one folder holds one theme.toml. Use it with --theme DIR, 'theme: DIR' in a spec, or [style] theme in svgdog.toml.",
+  "description": "A theme for SVGGod: one folder holds one theme.toml. Use it with --theme DIR, 'theme: DIR' in a spec, or [style] theme in svggod.toml.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -64,8 +64,8 @@ fn box_of_shape(e: &svg::Elem, bbox: Rect) -> Rect {
 pub fn read(text: &str, name: &str) -> Result<Previous, AppError> {
     let doc = roxmltree::Document::parse_with_options(text, svg::parse_options()).map_err(|e| AppError::input("malformed-xml", format!("{name} is not well-formed XML: {e}.")).path(name))?;
     let scene = Scene::build(&doc);
-    if !scene.svgdog_output {
-        return Err(AppError::input("not-svgdog-output", format!("{name} was not rendered by svgdog, so its layout cannot be read.")).path(name).suggest(Some("Pass the SVG that 'svgdog render' wrote for the earlier spec, or drop --previous.".into())));
+    if !scene.svggod_output {
+        return Err(AppError::input("not-svggod-output", format!("{name} was not rendered by svggod, so its layout cannot be read.")).path(name).suggest(Some("Pass the SVG that 'svggod render' wrote for the earlier spec, or drop --previous.".into())));
     }
     let mut out = Previous::default();
     let mut notes: BTreeMap<usize, Rect> = BTreeMap::new();

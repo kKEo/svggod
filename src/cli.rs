@@ -6,11 +6,11 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "svgdog",
+    name = "svggod",
     version,
     about = "Compile and check SVG diagrams for technical documentation.",
     disable_help_subcommand = true,
-    after_help = "Example:\n  svgdog validate docs/fig/orders.svg --format json"
+    after_help = "Example:\n  svggod validate docs/fig/orders.svg --format json"
 )]
 pub struct Cli {
     #[command(flatten)]
@@ -30,7 +30,7 @@ pub struct Global {
     /// Output form [default: text on a terminal, json otherwise]
     #[arg(long, global = true, value_enum, value_name = "json|text")]
     pub format: Option<Format>,
-    /// Config file to use [default: nearest svgdog.toml above the input file]
+    /// Config file to use [default: nearest svggod.toml above the input file]
     #[arg(long, global = true, value_name = "PATH", conflicts_with = "no_config")]
     pub config: Option<PathBuf>,
     /// Ignore any config file
@@ -80,7 +80,7 @@ pub enum SchemaName {
 #[derive(Subcommand, Debug)]
 pub enum Command {
     /// Compile a spec to SVG and validate the result
-    #[command(after_help = "Example:\n  svgdog render fig/orders.yaml -o fig/orders.svg")]
+    #[command(after_help = "Example:\n  svggod render fig/orders.yaml -o fig/orders.svg")]
     Render {
         /// Diagram spec, YAML or JSON; - reads stdin
         #[arg(value_name = "SPEC")]
@@ -88,10 +88,10 @@ pub enum Command {
         /// Where to write the SVG; - writes it to stdout in place of the report
         #[arg(short = 'o', value_name = "OUT")]
         output: String,
-        /// Theme: docs, blueprint, paper, bold or cards (add -dark or -auto), or a theme folder [default: the spec's, else svgdog.toml's, else docs-light]
+        /// Theme: docs, blueprint, paper, bold or cards (add -dark or -auto), or a theme folder [default: the spec's, else svggod.toml's, else docs-light]
         #[arg(long, value_name = "NAME|DIR")]
         theme: Option<String>,
-        /// How hard to work at edges that cross: normal, high or max [default: the spec's, else svgdog.toml's, else normal]
+        /// How hard to work at edges that cross: normal, high or max [default: the spec's, else svggod.toml's, else normal]
         #[arg(long, value_name = "LEVEL")]
         effort: Option<String>,
         /// css: an SVG that highlights on hover; html: a page with step controls [default: none]
@@ -120,7 +120,7 @@ pub enum Command {
         text_as_paths: bool,
     },
     /// Run rules on one or more SVG files
-    #[command(after_help = "Example:\n  svgdog validate 'docs/**/*.svg' --fail-on warning")]
+    #[command(after_help = "Example:\n  svggod validate 'docs/**/*.svg' --fail-on warning")]
     Validate {
         /// SVG files or globs; - reads stdin
         #[arg(required = true, value_name = "FILE")]
@@ -139,7 +139,7 @@ pub enum Command {
         max_findings: usize,
     },
     /// Describe an SVG's elements as data
-    #[command(after_help = "Example:\n  svgdog inspect fig/orders.svg --select '#node-api' --fields id,tag,bbox,text")]
+    #[command(after_help = "Example:\n  svggod inspect fig/orders.svg --select '#node-api' --fields id,tag,bbox,text")]
     Inspect {
         /// SVG file; - reads stdin
         #[arg(value_name = "FILE")]
@@ -155,7 +155,7 @@ pub enum Command {
         fields: Vec<String>,
     },
     /// Rasterize to PNG
-    #[command(after_help = "Example:\n  svgdog preview fig/orders.svg -o /tmp/orders.png --annotate")]
+    #[command(after_help = "Example:\n  svggod preview fig/orders.svg -o /tmp/orders.png --annotate")]
     Preview {
         /// SVG file; - reads stdin
         #[arg(value_name = "FILE")]
@@ -183,7 +183,7 @@ pub enum Command {
         force: bool,
     },
     /// Apply targeted changes by id
-    #[command(after_help = "Example:\n  svgdog edit fig/orders.svg --set '#node-api > rect.fill=#2563eb' --dry-run")]
+    #[command(after_help = "Example:\n  svggod edit fig/orders.svg --set '#node-api > rect.fill=#2563eb' --dry-run")]
     Edit {
         /// SVG file; - reads stdin
         #[arg(value_name = "FILE")]
@@ -191,7 +191,7 @@ pub enum Command {
         /// Set one attribute on every element the selector matches; repeatable
         #[arg(long, value_name = "SELECTOR.attr=value")]
         set: Vec<String>,
-        /// JSON operations: set, remove, move, rename-id, add-node (see: svgdog schema ops)
+        /// JSON operations: set, remove, move, rename-id, add-node (see: svggod schema ops)
         #[arg(long, value_name = "ops.json|-")]
         ops: Option<String>,
         /// Report the diff and the resulting findings; write nothing
@@ -205,7 +205,7 @@ pub enum Command {
         in_place: bool,
     },
     /// Apply autofixes from findings
-    #[command(after_help = "Example:\n  svgdog fix fig/orders.svg --unsafe --dry-run")]
+    #[command(after_help = "Example:\n  svggod fix fig/orders.svg --unsafe --dry-run")]
     Fix {
         /// SVG file; - reads stdin
         #[arg(value_name = "FILE")]
@@ -227,27 +227,27 @@ pub enum Command {
         in_place: bool,
     },
     /// Serve the commands as Model Context Protocol tools over stdio
-    #[command(after_help = "Example:\n  svgdog mcp --root-path ./docs")]
+    #[command(after_help = "Example:\n  svggod mcp --root-path ./docs")]
     Mcp {
         /// Directory the server may read and write; paths outside it are refused
         #[arg(long, value_name = "DIR")]
         root_path: PathBuf,
     },
     /// Print a JSON Schema
-    #[command(after_help = "Example:\n  svgdog schema findings")]
+    #[command(after_help = "Example:\n  svggod schema findings")]
     Schema {
         #[arg(value_enum, value_name = "spec|config|findings|scene|ops|theme")]
         name: SchemaName,
     },
     /// List or explain rules
-    #[command(after_help = "Example:\n  svgdog rules --explain text-overflow")]
+    #[command(after_help = "Example:\n  svggod rules --explain text-overflow")]
     Rules {
         /// Show rationale, thresholds and a failing and a passing example
         #[arg(long, value_name = "ID")]
         explain: Option<String>,
     },
     /// Render the diagrams written inside Markdown pages
-    #[command(after_help = "Example:\n  svgdog docs docs/ --check")]
+    #[command(after_help = "Example:\n  svggod docs docs/ --check")]
     Docs {
         /// Markdown files, or folders to search for them
         #[arg(required = true, value_name = "PATH")]
@@ -269,7 +269,7 @@ pub enum Command {
         interactive: Live,
     },
     /// Say in words what a diagram shows
-    #[command(after_help = "Example:\n  svgdog describe fig/orders.yaml --format text")]
+    #[command(after_help = "Example:\n  svggod describe fig/orders.yaml --format text")]
     Describe {
         /// A diagram spec, or an SVG rendered with --embed-spec; - reads stdin
         #[arg(value_name = "FILE")]
@@ -279,14 +279,14 @@ pub enum Command {
         short: bool,
     },
     /// List the bundled example specs, or print one
-    #[command(after_help = "Example:\n  svgdog examples flow --format text > fig/first.yaml")]
+    #[command(after_help = "Example:\n  svggod examples flow --format text > fig/first.yaml")]
     Examples {
         /// Example to print [default: list them]
         #[arg(value_name = "NAME")]
         name: Option<String>,
     },
     /// List the built-in themes, start a theme of your own, or check one
-    #[command(after_help = "Example:\n  svgdog theme init themes/acme --from paper")]
+    #[command(after_help = "Example:\n  svggod theme init themes/acme --from paper")]
     Theme {
         #[command(subcommand)]
         action: ThemeAction,
@@ -298,7 +298,7 @@ pub enum ThemeAction {
     /// List the built-in themes
     List,
     /// Write a theme.toml to start from into a folder
-    #[command(after_help = "Example:\n  svgdog theme init themes/acme --from paper")]
+    #[command(after_help = "Example:\n  svggod theme init themes/acme --from paper")]
     Init {
         /// Folder for the theme; it is created when missing
         #[arg(value_name = "DIR")]
@@ -311,7 +311,7 @@ pub enum ThemeAction {
         force: bool,
     },
     /// Check a theme folder: the file, the contrast of its colours, and the bundled examples drawn with it
-    #[command(after_help = "Example:\n  svgdog theme check themes/acme")]
+    #[command(after_help = "Example:\n  svggod theme check themes/acme")]
     Check {
         /// Folder that holds the theme.toml
         #[arg(value_name = "DIR")]
