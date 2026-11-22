@@ -2515,3 +2515,76 @@ fn deep_nesting_is_a_finding_for_validate_and_an_input_error_for_inspect() {
     let i = run_in(dir.path(), &["inspect", "deep.svg", "--format", "json"], None);
     assert_eq!((i.code, i.json()["error"]["code"].as_str()), (3, Some("malformed-xml")));
 }
+
+// Hardening: the program's own memory limit. Every run here is given a limit, so
+// none of these can take more than a few megabytes whatever goes wrong.
+
+/// An ordinary drawing, only large: `n` boxes with a label each. Checking it takes
+/// more than 16 MB, the smallest limit there is, and far less than the default.
+fn many_boxes(n: usize) -> String {
+    let mut svg = format!("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 12040 {}\"><title>t</title><desc>d</desc>", (n / 100 + 1) * 60 + 40);
+    for i in 0..n {
+        let (x, y) = (20 + (i % 100) * 120, 20 + (i / 100) * 60);
+        svg.push_str(&format!("<rect x=\"{x}\" y=\"{y}\" width=\"90\" height=\"36\" fill=\"#fff\" stroke=\"#333\"/><text x=\"{}\" y=\"{}\" font-size=\"14\" font-family=\"Inter, sans-serif\">n{i}</text>", x + 10, y + 24));
+    }
+    svg + "</svg>"
+}
+
+fn run_env(dir: &Path, args: &[&str], limit: Option<&str>) -> Run {
+    let mut cmd = Command::new(BIN);
+    cmd.args(args).current_dir(dir).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).env_remove("SVGGOD_MAX_MEMORY");
+    if let Some(l) = limit {
+        cmd.env("SVGGOD_MAX_MEMORY", l);
+    }
+    let out = cmd.output().unwrap();
+    Run { code: out.status.code().unwrap(), stdout: String::from_utf8(out.stdout).unwrap(), stderr: String::from_utf8(out.stderr).unwrap() }
+}
+
+#[test]
+fn an_input_that_needs_more_than_the_memory_limit_ends_with_an_error() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("big.svg"), many_boxes(3000)).unwrap();
+
+    let json = run_env(dir.path(), &["validate", "big.svg", "--max-memory", "16MB", "--format", "json"], None);
+    assert_eq!(json.code, 3, "{}", json.stderr);
+    let v = json.json();
+    assert_eq!((v["ok"].as_bool(), v["command"].as_str(), v["error"]["code"].as_str()), (Some(false), Some("validate"), Some("memory-limit")));
+    assert!(v["error"]["message"].as_str().unwrap().contains("16 MB"));
+    assert!(v["error"]["suggestion"].as_str().unwrap().contains("--max-memory"));
+    assert_eq!(json.stderr, "");
+
+    let text = run_env(dir.path(), &["validate", "big.svg", "--max-memory", "16MB", "--format", "text"], None);
+    assert_eq!((text.code, text.stdout.as_str()), (3, ""));
+    assert!(text.stderr.starts_with("error[memory-limit]: "), "{}", text.stderr);
+
+    // With room, the same file is checked: the default, a larger limit, and no limit.
+    for limit in [&[][..], &["--max-memory", "256MB"], &["--max-memory", "0"]] {
+        let args = [&["validate", "big.svg", "--format", "json", "--skip", "file-too-large"], limit].concat();
+        let ok = run_env(dir.path(), &args, None);
+        assert_eq!(ok.code, 0, "{limit:?}: {}", ok.stdout);
+        assert_eq!(ok.json()["summary"]["files"], 1);
+    }
+}
+
+#[test]
+fn the_memory_limit_comes_from_the_flag_then_the_environment() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("big.svg"), many_boxes(3000)).unwrap();
+    let args = ["validate", "big.svg", "--format", "json", "--skip", "file-too-large"];
+
+    let env = run_env(dir.path(), &args, Some("16MB"));
+    assert_eq!((env.code, env.json()["error"]["code"].as_str()), (3, Some("memory-limit")));
+    // The flag is heard over the environment, in both directions.
+    assert_eq!(run_env(dir.path(), &[&args[..], &["--max-memory", "256MB"]].concat(), Some("16MB")).code, 0);
+    assert_eq!(run_env(dir.path(), &[&args[..], &["--max-memory", "16MB"]].concat(), Some("256MB")).code, 3);
+
+    // A size that cannot be read is a usage error, wherever it comes from.
+    for bad in ["lots", "512", "5MB", "1TB"] {
+        let flag = run_env(dir.path(), &["validate", "big.svg", "--format", "json", "--max-memory", bad], None);
+        assert_eq!((flag.code, flag.json()["error"]["code"].as_str()), (2, Some("invalid-argument")), "{bad}");
+        assert!(flag.json()["error"]["message"].as_str().unwrap().starts_with("--max-memory: "), "{bad}");
+    }
+    let var = run_env(dir.path(), &["validate", "big.svg", "--format", "json"], Some("lots"));
+    assert_eq!(var.code, 2);
+    assert!(var.json()["error"]["message"].as_str().unwrap().starts_with("SVGGOD_MAX_MEMORY: "));
+}

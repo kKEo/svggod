@@ -7,7 +7,7 @@ use clap::error::{ContextKind, ContextValue, ErrorKind};
 
 use crate::cli::{self, Cli, Command, Format};
 use crate::envelope::{AppError, EXIT_INTERNAL, EXIT_OK, Output};
-use crate::{commands, config, mcp, util};
+use crate::{commands, config, mcp, memory, util};
 
 fn default_format() -> Format {
     if std::io::stdout().is_terminal() { Format::Text } else { Format::Json }
@@ -139,6 +139,32 @@ thread_local! {
     static LOADED: std::cell::RefCell<Vec<std::path::PathBuf>> = const { std::cell::RefCell::new(Vec::new()) };
 }
 
+/// Set the memory limit, from the flag, else the environment, else the default, and
+/// make ready what is said if an input takes the program past it.
+fn limit_memory(flag: Option<&str>, format: Format, command: &str) -> Result<(), AppError> {
+    let from_env = std::env::var(memory::VARIABLE).ok().filter(|v| !v.trim().is_empty());
+    let limit = match (flag, &from_env) {
+        (Some(v), _) => memory::parse_size(v).map_err(|why| AppError::usage("invalid-argument", format!("--max-memory: {why}")))?,
+        (None, Some(v)) => memory::parse_size(v).map_err(|why| AppError::usage("invalid-argument", format!("{}: {why}", memory::VARIABLE)))?,
+        (None, None) => Some(memory::DEFAULT),
+    };
+    if let Some(bytes) = limit {
+        memory::arm(memory_error(bytes, command, format), format == Format::Json);
+    }
+    memory::set_limit(limit);
+    Ok(())
+}
+
+/// The `memory-limit` error as it is printed, ready before it is needed.
+fn memory_error(limit: u64, command: &str, format: Format) -> Vec<u8> {
+    let err = AppError::input("memory-limit", format!("The input needs more memory than the limit of {}, so svggod stopped.", memory::show(limit)))
+        .suggest(Some("Raise the limit with --max-memory (0 is no limit), or check the input: a number far out of range can ask for this much.".into()));
+    match format {
+        Format::Json => format!("{}\n", err.to_json(command)).into_bytes(),
+        Format::Text => format!("{}\n", err.to_text()).into_bytes(),
+    }
+}
+
 fn dispatch(args: &[String]) -> i32 {
     let cli = match Cli::try_parse_from(args) {
         Ok(c) => c,
@@ -153,6 +179,9 @@ fn dispatch(args: &[String]) -> i32 {
     };
     let format = cli.global.format.unwrap_or_else(default_format);
     let name = cli.command.name();
+    if let Err(e) = limit_memory(cli.global.max_memory.as_deref(), format, name) {
+        return fail(format, name, &e);
+    }
     if let Command::Mcp { root_path } = &cli.command {
         // The server owns stdout from here on; a start-up failure is reported as JSON.
         return match mcp::serve(root_path) {

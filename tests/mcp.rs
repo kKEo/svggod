@@ -18,7 +18,11 @@ struct Server {
 
 impl Server {
     fn start(root: &Path) -> Server {
-        let mut child = Command::new(BIN).args(["mcp", "--root-path", root.to_str().unwrap()]).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().unwrap();
+        Server::start_with(root, &[])
+    }
+
+    fn start_with(root: &Path, more: &[&str]) -> Server {
+        let mut child = Command::new(BIN).args(["mcp", "--root-path", root.to_str().unwrap()]).args(more).env_remove("SVGGOD_MAX_MEMORY").stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().unwrap();
         let stdin = child.stdin.take();
         let stdout = BufReader::new(child.stdout.take().unwrap());
         Server { child, stdin, stdout, next: 0 }
@@ -411,4 +415,31 @@ fn themes_are_listed_made_and_used_inside_the_root_only() {
     let (e, is_error, _) = s.call("svggod_theme_init", json!({ "dir": "../elsewhere/new" }));
     assert!(is_error && e["error"]["code"] == "outside-root", "{e:#}");
     assert_eq!(s.finish(), 0);
+}
+
+#[test]
+fn a_call_over_the_memory_limit_is_answered_and_then_the_server_stops() {
+    let dir = project();
+    // An ordinary drawing, only large: checking it takes more than the 16 MB given here.
+    let mut big = String::from("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 12040 1900\"><title>t</title><desc>d</desc>");
+    for i in 0..3000 {
+        let (x, y) = (20 + (i % 100) * 120, 20 + (i / 100) * 60);
+        big.push_str(&format!("<rect x=\"{x}\" y=\"{y}\" width=\"90\" height=\"36\" fill=\"#fff\" stroke=\"#333\"/><text x=\"{}\" y=\"{}\" font-size=\"14\">n{i}</text>", x + 10, y + 24));
+    }
+    fs::write(dir.path().join("big.svg"), big + "</svg>").unwrap();
+
+    let mut s = Server::start_with(dir.path(), &["--max-memory", "16MB"]);
+    // A call that fits is served as usual.
+    let (envelope, is_error, _) = s.call("svggod_validate", json!({ "files": ["orders.svg"] }));
+    assert!(!is_error && envelope["ok"] == true, "{envelope}");
+
+    // One that does not fit gets an answer of its own, with its id, and no result.
+    let reply = s.request("tools/call", json!({ "name": "svggod_validate", "arguments": { "files": ["big.svg"] } }));
+    assert_eq!(reply["error"]["code"], -32603, "{reply}");
+    assert_eq!(reply["error"]["data"]["code"], "memory-limit");
+    assert!(reply["error"]["message"].as_str().unwrap().contains("--max-memory"));
+    assert!(reply.get("result").is_none());
+
+    // The server has stopped by itself, with the exit code for an input it could not take.
+    assert_eq!(s.child.wait().unwrap().code(), Some(3));
 }

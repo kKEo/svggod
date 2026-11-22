@@ -13,10 +13,11 @@ They may be placed before or after the subcommand.
 | `--no-config` | Ignore any config file | off |
 | `--profile NAME` | Rule profile: `minimal`, `docs` or `strict` | `docs`, or the config's `profile` |
 | `--quiet` | Suppress the stderr log line `svggod: config <path>` | off |
+| `--max-memory SIZE` | The most memory the program may hold, as `512MB` or `2GB` (units `KB`, `MB`, `GB`; least 16 MB); `0` is no limit. The `SVGGOD_MAX_MEMORY` variable is used when the flag is absent | `1GB` |
 | `--no-color` | Plain text output; the `NO_COLOR` variable is also honoured | off |
 | `--version`, `--help` | Print the version or help and exit 0 | |
 
-Colour is used only for text output on a terminal. See [Configuration](configuration.md) for profiles and [Envelope and exit codes](envelope-exit-codes.md) for the result shape.
+An input that would take the program past `--max-memory` ends it with the error `memory-limit` and exit code 3; see [Known limits](../operations/known-limits.md#limits-on-input). Colour is used only for text output on a terminal. See [Configuration](configuration.md) for profiles and [Envelope and exit codes](envelope-exit-codes.md) for the result shape.
 
 Only `validate` has `--fail-on`. Every other command that checks a drawing (`render`, `edit`, `fix`) fails with exit 1 on findings of severity `error`; `preview` never fails because of findings.
 

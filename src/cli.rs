@@ -42,6 +42,9 @@ pub struct Global {
     /// Suppress stderr logs
     #[arg(long, global = true)]
     pub quiet: bool,
+    /// Most memory to use, as 512MB or 2GB; 0 is no limit [default: 1GB]
+    #[arg(long, global = true, value_name = "SIZE")]
+    pub max_memory: Option<String>,
     /// Plain text output; NO_COLOR is also honoured
     #[arg(long, global = true)]
     pub no_color: bool,

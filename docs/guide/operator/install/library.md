@@ -100,6 +100,8 @@ let renderer = Renderer::new()
 
 Without `root`, a spec's `theme:` can name any folder on the disk; without `max_effort`, a spec can say `effort: max`.
 
+The library itself sets no memory limit; that is the allocator's business, and the allocator belongs to your program. The `svggod` program limits itself to 1 GB (`--max-memory`). If you take input from strangers, give your own program a limit in the same way, or run the work in a process that has one.
+
 ## Errors
 
 Every fallible call returns `svggod::Error`. It implements `std::error::Error`, so it works with `?`, `anyhow` and `Box<dyn Error>`. Its fields are the same as the `error` object in the envelope:

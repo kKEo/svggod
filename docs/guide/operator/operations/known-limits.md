@@ -6,6 +6,7 @@ This page lists what SVGGod does not do, or does only approximately, so you can 
 
 These exist so that a file or a spec, whatever it holds, cannot decide how much memory or time SVGGod takes. Each is refused with an ordinary error or finding, never a crash.
 
+- **Memory:** the program counts what it holds and stops with `memory-limit` (exit 3) when an input would take it past `--max-memory`, 1 GB unless set. The limits below should keep any input far under that; this one is there for the input nobody has thought of. The MCP server answers the call in hand with an error and then stops, since memory cannot be taken back from a call half done; the client starts it again. There is no time limit: a slow input is not stopped.
 - **Input size:** a file or stdin over 64 MB is refused with `input-too-large`; an MCP message over 64 MB is answered with an error and skipped.
 - **Nesting:** an SVG whose elements are nested more than 100 deep is not checked; `validate` reports one `xml-well-formed` finding and the other commands fail with `malformed-xml`.
 - **Numbers in an SVG:** a circle, an ellipse or a path with a coordinate or radius beyond 1,000,000,000 (or one that is not a number) is treated as having no shape. Curves in very large paths are followed more loosely, in proportion to their size.

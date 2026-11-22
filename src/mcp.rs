@@ -458,6 +458,9 @@ fn handle(root: &Path, msg: &Value) -> Option<Value> {
         return msg.get("result").or(msg.get("error")).is_none().then(|| rpc_error(id.unwrap_or(Value::Null), -32600, "Invalid request: no method", None));
     };
     let id = id?;
+    // If this request takes the server past its memory limit, this is its answer;
+    // the server then stops, since memory cannot be taken back from a call half done.
+    crate::memory::arm(format!("{}\n", rpc_error(id.clone(), -32603, "Internal error: the request needs more memory than the server's limit (--max-memory); the server has stopped and must be started again", Some(json!({ "code": "memory-limit" })))).into_bytes(), true);
     let params = msg.get("params").cloned().unwrap_or(json!({}));
     let meta = params.get("_meta").cloned().unwrap_or(json!({}));
 

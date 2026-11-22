@@ -74,6 +74,7 @@ You get two lines back (none for the notification). The first echoes `"protocolV
 - **A failing command is not a protocol error.** A tool call that hits validation errors or a bad path still returns a normal JSON-RPC result whose envelope has `"ok": false`; read the envelope, not the transport.
 - **Tool arguments are strict.** An unknown argument name is rejected with `unknown-field` and a suggestion.
 - **`svggod_preview` without `output`** returns the PNG as base64 image content instead of writing a file.
+- **The server has a memory limit.** It holds at most 1 GB unless started with another limit: `svggod mcp --root-path ./docs --max-memory 512MB`, or the `SVGGOD_MAX_MEMORY` variable in the client's config. A call that would pass it is answered with a JSON-RPC error (code -32603, `data.code` `memory-limit`) and the server then exits with code 3; the client has to start it again. A tool call cannot change the limit.
 - **Config is per call.** Each tool that takes one accepts `profile`, `config` and `no_config`, like the global flags.
 
 ## Where to go next

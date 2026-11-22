@@ -95,6 +95,7 @@ In text mode the same error is printed on stderr as `error[code]: message` follo
 | `theme-not-found`, `invalid-theme`, `theme-no-dark` | 3 | A theme folder is missing, its `theme.toml` is invalid, or it has no dark colours for the variant asked for; see [Themes](themes.md) |
 | `file-not-found`, `file-not-readable`, `not-utf8`, `stdin-not-readable` | 3 | An input could not be read |
 | `diagram-too-large` | 3 | The diagram is too large to draw: its routing grid would pass 2 million points, which is about 11,000 px on each side |
+| `memory-limit` | 3 | The input needs more memory than `--max-memory` allows (1 GB unless set). The program stops at once; nothing is written |
 | `input-too-large` | 3 | An input file or stdin is over 64 MB, the most that is read |
 | `malformed-spec`, `malformed-xml` | 3 | Input is not valid YAML/JSON or XML |
 | `invalid-spec`, `unknown-field`, `missing-field`, `invalid-value`, `duplicate-id`, `unknown-reference`, `group-cycle`, `group-overlap`, `at-outside-free`, `too-wide` | 3 | A spec failed validation; see [Spec reference](spec.md) |

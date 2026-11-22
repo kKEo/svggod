@@ -274,6 +274,9 @@ relative to the root and paths outside it are refused. It serves both the
 
 ## Known limits
 
+- The program holds at most 1 GB of memory; an input that needs more ends it with the
+  error `memory-limit` (exit 3). `--max-memory 512MB` or `SVGGOD_MAX_MEMORY` sets another
+  limit, `0` none. Input limits are listed in the operator guide.
 - Geometry findings on SVG files SVGGod did not render rest on heuristics; they are
   marked `approximate` and capped at warning.
 - Editing a YAML spec keeps comments and layout for field changes, renames and
