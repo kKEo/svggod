@@ -7,6 +7,6 @@
   },
   "homepage": "https://github.com/kKEo/svggod",
   "repository": "https://github.com/kKEo/svggod",
-  "license": "MIT OR Apache-2.0",
+  "license": "GPL-3.0-only",
   "keywords": ["svg", "diagram", "documentation", "lint", "svggod"]
 }

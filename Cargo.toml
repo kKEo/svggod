@@ -4,7 +4,7 @@ version = "1.2.0"
 edition = "2024"
 rust-version = "1.88"
 description = "Compile declarative diagram descriptions to SVG and check any SVG for correctness, legibility and portability"
-license = "MIT OR Apache-2.0"
+license = "GPL-3.0-only"
 repository = "https://github.com/kKEo/svggod"
 homepage = "https://github.com/kKEo/svggod"
 documentation = "https://kkeo.github.io/svggod/"
@@ -18,8 +18,7 @@ include = [
     "/examples/**",
     "/themes/**",
     "/README.md",
-    "/LICENSE-MIT",
-    "/LICENSE-APACHE",
+    "/LICENSE",
 ]
 
 # Prebuilt binaries from the GitHub release, used by `cargo binstall svggod`.

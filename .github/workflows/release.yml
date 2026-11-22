@@ -68,7 +68,7 @@ jobs:
         run: |
           name="svggod-${{ needs.version.outputs.version }}-${{ matrix.target }}"
           mkdir -p "dist/$name"
-          cp README.md "dist/$name/"
+          cp README.md LICENSE "dist/$name/"
           cd dist
           cp "../target/${{ matrix.target }}/release/svggod" "$name/"
           tar -czf "$name.tar.gz" "$name"
@@ -159,7 +159,7 @@ jobs:
             desc "Compile declarative diagram descriptions to SVG and check any SVG"
             homepage "https://github.com/$GITHUB_REPOSITORY"
             version "$VERSION"
-            license any_of: ["MIT", "Apache-2.0"]
+            license "GPL-3.0-only"
 
             on_macos do
               if Hardware::CPU.arm?

@@ -11,8 +11,8 @@ unmaintained = "workspace"
 ignore = []
 
 [licenses]
-# Every licence a dependency may carry. All are permissive and fit a binary
-# released under MIT OR Apache-2.0.
+# Every licence a dependency may carry. All are permissive and GPL-3.0 compatible,
+# so they fit a binary released under GPL-3.0-only.
 allow = [
     "MIT",
     "MIT-0",

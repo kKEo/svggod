@@ -298,3 +298,7 @@ The skills live in [`plugins/svggod/`](plugins/svggod/README.md).
   the result says `"formatting": "rewritten"`.
 - A drawing wider than `max_width` is first set more tightly; if it still does not
   fit, render fails with advice instead of producing an unreadable figure.
+
+## Licence
+
+SVGGod is released under the GNU General Public License v3.0 only (GPL-3.0-only), see [LICENSE](LICENSE). The bundled fonts keep their own SIL Open Font License, see `fonts/`.
