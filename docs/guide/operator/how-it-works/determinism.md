@@ -41,7 +41,7 @@ A rendered SVG carries `data-svggod="1"` on its root, which marks it as SVGGod's
 
 These are what `svggod inspect --select '#node-api'` and `svggod edit --set '#node-api.fill=#ffffff'` target. They are also why an id in a spec should be a short lowercase slug: it becomes part of an SVG id.
 
-The `data-svggod` mark matters for checking: geometry rules are exact on SVGGod output and heuristic on files SVGGod did not make. See [The rule engine](rules-engine.md).
+SVGs drawn before version 1.1.0 carry `data-svgdog="1"` instead, and their embedded spec is `<metadata id="svgdog-spec">`. Both old forms are still read as SVGGod's own output. The `data-svggod` mark matters for checking: geometry rules are exact on SVGGod output and heuristic on files SVGGod did not make. See [The rule engine](rules-engine.md).
 
 ## Text as paths
 

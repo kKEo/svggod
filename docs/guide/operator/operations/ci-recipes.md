@@ -87,7 +87,7 @@ jobs:
       - name: Install svggod
         run: |
           # Replace with your pinned install; see Release binaries.
-          cargo install --git https://github.com/kKEo/svggod --locked --tag v1.0.0 svggod
+          cargo install --git https://github.com/kKEo/svggod --locked --tag v1.1.0 svggod
       - name: Check diagrams
         run: svggod validate 'docs/**/*.svg' --fail-on warning
 ```

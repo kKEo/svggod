@@ -2,7 +2,7 @@
 
 A release publishes a version of SVGGod as a GitHub release with binaries for five platforms and a checksum file. This page is for whoever cuts releases. It takes about ten minutes of your time plus the workflow run, and it needs push access to the repository.
 
-> **Note.** `.github/workflows/release.yml` is not yet committed and no tag exists, so this process has never run end to end. What follows is what the workflow file specifies, and the README says the same. The CI workflow it depends on has not yet been seen passing on all three operating systems either.
+> **Note.** Version 1.1.0 renamed the tool from svgdog to svggod. Releases up to `v1.0.4` carry the old name (`svgdog-<version>-<target>.tar.gz`, crate `svgdog`). A crates.io crate cannot be renamed, so `svggod` is a new crate: publish its first version by hand with `cargo publish`, then add this repository and `release.yml` under the crate's Trusted Publishing settings. Until then the **crates-io** job below fails.
 
 ## Before you start
 
@@ -29,9 +29,11 @@ Pushing a tag matching `v[0-9]+.[0-9]+.[0-9]+*` starts the workflow. Do not push
 1. **check** runs `ci.yml` as a reusable workflow: `cargo clippy --locked --all-targets -- -D warnings`, `cargo test --locked`, and `cargo test --locked --release r15` on Linux and macOS.
 2. **version** reads the version from `Cargo.toml` and fails if the tag is not `v<that version>`.
 3. **build** compiles `cargo build --locked --release` for four targets (Linux x86_64 and arm64 with musl, macOS Apple silicon and Intel) and packs each as `svggod-<version>-<target>.tar.gz` containing the binary and `README.md`.
-4. **publish** runs only for tags. It writes `SHA256SUMS` for every archive and creates the release with `gh release create ... --generate-notes --verify-tag`. A tag with a suffix, such as `v1.1.0-rc.1`, is published as a pre-release.
+4. **publish** runs only for tags. It writes `SHA256SUMS` for every archive and creates the release with `gh release create ... --generate-notes --verify-tag`. A tag with a suffix, such as `v1.2.0-rc.1`, is published as a pre-release.
+5. **crates-io** publishes the `svggod` crate with crates.io Trusted Publishing (no stored token). It skips pre-release tags.
+6. **homebrew** writes `Formula/svggod.rb` with the new archive URLs and checksums and pushes it to `kKEo/homebrew-tap`, using the `TAP_GITHUB_TOKEN` secret. It skips pre-release tags.
 
-The jobs run in that order: build needs version, and publish needs check, version and build.
+The jobs run in that order: build needs version, publish needs check, version and build, and crates-io and homebrew run after publish.
 
 ## Dry run without publishing
 

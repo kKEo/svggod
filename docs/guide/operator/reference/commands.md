@@ -226,7 +226,7 @@ svggod docs docs/ README.md --check
 | `--force` | Lay a diagram out afresh when its boxes cannot stay where the picture on disk has them. Cannot be combined with `--check` | off (such a diagram gives exit 4) |
 | `--interactive none\|css\|html` | `css`: the pictures are the `css` version. `html`: the pictures stay static, a page `DIR/<page>-<name>.html` is written beside each, and the image line ends with a link to it, labelled "Interactive version" | `none` |
 
-A diagram is a fenced code block whose info word is `svggod`, or, when the source should not be shown to readers, an HTML comment that opens with `<!-- svggod` on its own line and closes with `-->` on its own line. An optional second word names the diagram.
+A diagram is a fenced code block whose info word is `svggod`, or, when the source should not be shown to readers, an HTML comment that opens with `<!-- svggod` on its own line and closes with `-->` on its own line. An optional second word names the diagram. The info word `svgdog` and the comment `<!-- svgdog`, from before version 1.1.0, are still recognised.
 
 ````markdown
 ```svggod request-path

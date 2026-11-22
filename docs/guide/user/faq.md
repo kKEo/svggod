@@ -82,6 +82,10 @@ The `fixed-size` rule reports a root with fixed `width` and `height`, because su
 
 Not for ordinary changes: changing a value, renaming or adding keeps your comments and layout. Removing a node, group or edge rewrites the spec in a standard layout; the result says `"formatting": "rewritten"`.
 
+### I used svgdog before. Do my files still work?
+
+Yes. Version 1.1.0 renamed the program from `svgdog` to `svggod`, and your existing files keep working without changes: an `svgdog.toml` is still read (as long as there's no `svggod.toml` in the same folder), ` ```svgdog ` blocks in your pages are still drawn, `svgdog-disable` comments still silence a rule, and SVGs drawn by svgdog still count as SVGGod's own. New files use the new name, so rename them when convenient: `svgdog.toml` to `svggod.toml`, and `svgdog` to `svggod` in blocks and comments.
+
 ### Where is the licence?
 
 The repository does not state a licence for SVGGod yet. Ask the maintainers before you redistribute it. The two built-in fonts are under the SIL Open Font License, and their licence texts are in the `fonts/` folder of the repository.

@@ -2,7 +2,7 @@
 
 This page describes the checks in `.github/workflows/release.yml` that run before SVGGod binaries are published, and how to verify a release.
 
-> **Note.** At the time of writing `release.yml` is new and no `v*` tag exists in the repository, so the `publish` job has not run yet. Treat the description below as the intended behaviour and confirm it on the first real tag (use a pre-release tag such as `v1.0.1-rc.1` first).
+> **Note.** Releases up to `v1.0.4` were published under the tool's old name, svgdog: their archives are `svgdog-<version>-<target>.tar.gz` and their crate is `svgdog`. `v1.1.0` is the first release named svggod. On that tag, check that the archives, the `svggod` crate on crates.io and the `svggod` Homebrew formula all carry the new name.
 
 ## How a release is triggered
 
@@ -47,21 +47,21 @@ Each build runs `cargo build --locked --release --target <target>` and packages 
 
 ### Checksums and pre-releases
 
-The `publish` job downloads all packages, writes `SHA256SUMS` with `sha256sum svggod-* > SHA256SUMS`, and runs `gh release create` with `--generate-notes --verify-tag`. A tag that contains a hyphen (`v1.1.0-rc.1`) is published as a pre-release.
+The `publish` job downloads all packages, writes `SHA256SUMS` with `sha256sum svggod-* > SHA256SUMS`, and runs `gh release create` with `--generate-notes --verify-tag`. A tag that contains a hyphen (`v1.2.0-rc.1`) is published as a pre-release.
 
 ## Verify a published release by hand
 
 ```bash
 # download the archive for your system and SHA256SUMS from the release page, then:
 sha256sum --check --ignore-missing SHA256SUMS      # on macOS: shasum -a 256 -c SHA256SUMS
-tar -xzf svggod-1.0.0-x86_64-unknown-linux-musl.tar.gz
-./svggod-1.0.0-x86_64-unknown-linux-musl/svggod --version     # prints: svggod 1.0.0
+tar -xzf svggod-1.1.0-x86_64-unknown-linux-musl.tar.gz
+./svggod-1.1.0-x86_64-unknown-linux-musl/svggod --version     # prints: svggod 1.1.0
 ```
 
 Then run a smoke test with a fixture from the repository:
 
 ```bash
-./svggod-1.0.0-x86_64-unknown-linux-musl/svggod render tests/fixtures/orders.yaml -o /tmp/orders.svg
+./svggod-1.1.0-x86_64-unknown-linux-musl/svggod render tests/fixtures/orders.yaml -o /tmp/orders.svg
 echo $?     # 0 means no findings at or above the failing level
 ```
 

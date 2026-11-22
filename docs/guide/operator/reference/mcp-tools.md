@@ -41,6 +41,8 @@ Every path argument is checked before anything runs. A path is refused (`outside
 
 All fourteen tools return the CLI envelope as `structuredContent` and as JSON text in `content`. A failure sets `isError: true` and carries the error envelope. Unknown arguments are rejected (`unknown-field`, with a hint).
 
+Before version 1.1.0 the tools were named `svgdog_*`. A call to an old name, such as `svgdog_render`, still runs the matching `svggod_*` tool, but `tools/list` shows only the new names.
+
 Tools marked † also accept the three config arguments:
 
 | Argument | Type | Meaning |

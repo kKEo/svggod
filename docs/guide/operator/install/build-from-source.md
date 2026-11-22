@@ -40,7 +40,7 @@ Both were run for this guide; the second form installs to `<root>/bin/svggod`.
 
 ```bash
 svggod --version
-# svggod 1.0.0
+# svggod 1.1.0
 
 svggod render tests/fixtures/orders.yaml -o /tmp/orders.svg --format text
 # Wrote /tmp/orders.svg (3052 bytes).

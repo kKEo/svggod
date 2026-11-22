@@ -21,15 +21,15 @@ The binaries are not signed or notarised; the workflow has no signing step.
 
 ## Download and verify
 
-Once a release exists, for version `1.0.0` on Apple silicon:
+Once a release exists, for version `1.1.0` on Apple silicon:
 
 ```bash
-gh release download v1.0.0 --repo kKEo/svggod \
-  --pattern 'svggod-1.0.0-aarch64-apple-darwin.tar.gz' --pattern SHA256SUMS
+gh release download v1.1.0 --repo kKEo/svggod \
+  --pattern 'svggod-1.1.0-aarch64-apple-darwin.tar.gz' --pattern SHA256SUMS
 
 shasum -a 256 -c SHA256SUMS --ignore-missing    # macOS; on Linux: sha256sum -c SHA256SUMS --ignore-missing
-tar -xzf svggod-1.0.0-aarch64-apple-darwin.tar.gz
-install -m 755 svggod-1.0.0-aarch64-apple-darwin/svggod /usr/local/bin/svggod
+tar -xzf svggod-1.1.0-aarch64-apple-darwin.tar.gz
+install -m 755 svggod-1.1.0-aarch64-apple-darwin/svggod /usr/local/bin/svggod
 svggod --version
 ```
 
@@ -39,14 +39,14 @@ There is no Windows binary.
 
 ## Pre-releases
 
-A tag with a suffix, such as `v1.1.0-rc.1`, is published as a GitHub pre-release. The tag pattern is `v[0-9]+.[0-9]+.[0-9]+*`.
+A tag with a suffix, such as `v1.2.0-rc.1`, is published as a GitHub pre-release. The tag pattern is `v[0-9]+.[0-9]+.[0-9]+*`.
 
 ## Pinning in CI
 
 Pin an exact version and check its checksum, so a pipeline never changes behaviour without a commit:
 
 ```bash
-VERSION=1.0.0
+VERSION=1.1.0
 TARGET=x86_64-unknown-linux-musl
 curl -fsSL -o svggod.tar.gz \
   "https://github.com/kKEo/svggod/releases/download/v${VERSION}/svggod-${VERSION}-${TARGET}.tar.gz"

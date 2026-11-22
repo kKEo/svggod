@@ -66,7 +66,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install SVGGod
-        run: cargo install svggod --version 1.0.4 --locked
+        run: cargo install svggod --version 1.1.0 --locked
       - name: Pictures in pages match their specs
         run: svggod docs docs/ README.md --check
       - name: Every SVG passes the house rules

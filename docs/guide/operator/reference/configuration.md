@@ -121,6 +121,6 @@ A comment placed directly before an element silences the named rules for that el
 <text x="40" y="20">Legend</text>
 ```
 
-Format: `svggod-disable <rule>[, <rule>...]: <reason>`. The reason is mandatory. Anything wrong with the comment is reported as an `invalid-suppression` error: no `:` or an empty reason, an unknown rule id (with a did-you-mean hint), no rule named, or no element directly after the comment (only whitespace may sit between them). `invalid-suppression` is not a catalogue rule, so it cannot be configured or suppressed.
+Format: `svggod-disable <rule>[, <rule>...]: <reason>`. The reason is mandatory. The older spelling `svgdog-disable`, from before version 1.1.0, is still accepted and works the same way. Anything wrong with the comment is reported as an `invalid-suppression` error: no `:` or an empty reason, an unknown rule id (with a did-you-mean hint), no rule named, or no element directly after the comment (only whitespace may sit between them). `invalid-suppression` is not a catalogue rule, so it cannot be configured or suppressed.
 
 Findings from geometry rules on an SVG that SVGGod did not draw are marked `approximate` in `measured` and are capped at `warning`, because positions in foreign files are estimated.
