@@ -301,4 +301,12 @@ The skills live in [`plugins/svggod/`](plugins/svggod/README.md).
 
 ## Licence
 
-SVGGod is released under the GNU General Public License v3.0 only (GPL-3.0-only), see [LICENSE](LICENSE). The bundled fonts keep their own SIL Open Font License, see `fonts/`.
+SVGGod is released under the Mozilla Public License 2.0 (MPL-2.0), see [LICENSE](LICENSE).
+You can use it in commercial and closed-source products, as a library or as an external
+tool. Changes to SVGGod's own source files must be shared under MPL-2.0.
+
+**Your output is yours.** The SVG files, previews and specs SVGGod produces for you,
+including any theme styles, built-in templates and font outlines copied into them, are
+not covered by the MPL-2.0. You may use, license and distribute them however you like.
+
+The bundled fonts keep their own SIL Open Font License, see `fonts/`.

@@ -159,7 +159,7 @@ jobs:
             desc "Compile declarative diagram descriptions to SVG and check any SVG"
             homepage "https://github.com/$GITHUB_REPOSITORY"
             version "$VERSION"
-            license "GPL-3.0-only"
+            license "MPL-2.0"
 
             on_macos do
               if Hardware::CPU.arm?
