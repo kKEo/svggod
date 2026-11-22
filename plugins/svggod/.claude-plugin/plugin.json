@@ -1,0 +1,12 @@
+{
+  "name": "svggod",
+  "version": "0.1.0",
+  "description": "Install SVGGod, draw diagrams for documentation from a short YAML spec, and check or repair any SVG file",
+  "author": {
+    "name": "Krzysztof Maziarz"
+  },
+  "homepage": "https://github.com/kKEo/svggod",
+  "repository": "https://github.com/kKEo/svggod",
+  "license": "MIT OR Apache-2.0",
+  "keywords": ["svg", "diagram", "documentation", "lint", "svggod"]
+}
