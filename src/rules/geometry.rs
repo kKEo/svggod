@@ -653,7 +653,7 @@ fn reroute_ops(ctx: &Ctx, e: &Elem, walls: &[Rect]) -> Vec<Value> {
         bounds = bounds.union(*w);
     }
     // The grid passes through the start point, so the route leaves it squarely.
-    let mut grid = Grid::new(bounds.inflate(48.0, 48.0), start);
+    let Some(mut grid) = Grid::new(bounds.inflate(48.0, 48.0), start) else { return vec![] };
     for w in walls {
         grid.block(w.inflate(8.0, 8.0));
     }

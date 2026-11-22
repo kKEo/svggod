@@ -231,6 +231,10 @@ impl Spec {
 }
 
 pub const ROOT_FIELDS: &[&str] = &["version", "diagram", "title", "description", "direction", "theme", "effort", "max_width", "nodes", "edges", "groups", "notes", "steps", "focus", "legend", "caption"];
+/// The widest a node may be asked to be, and the farthest from the origin it may be
+/// pinned. The drawing's size, and the memory to route its edges, grow with both.
+const MAX_NODE_WIDTH: f64 = 2000.0;
+const MAX_AT: f64 = 10000.0;
 pub const NODE_FIELDS: &[&str] = &["id", "label", "kind", "emphasis", "width", "at", "detail", "link", "when", "match"];
 pub const DIAGRAMS: &[&str] = &["flow", "layers", "sequence", "free", "state", "timeline", "compare"];
 pub const EDGE_FIELDS: &[&str] = &["id", "from", "to", "label", "style", "arrow", "detail", "link"];
@@ -458,14 +462,14 @@ pub fn parse(doc: &Value) -> Result<Spec, AppError> {
         let width = match m.get("width") {
             None | Some(Value::Null) => None,
             Some(v) => match v.as_f64() {
-                Some(w) if w >= 40.0 => Some(w),
-                _ => return Err(err("invalid-value", &join(&p, "width"), format!("{p}.width must be a number of at least 40."))),
+                Some(w) if (40.0..=MAX_NODE_WIDTH).contains(&w) => Some(w),
+                _ => return Err(err("invalid-value", &join(&p, "width"), format!("{p}.width must be a number from 40 to {MAX_NODE_WIDTH}."))),
             },
         };
         let at = match m.get("at") {
             None | Some(Value::Null) => None,
-            Some(Value::Array(a)) if a.len() == 2 && a.iter().all(|n| n.is_number()) => Some((a[0].as_f64().unwrap(), a[1].as_f64().unwrap())),
-            Some(_) => return Err(err("invalid-value", &join(&p, "at"), format!("{p}.at must be two numbers: [x, y]."))),
+            Some(Value::Array(a)) if a.len() == 2 && a.iter().all(|n| n.as_f64().is_some_and(|v| v.abs() <= MAX_AT)) => Some((a[0].as_f64().unwrap(), a[1].as_f64().unwrap())),
+            Some(_) => return Err(err("invalid-value", &join(&p, "at"), format!("{p}.at must be two numbers, [x, y], each from -{MAX_AT} to {MAX_AT}."))),
         };
         nodes.push(Node {
             id: slug(m, &p, "id", true)?.unwrap(),

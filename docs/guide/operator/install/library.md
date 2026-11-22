@@ -16,7 +16,7 @@ svggod = { version = "1", default-features = false }
 | `cli` | on | The `svggod` program, the MCP server and `svggod::app`. Turns on `preview`. | `clap` |
 | `preview` | on | `svggod::rasterize`, which draws an SVG as a PNG. | `resvg` |
 
-With both off, the library still draws, checks, fixes and describes. Add `features = ["preview"]` if you also want PNG output. The minimum Rust version is 1.85, the same as for the program.
+With both off, the library still draws, checks, fixes and describes. Add `features = ["preview"]` if you also want PNG output. The minimum Rust version is 1.88, the same as for the program.
 
 ## Draw a diagram
 

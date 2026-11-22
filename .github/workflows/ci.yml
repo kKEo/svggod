@@ -33,11 +33,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
         with:
           components: clippy
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@2201cc584a476d1b508be977bbe4b7d1c7a52e9c # v2.9.3
       - name: Lint
         run: cargo clippy --locked --all-targets -- -D warnings
       - name: Test
@@ -58,3 +58,32 @@ jobs:
       # The guide's own diagrams are written in its pages; they must be current.
       - name: Guide diagrams are up to date
         run: cargo run --locked --release --quiet -- docs docs/guide README.md --check --format text
+
+  msrv:
+    name: minimum Rust version
+    # Cargo.toml promises a minimum compiler; this is the only place it is tried.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Read rust-version from Cargo.toml
+        id: msrv
+        run: echo "version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].rust_version')" >> "$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+        with:
+          toolchain: ${{ steps.msrv.outputs.version }}
+      - uses: Swatinem/rust-cache@2201cc584a476d1b508be977bbe4b7d1c7a52e9c # v2.9.3
+      - run: cargo check --locked --all-features
+      - run: cargo check --locked --no-default-features --lib
+
+  deny:
+    name: advisories and licences
+    # Known vulnerabilities, licences outside the allowed list and crates from
+    # anywhere but crates.io fail here; the rules are in deny.toml.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: EmbarkStudios/cargo-deny-action@094a77a254a15132dbeb0fb0744a2307f086e063 # v2.1.3
+        with:
+          command: check advisories licenses bans sources

@@ -90,14 +90,23 @@ pub struct Grid {
 }
 
 impl Grid {
+    /// The most points a grid may have. Each takes 14 bytes, so this is about 110 MB;
+    /// a drawing 20,000 px on a side fits.
+    pub const MAX_POINTS: f64 = 8_000_000.0;
+
     /// A grid whose points cover `bounds`; `origin` fixes where the grid lines fall.
-    pub fn new(bounds: Rect, anchor: Point) -> Grid {
+    /// `None` when the bounds are not finite or would take more than `MAX_POINTS`:
+    /// the size comes from the input, so it must not decide how much memory is taken.
+    pub fn new(bounds: Rect, anchor: Point) -> Option<Grid> {
         let ox = anchor.x + ((bounds.x0 - anchor.x) / STEP).floor() * STEP;
         let oy = anchor.y + ((bounds.y0 - anchor.y) / STEP).floor() * STEP;
-        let cols = ((bounds.x1 - ox) / STEP).ceil() as i32 + 1;
-        let rows = ((bounds.y1 - oy) / STEP).ceil() as i32 + 1;
+        let (cols, rows) = (((bounds.x1 - ox) / STEP).ceil() + 1.0, ((bounds.y1 - oy) / STEP).ceil() + 1.0);
+        if !(ox.is_finite() && oy.is_finite() && cols >= 1.0 && rows >= 1.0 && cols * rows <= Self::MAX_POINTS) {
+            return None;
+        }
+        let (cols, rows) = (cols as i32, rows as i32);
         let n = (cols * rows) as usize;
-        Grid { origin: Point::new(ox, oy), cols, rows, hard: vec![false; n], soft: vec![0; n], border: vec![false; n], east: vec![0; n], south: vec![0; n] }
+        Some(Grid { origin: Point::new(ox, oy), cols, rows, hard: vec![false; n], soft: vec![0; n], border: vec![false; n], east: vec![0; n], south: vec![0; n] })
     }
 
     fn idx(&self, i: i32, j: i32) -> usize {
@@ -405,7 +414,7 @@ mod tests {
 
     #[test]
     fn routes_around_a_box_and_keeps_clear_of_earlier_routes() {
-        let mut g = Grid::new(Rect::new(0.0, 0.0, 240.0, 160.0), Point::ZERO);
+        let mut g = Grid::new(Rect::new(0.0, 0.0, 240.0, 160.0), Point::ZERO).unwrap();
         g.block(Rect::new(88.0, 40.0, 152.0, 120.0));
         let a = g.route(Point::new(16.0, 80.0), Dir::E, Point::new(224.0, 80.0), Dir::E, &[]).unwrap();
         assert!(a.len() >= 4, "{a:?}");
@@ -421,7 +430,7 @@ mod tests {
 
     #[test]
     fn a_route_taken_back_leaves_the_grid_as_it_was() {
-        let mut g = Grid::new(Rect::new(0.0, 0.0, 240.0, 160.0), Point::ZERO);
+        let mut g = Grid::new(Rect::new(0.0, 0.0, 240.0, 160.0), Point::ZERO).unwrap();
         let q = seek(Point::new(16.0, 80.0), Dir::E, Point::new(224.0, 80.0), Dir::E, true, COST_CROSS);
         let first = g.find(&q, &mut Scratch::default()).unwrap();
         g.mark(&first);
@@ -434,7 +443,7 @@ mod tests {
 
     #[test]
     fn a_dear_crossing_is_gone_round_and_a_cheap_one_is_taken() {
-        let mut g = Grid::new(Rect::new(0.0, 0.0, 240.0, 240.0), Point::ZERO);
+        let mut g = Grid::new(Rect::new(0.0, 0.0, 240.0, 240.0), Point::ZERO).unwrap();
         // A short wall of line across the straight way.
         g.mark(&[Point::new(120.0, 96.0), Point::new(120.0, 144.0)]);
         let q = |cross| seek(Point::new(40.0, 120.0), Dir::E, Point::new(200.0, 120.0), Dir::E, true, cross);
@@ -447,7 +456,7 @@ mod tests {
 
     #[test]
     fn the_last_leg_may_be_turned_into_when_that_is_not_required() {
-        let g = Grid::new(Rect::new(0.0, 0.0, 240.0, 160.0), Point::ZERO);
+        let g = Grid::new(Rect::new(0.0, 0.0, 240.0, 160.0), Point::ZERO).unwrap();
         // The end lies one step beside the start's line: no room for a jog that arrives heading south.
         let (from, to) = (Point::new(40.0, 40.0), Point::new(120.0, 48.0));
         let strict = g.find(&seek(from, Dir::E, to, Dir::S, true, COST_CROSS), &mut Scratch::default()).unwrap();
@@ -463,7 +472,7 @@ mod tests {
 
     #[test]
     fn straight_when_nothing_is_in_the_way() {
-        let mut g = Grid::new(Rect::new(0.0, 0.0, 200.0, 100.0), Point::ZERO);
+        let mut g = Grid::new(Rect::new(0.0, 0.0, 200.0, 100.0), Point::ZERO).unwrap();
         let r = g.route(Point::new(16.0, 48.0), Dir::E, Point::new(160.0, 48.0), Dir::E, &[]).unwrap();
         assert_eq!(r, vec![Point::new(16.0, 48.0), Point::new(160.0, 48.0)]);
     }

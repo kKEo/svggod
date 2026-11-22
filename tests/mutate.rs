@@ -4,7 +4,50 @@
 //! handed to the library. `SVGGOD_MUTATIONS=N` sets how many changes each file gets;
 //! the default keeps the test to a few seconds.
 
+//!
+//! The test also holds the library to a memory budget: an allocation that would take
+//! the test over `BUDGET` fails, which ends the test at once. The input being tried
+//! is always on disk first (the path is printed), so the one to blame is not lost.
+
+use std::alloc::{GlobalAlloc, Layout, System};
 use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+/// The most memory the whole test may hold at once.
+const BUDGET: usize = 1024 * 1024 * 1024;
+
+struct Counted;
+
+static LIVE: AtomicUsize = AtomicUsize::new(0);
+
+// SAFETY: every call goes to the system allocator unchanged; this only counts bytes
+// and refuses, by returning null as an allocator may, what would pass the budget.
+unsafe impl GlobalAlloc for Counted {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        if LIVE.fetch_add(layout.size(), Ordering::Relaxed) + layout.size() > BUDGET {
+            LIVE.fetch_sub(layout.size(), Ordering::Relaxed);
+            return std::ptr::null_mut();
+        }
+        unsafe { System.alloc(layout) }
+    }
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        LIVE.fetch_sub(layout.size(), Ordering::Relaxed);
+        unsafe { System.dealloc(ptr, layout) }
+    }
+    unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
+        if new_size > layout.size() && LIVE.fetch_add(new_size - layout.size(), Ordering::Relaxed) + new_size - layout.size() > BUDGET {
+            LIVE.fetch_sub(new_size - layout.size(), Ordering::Relaxed);
+            return std::ptr::null_mut();
+        }
+        if new_size < layout.size() {
+            LIVE.fetch_sub(layout.size() - new_size, Ordering::Relaxed);
+        }
+        unsafe { System.realloc(ptr, layout, new_size) }
+    }
+}
+
+#[global_allocator]
+static ALLOCATOR: Counted = Counted;
 
 struct Rng(u64);
 
@@ -95,10 +138,14 @@ fn hammer(seeds: Vec<(String, String)>, what: &str, work: impl Fn(&str)) {
     let quiet = std::panic::take_hook();
     std::panic::set_hook(Box::new(|_| {}));
     let mut failed = Vec::new();
+    // The input in hand, kept on disk in case it ends the process.
+    let current = std::env::temp_dir().join(format!("svggod-{what}-current.txt"));
+    eprintln!("{what}: the input being tried is kept in {}", current.display());
     for (n, (name, seed)) in seeds.iter().enumerate() {
         let mut rng = Rng(0x9E37_79B9_7F4A_7C15 ^ (n as u64 + 1));
         for round in 0..rounds() {
             let input = mutate(seed, &mut rng);
+            let _ = std::fs::write(&current, &input);
             if let Err(panic) = catch_unwind(AssertUnwindSafe(|| work(&input))) {
                 let why = panic.downcast_ref::<String>().cloned().or_else(|| panic.downcast_ref::<&str>().map(|s| s.to_string())).unwrap_or_default();
                 let path = std::env::temp_dir().join(format!("svggod-{what}-{n}-{round}.txt"));

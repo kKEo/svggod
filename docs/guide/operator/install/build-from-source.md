@@ -4,7 +4,7 @@ Building from source is the only install path that works today. This page takes 
 
 ## Requirements
 
-- **A Rust toolchain that supports edition 2024**, which means Rust 1.85 or newer. `Cargo.toml` declares `edition = "2024"` and no `rust-version`, so an older compiler fails with an edition error. The documentation was verified with rustc 1.99.1.
+- **Rust 1.88 or newer.** `Cargo.toml` declares `edition = "2024"` and `rust-version = "1.88"`: the code uses `if let` chains, which that release made stable, so an older compiler refuses to build. CI checks this version in its own job. The documentation was verified with rustc 1.99.1.
 - **No system libraries.** The direct dependencies listed in `Cargo.toml` (`clap`, `resvg`, `roxmltree`, `rustybuzz`, `kurbo`, `serde_yaml_ng`, `yaml-rust2`, `toml` and a few more) are Rust crates, and the build on a stock macOS machine needed nothing else. Whether a minimal Linux image needs a linker package depends on the image.
 - **Network access during the build only**, to fetch crates. Once built, SVGGod needs none.
 

@@ -341,7 +341,7 @@ fn midpoint(route: &[Point]) -> Point {
 
 /// Place the boxes and route the edges. When the edges of the plain placement cross, other
 /// orders of the boxes are placed and routed too, and the drawing that scores best is kept.
-fn arrange(spec: &Spec, m: &Measured, t: &Tuning, ladder: &[Budget], shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Drawn {
+fn arrange(spec: &Spec, m: &Measured, t: &Tuning, ladder: &[Budget], shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Result<Drawn, AppError> {
     let floor = least_crossings(spec);
     let mut best: Option<((bool, cross::Score), Drawn)> = None;
     'levels: for budget in ladder {
@@ -352,7 +352,7 @@ fn arrange(spec: &Spec, m: &Measured, t: &Tuning, ladder: &[Budget], shapes_of: 
                 continue;
             }
             seen.push(geo.clone());
-            let d = connect(spec, m, geo, budget, shapes_of);
+            let d = connect(spec, m, geo, budget, shapes_of)?;
             // A drawing that fits the width beats one that does not, whatever crosses.
             let mark = (d.size.0 > spec.max_width + 1e-6, cross::score(&d.routes));
             if best.as_ref().is_none_or(|(b, _)| mark < *b) {
@@ -363,7 +363,7 @@ fn arrange(spec: &Spec, m: &Measured, t: &Tuning, ladder: &[Budget], shapes_of: 
             }
         }
     }
-    best.expect("the plain placement is always drawn").1
+    Ok(best.expect("the plain placement is always drawn").1)
 }
 
 /// A number of crossings that no drawing of the spec's boxes and edges can go below.
@@ -379,11 +379,11 @@ fn least_crossings(spec: &Spec) -> usize {
 
 /// Route the edges between boxes that stay where they are, working up the levels of effort
 /// while edges cross.
-fn connect_best(spec: &Spec, m: &Measured, geo: Geometry, ladder: &[Budget], shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Drawn {
+fn connect_best(spec: &Spec, m: &Measured, geo: Geometry, ladder: &[Budget], shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Result<Drawn, AppError> {
     let floor = least_crossings(spec);
     let mut best: Option<(cross::Score, Drawn)> = None;
     for budget in ladder {
-        let d = connect(spec, m, geo.clone(), budget, shapes_of);
+        let d = connect(spec, m, geo.clone(), budget, shapes_of)?;
         let mark = cross::score(&d.routes);
         if best.as_ref().is_none_or(|(b, _)| mark < *b) {
             best = Some((mark, d));
@@ -392,11 +392,11 @@ fn connect_best(spec: &Spec, m: &Measured, geo: Geometry, ladder: &[Budget], sha
             break;
         }
     }
-    best.expect("there is at least one level of effort").1
+    Ok(best.expect("there is at least one level of effort").1)
 }
 
 /// Route the edges between boxes that are already placed, then set labels and notes.
-fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, budget: &Budget, shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Drawn {
+fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, budget: &Budget, shapes_of: &dyn Fn(usize, Rect) -> Shape) -> Result<Drawn, AppError> {
 
     // Work in positive coordinates with room around the content for routes.
     let all = |geo: &Geometry| geo.nodes.iter().chain(&geo.groups).chain(geo.notes.iter().flatten()).copied().reduce(|a, b| a.union(b)).unwrap_or(Rect::ZERO);
@@ -406,7 +406,7 @@ fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, budget: &Budget, shapes
         *r = *r + shift;
     }
     let b = all(&geo);
-    let mut grid = Grid::new(b.inflate(64.0, 64.0), Point::ZERO);
+    let mut grid = Grid::new(b.inflate(64.0, 64.0), Point::ZERO).ok_or_else(|| AppError::input("diagram-too-large", format!("The diagram would be {} by {} px, too large to route its edges.", fmt(b.width()), fmt(b.height()))).suggest(Some("Split it into smaller diagrams, or bring pinned nodes closer together.".into())))?;
     for r in geo.nodes.iter().chain(geo.notes.iter().flatten()) {
         grid.block(r.inflate(8.0, 8.0));
     }
@@ -684,7 +684,7 @@ fn connect(spec: &Spec, m: &Measured, mut geo: Geometry, budget: &Budget, shapes
         leaders.push(Some(line));
     }
 
-    fit(geo, routes, labels, leaders, vec![None; spec.nodes.len()])
+    Ok(fit(geo, routes, labels, leaders, vec![None; spec.nodes.len()]))
 }
 
 /// Fit the canvas to everything drawn, with a margin that scales down for small diagrams.
@@ -855,7 +855,7 @@ fn draw(spec: &Spec, opt: &Options, prev: Option<&keep::Previous>) -> Result<(St
         let t = &layout::LEVELS[keep::level(spec, prev, theme)];
         let m = layout::measure(spec, t, theme);
         let (geo, mut k) = keep::pinned(spec, &m, t, prev);
-        let d = connect_best(spec, &m, geo, &ladder, &|i, r| shape(kinds[i], r, theme));
+        let d = connect_best(spec, &m, geo, &ladder, &|i, r| shape(kinds[i], r, theme))?;
         if d.size.0 > spec.max_width + 1e-6 {
             k.reasons.push(keep::Reason { id: String::new(), why: format!("with the boxes kept in place the drawing would be {} px wide; max_width allows {}", fmt(d.size.0), fmt(spec.max_width)) });
         }
@@ -869,8 +869,8 @@ fn draw(spec: &Spec, opt: &Options, prev: Option<&keep::Previous>) -> Result<(St
             let d = match spec.diagram {
                 Diagram::Sequence => sequence::arrange(spec, &m, t, &|i, r| shape(kinds[i], r, theme)),
                 Diagram::Timeline => timeline::arrange(spec, &m, theme),
-                Diagram::Compare => connect_best(spec, &m, compare::layout(spec, &m), &ladder, &|i, r| shape(kinds[i], r, theme)),
-                _ => arrange(spec, &m, t, &ladder, &|i, r| shape(kinds[i], r, theme)),
+                Diagram::Compare => connect_best(spec, &m, compare::layout(spec, &m), &ladder, &|i, r| shape(kinds[i], r, theme))?,
+                _ => arrange(spec, &m, t, &ladder, &|i, r| shape(kinds[i], r, theme))?,
             };
             let fits = d.size.0 <= spec.max_width + 1e-6;
             chosen = Some((m, d));

@@ -47,8 +47,8 @@ Parsing is strict: an unknown key is an error with a did-you-mean hint, not sile
 | `label` | string | yes | | 1 to 80 characters; not needed, and not drawn, for `kind: start` and `kind: end` |
 | `kind` | string | no | `box` (`state` in a state diagram) | `box`, `service`, `client`, `datastore`, `queue`, `actor`, `external`, `decision`, `document`, `state`; `start` and `end` in a state diagram only |
 | `emphasis` | boolean | no | `false` | highlights the node |
-| `width` | number | no | automatic | at least 40 |
-| `at` | `[x, y]` | `free` only | | two numbers; allowed only when `diagram: free`, and required there |
+| `width` | number | no | automatic | from 40 to 2000 |
+| `at` | `[x, y]` | `free` only | | two numbers, each from -10000 to 10000; allowed only when `diagram: free`, and required there |
 | `when` | string | no | | `timeline` only; up to 30 characters, printed at the node's place on the axis |
 | `match` | string | no | the label | `compare` only; 1 to 80 characters. Nodes on the two sides with the same key share a row. Rows follow the order of both sides, so a pair that would have to cross another is not aligned |
 

@@ -2,7 +2,7 @@
 name = "svggod"
 version = "1.1.2"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 description = "Compile declarative diagram descriptions to SVG and check any SVG for correctness, legibility and portability"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/kKEo/svggod"

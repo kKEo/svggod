@@ -1,0 +1,39 @@
+# Rules for `cargo deny check`, run in CI (the `deny` job).
+
+[graph]
+# Only the systems releases are built for.
+targets = ["x86_64-unknown-linux-musl", "aarch64-unknown-linux-musl", "x86_64-apple-darwin", "aarch64-apple-darwin"]
+all-features = true
+
+[advisories]
+# Any advisory against a crate in Cargo.lock fails the check; unmaintained crates too.
+unmaintained = "workspace"
+ignore = []
+
+[licenses]
+# Every licence a dependency may carry. All are permissive and fit a binary
+# released under MIT OR Apache-2.0.
+allow = [
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "0BSD",
+    "BSL-1.0",
+    "Zlib",
+    "Unlicense",
+    "Unicode-3.0",
+]
+confidence-threshold = 0.9
+
+[bans]
+# Two versions of one crate cost build time, not safety.
+multiple-versions = "allow"
+wildcards = "deny"
+
+[sources]
+# Nothing from a git repository or another registry.
+unknown-registry = "deny"
+unknown-git = "deny"
