@@ -18,6 +18,27 @@ fn text_of<'e>(e: &'e Elem) -> Option<(&'e TextInfo, Rect)> {
     }
 }
 
+/// The most points tried along one segment over one shape.
+const MAX_SAMPLES: f64 = 100_000.0;
+
+/// The part of the segment from `a` to `b` that lies over `r`, as the two fractions of
+/// the way along it where that part starts and ends. `None` when no part does.
+fn span_in(a: Point, b: Point, r: Rect) -> Option<(f64, f64)> {
+    let (mut from, mut to) = (0.0f64, 1.0f64);
+    for (start, delta, low, high) in [(a.x, b.x - a.x, r.x0, r.x1), (a.y, b.y - a.y, r.y0, r.y1)] {
+        if delta == 0.0 {
+            if start < low || start > high {
+                return None;
+            }
+            continue;
+        }
+        let (t0, t1) = ((low - start) / delta, (high - start) / delta);
+        from = from.max(t0.min(t1));
+        to = to.min(t0.max(t1));
+    }
+    (from <= to).then_some((from, to))
+}
+
 /// The smallest painted closed shape drawn before `ti` that encloses `p`.
 pub fn container(scene: &Scene, ti: usize, p: Point, opaque: bool) -> Option<usize> {
     // Smallest box first; of equal boxes, the one drawn last.
@@ -235,7 +256,7 @@ pub fn run(ctx: &mut Ctx) {
             for v in elems.iter().filter(|e| e.is_leaf()).filter_map(|e| e.vbox) {
                 grown = Rect::new(grown.x0.min(v.x0.floor()), grown.y0.min(v.y0.floor()), grown.x1.max(v.x1.ceil()), grown.y1.max(v.y1.ceil()));
             }
-            let grow = scene.viewbox.is_some().then(|| json!({ "op": "set", "target": scene.target(scene.root), "attr": "viewBox", "value": viewbox_value(grown) }));
+            let grow = (scene.viewbox.is_some() && usable(grown)).then(|| json!({ "op": "set", "target": scene.target(scene.root), "attr": "viewBox", "value": viewbox_value(grown) }));
             for e in elems.iter().filter(|e| e.is_leaf()) {
                 let Some(v) = e.vbox else { continue };
                 let over = [canvas.x0 - v.x0, canvas.y0 - v.y0, v.x1 - canvas.x1, v.y1 - canvas.y1];
@@ -275,7 +296,7 @@ pub fn run(ctx: &mut Ctx) {
                     let (px, py) = ((c.width() * 0.05).min(8.0), (c.height() * 0.05).min(8.0));
                     let fit = Rect::new(floor2(c.x0 - px), floor2(c.y0 - py), ceil2(c.x1 + px), ceil2(c.y1 + py));
                     let mut ops = vec![json!({ "op": "set", "target": scene.target(scene.root), "attr": "viewBox", "value": viewbox_value(fit) })];
-                    let mut fixable = scene.viewbox.is_some();
+                    let mut fixable = scene.viewbox.is_some() && usable(fit);
                     for b in elems.iter().filter(|e| scene.is_background(e)) {
                         let follow = rect_ops(ctx, b, fit);
                         fixable &= b.tag == "rect" && axis_aligned(b.tf);
@@ -357,11 +378,21 @@ pub fn run(ctx: &mut Ctx) {
                 for poly in &c.outline {
                     for w in poly.windows(2) {
                         let len = w[0].distance(w[1]);
-                        let steps = (len / 2.0).ceil().max(1.0) as usize;
-                        for k in 0..=steps {
-                            let p = w[0].lerp(w[1], k as f64 / steps as f64);
+                        let steps = (len / 2.0).ceil().max(1.0);
+                        // A point every 2 px, but only along the part of the segment that is
+                        // over the shape's box: the length of a line comes from the file, and
+                        // must not decide how long this takes.
+                        let Some((from, to)) = span_in(w[0], w[1], sb) else { continue };
+                        let (first, last) = ((from * steps).ceil(), (to * steps).floor());
+                        if !(first.is_finite() && last.is_finite()) || last < first || last - first > MAX_SAMPLES {
+                            continue;
+                        }
+                        // Counted with a whole number: among very large values, adding one
+                        // to a fraction leaves it as it was, and the loop would never end.
+                        for n in 0..=(last - first).max(0.0) as usize {
+                            let p = w[0].lerp(w[1], (first + n as f64) / steps);
                             if sb.contains(p) && svg::contains_point(path, p) && svg::distance_to(&s.outline, p) > 1.5 {
-                                inside_len += len / steps as f64;
+                                inside_len += len / steps;
                             }
                         }
                     }
@@ -533,6 +564,11 @@ fn floor2(v: f64) -> f64 {
 
 fn ceil2(v: f64) -> f64 {
     (v * 100.0 - 1e-7).ceil() / 100.0
+}
+
+/// Whether a box can be written as a viewBox: real numbers, of a size a drawing has.
+fn usable(r: Rect) -> bool {
+    [r.x0, r.y0, r.x1, r.y1].iter().all(|v| v.is_finite() && v.abs() <= svg::MAX_COORD)
 }
 
 fn viewbox_value(r: Rect) -> String {

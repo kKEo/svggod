@@ -22,6 +22,7 @@ Each job runs these steps in order. A failing step fails the job.
 | Lint | `cargo clippy --locked --all-targets -- -D warnings` | no clippy warning anywhere, including in tests |
 | Test | `cargo test --locked` | all 83 unit, command-line and MCP tests pass |
 | Library alone | `cargo clippy --locked --no-default-features --lib -- -D warnings`, the same with `--features preview`, and `cargo test --locked --no-default-features --test lib` | the library builds without warnings and passes its tests with the `cli` and `preview` features off |
+| Damaged input, deeper | `SVGGOD_MUTATIONS=300 cargo test --locked --release --test mutate` | about 20,000 damaged SVGs and specs give findings or an error, within the test's own memory and time limits |
 | API docs | `RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps --all-features` | the API reference builds with no broken link |
 | Timing budgets | `cargo test --locked --release r15` | speed budgets hold in a release build |
 

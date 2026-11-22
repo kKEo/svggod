@@ -12,6 +12,8 @@ use crate::util::{Rgba, fmt};
 pub const MAX_WIDTH: u32 = 2000;
 pub const MAX_HEIGHT: u32 = 4000;
 pub const DEFAULT_WIDTH: u32 = 1200;
+/// The farthest from the origin, in the renderer's units, anything may be drawn.
+const MAX_REACH: f32 = 1e7;
 
 pub fn options() -> usvg::Options<'static> {
     let mut opt = usvg::Options::default();
@@ -120,8 +122,21 @@ fn overlay(findings: &[Finding], region: Rect, scale: f64, width: u32, height: u
 /// Render `region` of an SVG (the whole canvas when `None`) to a PNG `width` pixels wide.
 /// `canvas` is the drawing's viewBox as the scene resolved it.
 pub fn rasterize(svg: &str, canvas: Option<Rect>, region: Option<Rect>, width: u32, background: Rgba, annotate: Option<&[Finding]>) -> Result<Shot, AppError> {
+    // The renderer is another crate's code, and it panics on some files it should
+    // refuse (a size that is not a number, for one). That is the file's fault, not a
+    // bug of the caller's: it is an error like any other file that cannot be drawn.
+    std::panic::catch_unwind(|| draw(svg, canvas, region, width, background, annotate)).unwrap_or_else(|_| Err(not_renderable("the renderer could not handle it")))
+}
+
+fn draw(svg: &str, canvas: Option<Rect>, region: Option<Rect>, width: u32, background: Rgba, annotate: Option<&[Finding]>) -> Result<Shot, AppError> {
     let opt = options();
     let tree = usvg::Tree::from_str(svg, &opt).map_err(not_renderable)?;
+    // The rasterizer fails badly, past what can be caught, on shapes millions of
+    // units away; nothing a drawing holds is out there.
+    let reach = tree.root().abs_stroke_bounding_box();
+    if [reach.left(), reach.top(), reach.right(), reach.bottom()].iter().any(|v| !v.is_finite() || v.abs() > MAX_REACH) {
+        return Err(not_renderable("something in it is drawn farther out than any drawing reaches"));
+    }
     let (tw, th) = (tree.size().width() as f64, tree.size().height() as f64);
     let canvas = canvas.unwrap_or(Rect::new(0.0, 0.0, tw, th));
     let region = region.unwrap_or(canvas);
@@ -137,6 +152,9 @@ pub fn rasterize(svg: &str, canvas: Option<Rect>, region: Option<Rect>, width: u
     pixmap.fill(tiny_skia::Color::from_rgba8(background.r, background.g, background.b, 255));
     // viewBox units -> the renderer's own pixels -> output pixels.
     let (ux, uy) = (tw / canvas.width(), th / canvas.height());
+    if ![scale, scale / ux, scale / uy, (canvas.x0 - region.x0) * scale, (canvas.y0 - region.y0) * scale].iter().all(|v| v.is_finite()) {
+        return Err(not_renderable("its size or viewBox is not a usable number"));
+    }
     let tf = tiny_skia::Transform::from_row((scale / ux) as f32, 0.0, 0.0, (scale / uy) as f32, ((canvas.x0 - region.x0) * scale) as f32, ((canvas.y0 - region.y0) * scale) as f32);
     resvg::render(&tree, tf, &mut pixmap.as_mut());
 

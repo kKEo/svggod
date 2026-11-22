@@ -245,9 +245,55 @@ fn first_number(value: &str, font: f64, reference: f64) -> Option<f64> {
     style::length(tok, font, reference)
 }
 
+/// No drawing has a coordinate or a radius larger than this. A curve is cut into
+/// more pieces the larger it is, so a number from the file must not be taken as it
+/// comes: a circle of radius 1e308 would ask for more pieces than there is memory.
+pub const MAX_COORD: f64 = 1e9;
+
+/// Whether path data holds a number larger than `MAX_COORD`, or one that is not finite.
+fn beyond_any_drawing(d: &str) -> bool {
+    let bytes = d.as_bytes();
+    let mut start = 0;
+    while start < bytes.len() {
+        // A number: an optional sign, then digits, a point and an exponent with its own sign.
+        let mut end = start;
+        if matches!(bytes[end], b'+' | b'-') {
+            end += 1;
+        }
+        let digits = end;
+        while end < bytes.len() && (bytes[end].is_ascii_digit() || bytes[end] == b'.' || (matches!(bytes[end], b'e' | b'E') && end > digits) || (matches!(bytes[end], b'+' | b'-') && matches!(bytes[end - 1], b'e' | b'E'))) {
+            end += 1;
+        }
+        if end > digits && d[start..end].parse::<f64>().is_ok_and(|v| !v.is_finite() || v.abs() > MAX_COORD) {
+            return true;
+        }
+        start = end.max(start + 1);
+    }
+    false
+}
+
+/// A path as straight pieces, within 0.2 units of the curve. A path larger than any
+/// drawing is followed more loosely, in proportion to its size, so that the number of
+/// pieces, and with it the memory, stays bounded whatever numbers the file holds.
 pub fn flatten(path: &BezPath) -> Vec<Vec<Point>> {
     let mut out: Vec<Vec<Point>> = Vec::new();
-    kurbo::flatten(path.iter(), 0.2, |el| match el {
+    let mut reach = 0.0f64;
+    for el in path.elements() {
+        let pts: &[Point] = match el {
+            PathEl::MoveTo(p) | PathEl::LineTo(p) => std::slice::from_ref(p),
+            PathEl::QuadTo(a, b) => &[*a, *b],
+            PathEl::CurveTo(a, b, c) => &[*a, *b, *c],
+            PathEl::ClosePath => &[],
+        };
+        for p in pts {
+            reach = reach.max(p.x.abs()).max(p.y.abs());
+        }
+    }
+    if !reach.is_finite() {
+        return out;
+    }
+    let tolerance = (reach / 20_000.0).max(0.2);
+    kurbo::flatten(path.iter(), tolerance, |el| match el {
         PathEl::MoveTo(p) => out.push(vec![p]),
         PathEl::LineTo(p) => {
             if let Some(cur) = out.last_mut() {
@@ -311,12 +357,12 @@ impl<'s, 'a, 'i> Builder<'s, 'a, 'i> {
             "circle" => {
                 let r = self.len(node, "r", st, diag);
                 let c = Point::new(self.len(node, "cx", st, cw), self.len(node, "cy", st, ch));
-                (r > 0.0).then(|| (kurbo::Circle::new(c, r).to_path(0.05), true))
+                (r > 0.0 && r <= MAX_COORD).then(|| (kurbo::Circle::new(c, r).to_path(0.05), true))
             }
             "ellipse" => {
                 let (rx, ry) = (self.len(node, "rx", st, cw), self.len(node, "ry", st, ch));
                 let c = Point::new(self.len(node, "cx", st, cw), self.len(node, "cy", st, ch));
-                (rx > 0.0 && ry > 0.0).then(|| (kurbo::Ellipse::new(c, (rx, ry), 0.0).to_path(0.05), true))
+                (rx > 0.0 && ry > 0.0 && rx.max(ry) <= MAX_COORD).then(|| (kurbo::Ellipse::new(c, (rx, ry), 0.0).to_path(0.05), true))
             }
             "line" => {
                 let mut p = BezPath::new();
@@ -340,7 +386,11 @@ impl<'s, 'a, 'i> Builder<'s, 'a, 'i> {
                 Some((p, tag == "polygon"))
             }
             "path" => {
-                let p = BezPath::from_svg(node.attribute("d")?).ok()?;
+                let d = node.attribute("d")?;
+                if beyond_any_drawing(d) {
+                    return None;
+                }
+                let p = BezPath::from_svg(d).ok()?;
                 if p.elements().len() < 2 {
                     return None;
                 }
@@ -781,4 +831,19 @@ pub fn nearest_on(outline: &[Vec<Point>], p: Point) -> Point {
         }
     }
     best.1
+}
+
+#[cfg(test)]
+mod limit_tests {
+    use super::*;
+
+    #[test]
+    fn path_numbers_beyond_any_drawing_are_noticed() {
+        for d in ["M1e308 0L1 1", "M0 0 A1e300 8 0 0 1 5 5", "M0,0L-99999999999999999999,4", "M0 0h1e10", "M.5-2e+12"] {
+            assert!(beyond_any_drawing(d), "{d}");
+        }
+        for d in ["M0 0L10 4L0 8Z", "M176 552 A48 8 0 0 1 272 552", "M1e-320 0L10 4", "M-1e9,1e9 l.5-.5", "", "Me5"] {
+            assert!(!beyond_any_drawing(d), "{d}");
+        }
+    }
 }

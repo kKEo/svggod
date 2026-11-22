@@ -45,7 +45,9 @@ fn main() -> Result<(), svggod::Error> {
 | --- | --- | --- |
 | `theme(name)` | `--theme` | A built-in name (`svggod::themes()` lists them) or a theme folder. Wins over `theme:` in the spec. |
 | `base_dir(dir)` | none | Where a theme path written in the spec starts from. The command uses the spec file's folder. |
+| `root(dir)` | none | The only folder theme files may be read from; a path that leads out of it fails with `outside-root`. |
 | `effort(level)` | `--effort` | Wins over `effort:` in the spec. |
+| `max_effort(level)` | none | The most effort a drawing may take, whatever the spec asks for. |
 | `text_as_paths(true)` | `--text-as-paths` | |
 | `embed_spec(true)` | `--embed-spec` | Lets `svggod::describe` read the drawing back. |
 | `interactive(true)` | `--interactive css` | |
@@ -85,6 +87,18 @@ println!("{}", words.short);
 let image = svggod::rasterize(&svg, 1200)?;    // needs the `preview` feature
 std::fs::write("orders.png", image.png).expect("write");
 ```
+
+## Specs and SVGs from someone else
+
+The library is built to be handed input you do not control: it answers with an error or with findings, and does not panic, hang or take memory without bound. The limits it applies are listed in [Known limits](../operations/known-limits.md#limits-on-input). Two things are yours to set, because only you know them:
+
+```rust
+let renderer = Renderer::new()
+    .root("/srv/diagrams")              // theme folders may be read from here only
+    .max_effort(svggod::Effort::Normal); // a spec cannot ask for the slow search
+```
+
+Without `root`, a spec's `theme:` can name any folder on the disk; without `max_effort`, a spec can say `effort: max`.
 
 ## Errors
 

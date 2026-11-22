@@ -2,6 +2,19 @@
 
 This page lists what SVGGod does not do, or does only approximately, so you can decide before you build a pipeline on it. Each item is a property of version 1.0.0 as read from the code and the README, not a bug list.
 
+## Limits on input
+
+These exist so that a file or a spec, whatever it holds, cannot decide how much memory or time SVGGod takes. Each is refused with an ordinary error or finding, never a crash.
+
+- **Input size:** a file or stdin over 64 MB is refused with `input-too-large`; an MCP message over 64 MB is answered with an error and skipped.
+- **Nesting:** an SVG whose elements are nested more than 100 deep is not checked; `validate` reports one `xml-well-formed` finding and the other commands fail with `malformed-xml`.
+- **Numbers in an SVG:** a circle, an ellipse or a path with a coordinate or radius beyond 1,000,000,000 (or one that is not a number) is treated as having no shape. Curves in very large paths are followed more loosely, in proportion to their size.
+- **Numbers in a spec:** `at` takes values from -10000 to 10000, and `width` from 40 to 2000.
+- **Drawing size:** a diagram whose routing grid would pass 2 million points, about 11,000 px on each side, is refused with `diagram-too-large`.
+- **Pictures in a preview:** `preview` draws images carried in the file as `data:` URLs. It never opens a file or a URL that an `<image>` points to, so those are left blank.
+- **What the rasterizer cannot draw:** an SVG that draws more than 10 million units from the origin, or that makes the rasterizer fail, gives `not-renderable`.
+- **Effort is not limited by the command.** A spec may say `effort: max`, which can take many seconds on a dense diagram. A program using the library can cap it with `Renderer::max_effort`.
+
 ## Checking
 
 - **Geometry findings on foreign SVGs are heuristic.** For a file SVGGod did not render, measurements such as overlap, clipping and text size rest on estimates. Those findings carry `"approximate": true` and are capped at warning severity. A clean result on a hand-made SVG is weaker evidence than on SVGGod output. See [The rule engine](../how-it-works/rules-engine.md#findings-that-cannot-be-exact).

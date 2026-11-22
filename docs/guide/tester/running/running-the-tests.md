@@ -62,3 +62,24 @@ Many tests copy a fixture from `tests/fixtures/` into a temporary directory (`te
 2. If `r8_output_matches_the_golden_files` fails, read [Golden files](../adding/golden-files.md) before regenerating anything.
 3. If only `r15_*` fails, you are probably on a loaded machine or in a debug build; see [Continuous integration gates](../gates/ci.md#timing-budgets).
 4. If a test fails on one operating system in CI but not on yours, see [Continuous integration gates](../gates/ci.md#when-one-system-fails).
+
+## The damaged-input test and its limits
+
+`tests/mutate.rs` takes every fixture, golden file and example, damages it at random, and hands it to the library: cut pieces, repeated pieces, absurd numbers such as `1e308`, stray characters. The sequence is fixed, so a failure repeats. It checks one thing: the library answers with findings or an error.
+
+```bash
+cargo test --test mutate                                   # 12 changes per file, a few seconds
+SVGGOD_MUTATIONS=1500 cargo test --release --test mutate   # about 100,000 inputs, about a minute
+SVGGOD_MUTATE_FILE=bad.svg cargo test --release --test mutate one_saved_input -- --nocapture
+```
+
+The test limits itself, because the inputs it makes are exactly the kind that can take a machine down:
+
+| Limit | Value | What happens when it is passed |
+|---|---|---|
+| Memory | 256 MB for the whole test, counted by its own allocator | the allocation fails and the test ends at once |
+| Time | 20 seconds for one input | the test ends itself |
+
+Before each input is tried it is written to the system temp directory (`svggod-svg-current.txt` or `svggod-spec-current.txt`; the test prints the path), so the input that ended the test is still there. Try it again alone with `SVGGOD_MUTATE_FILE`, which prints each step as it starts.
+
+> **Warning.** Do not try a hostile or damaged file with the `svggod` program to see what happens. The program has no memory limit of its own, and a watchdog that looks at its memory from outside is too slow to stop a fast allocation. Use `SVGGOD_MUTATE_FILE`, which runs under the limits above. Inputs that were bombs once are kept in `known_bombs_stay_defused` in the same file, for the same reason.

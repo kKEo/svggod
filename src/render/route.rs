@@ -90,9 +90,10 @@ pub struct Grid {
 }
 
 impl Grid {
-    /// The most points a grid may have. Each takes 14 bytes, so this is about 110 MB;
-    /// a drawing 20,000 px on a side fits.
-    pub const MAX_POINTS: f64 = 8_000_000.0;
+    /// The most points a grid may have. Each takes 14 bytes here and about as much
+    /// again while a route is searched for, so this is some 60 MB; a drawing 2,000 px
+    /// wide and 64,000 px tall fits.
+    pub const MAX_POINTS: f64 = 2_000_000.0;
 
     /// A grid whose points cover `bounds`; `origin` fixes where the grid lines fall.
     /// `None` when the bounds are not finite or would take more than `MAX_POINTS`:

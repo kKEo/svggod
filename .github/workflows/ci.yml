@@ -48,6 +48,11 @@ jobs:
           cargo clippy --locked --no-default-features --lib -- -D warnings
           cargo clippy --locked --no-default-features --features preview --lib -- -D warnings
           cargo test --locked --no-default-features --test lib
+      # About 20,000 damaged inputs; the test caps its own memory and time.
+      - name: Damaged input, deeper
+        run: cargo test --locked --release --test mutate
+        env:
+          SVGGOD_MUTATIONS: 300
       - name: API docs
         run: cargo doc --locked --no-deps --all-features
         env:
