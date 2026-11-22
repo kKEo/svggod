@@ -1,7 +1,8 @@
 # SVGGod
 
-A single-binary command line tool that compiles a declarative diagram description
-to SVG and checks any SVG for correctness, legibility and portability. It is built
+A single-binary command line tool, and a Rust library, that compiles a declarative
+diagram description to SVG and checks any SVG for correctness, legibility and
+portability. It is built
 for diagrams in technical documentation, and for two kinds of caller: AI agents
 that use it as a tool, and people or CI pipelines that lint diagrams in a
 documentation repository.
@@ -32,11 +33,47 @@ Or download a tarball for Linux (x86_64 and arm64, static) or macOS (Apple silic
 Intel) from the [releases page](https://github.com/kKEo/svggod/releases) and check it
 against `SHA256SUMS`.
 
+## Use as a library
+
+The same crate is a library. It draws and checks without touching stdout, the process
+arguments or the exit code, and never looks for a config file you did not name.
+
+```toml
+[dependencies]
+svggod = { version = "1", default-features = false }
+```
+
+```rust
+use svggod::{Profile, Renderer, Severity, Validator};
+
+fn main() -> Result<(), svggod::Error> {
+    let spec = "version: 1\ndiagram: flow\ntitle: Request path\nedges:\n  - \"browser -> api: request\"\n";
+
+    let svg = Renderer::new().theme("blueprint").render(spec)?;       // spec text in, SVG out
+    let findings = Validator::new().profile(Profile::Strict).validate("request.svg", &svg);
+    assert!(findings.iter().all(|f| f.severity < Severity::Error));
+
+    println!("{}", svggod::describe(spec)?.short);                    // the diagram in words
+    Ok(())
+}
+```
+
+| Feature | Default | Adds |
+|---|---|---|
+| `cli` | yes | The `svggod` program and the MCP server (`clap`); turns on `preview` |
+| `preview` | yes | `svggod::rasterize`, SVG to PNG (`resvg`) |
+
+With `default-features = false` neither `clap` nor `resvg` is built. The API is small on
+purpose: `render` and `Renderer`, `validate` and `Validator` (with `fix`), `describe`,
+`rasterize`, `themes`, and the `Error`, `Finding` and `Severity` types. It follows
+semantic versioning; everything else in the crate is private. The reference is on
+[docs.rs](https://docs.rs/svggod), and `cargo doc --open` builds it locally.
+
 ## Build
 
 ```sh
 cargo build --release      # the binary is target/release/svggod
-cargo test                 # unit, command line and MCP tests
+cargo test                 # unit, library, command line and MCP tests
 ```
 
 No network, browser or language runtime is needed at run time. Fonts (Inter and

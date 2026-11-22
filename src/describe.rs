@@ -1,5 +1,6 @@
 //! A diagram in words: what a reader who cannot see the picture needs to be told.
 
+use crate::envelope::AppError;
 use crate::spec::{Arrow, Diagram, Direction, EdgeStyle, Kind, Ref, Spec};
 
 fn type_name(d: Diagram) -> &'static str {
@@ -160,4 +161,16 @@ pub const LEGACY_EMBED_ID: &str = "svgdog-spec";
 /// Whether a metadata id marks an embedded spec, under the current or the old name.
 pub fn is_embed_id(id: Option<&str>) -> bool {
     id == Some(EMBED_ID) || id == Some(LEGACY_EMBED_ID)
+}
+
+/// The spec text behind a file: the file itself, or what a rendered SVG has embedded.
+pub fn source(file: &str, text: &str) -> Result<String, AppError> {
+    if !text.trim_start().starts_with('<') {
+        return Ok(text.to_string());
+    }
+    embedded(text).ok_or_else(|| {
+        AppError::input("no-spec", format!("{file} is an SVG without an embedded spec, so there is nothing to read it back from."))
+            .path(file)
+            .suggest(Some("Describe the spec file, or render with --embed-spec. For any SVG, 'svggod inspect' lists what is drawn.".into()))
+    })
 }

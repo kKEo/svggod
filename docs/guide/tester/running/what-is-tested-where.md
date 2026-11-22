@@ -7,6 +7,7 @@ This page maps each area of SVGGod to the test file and test names that cover it
 | Layer | Location | What it checks | How |
 |---|---|---|---|
 | Unit | `src/ops.rs`, `src/yaml_patch.rs`, `src/preview.rs`, `src/diff.rs`, `src/mcp.rs`, `src/render/route.rs`, `src/svg/selector.rs` | small pure pieces: edit operations, YAML patching, selectors, routing, diff text, base64 | `#[cfg(test)]` modules, 21 tests |
+| Library | `tests/lib.rs`, and the examples in the doc comments of `src/lib.rs` | the public API as another crate uses it: `render`, `validate`, `fix`, `describe`, `rasterize`, the error type | calls `svggod::…` in process, 8 tests and 3 doc examples |
 | Command line | `tests/cli.rs` | the whole binary: every command, exit codes, JSON shapes, determinism | spawns the binary, 55 tests |
 | MCP | `tests/mcp.rs` | the stdio server as a client would drive it | spawns `svggod mcp --root-path DIR`, 7 tests |
 

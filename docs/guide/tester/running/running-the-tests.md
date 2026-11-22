@@ -11,7 +11,7 @@ You need a Rust toolchain with `cargo` and `clippy` (the CI uses the stable chan
 ## Run everything once
 
 ```bash
-cargo test                                # unit, command-line and MCP tests (debug build)
+cargo test                                # unit, library, command-line and MCP tests (debug build)
 cargo test --release r15                  # the timing budgets, which are strict only in release builds
 cargo clippy --locked --all-targets -- -D warnings   # the lint gate CI also runs
 ```
@@ -20,9 +20,11 @@ On version 1.0.0, `cargo test` prints three result blocks, all passing:
 
 | Block printed by cargo | Source | Tests |
 |---|---|---|
-| `Running unittests src/main.rs` | `#[cfg(test)]` modules inside `src/` | 21 |
+| `Running unittests src/lib.rs` | `#[cfg(test)]` modules inside `src/` | 21 |
 | `Running tests/cli.rs` | `tests/cli.rs`, drives the real binary | 55 |
 | `Running tests/mcp.rs` | `tests/mcp.rs`, drives `svggod mcp` over stdio | 7 |
+
+Since the crate became a library as well, cargo prints two more blocks, `Running tests/lib.rs` (the public API, used as another crate uses it) and `Doc-tests svggod` (the examples in the API docs), and the unit tests run under `src/lib.rs`; `src/main.rs` has none.
 
 That is 83 tests. The `tests/cli.rs` block takes about nine seconds on a laptop in a debug build; the other two take well under a second. The release-mode command runs two tests (`r15_cold_start_is_fast` and `r15_a_200_kb_file_validates_quickly`) and finishes in under a second.
 
@@ -36,7 +38,9 @@ That is 83 tests. The `tests/cli.rs` block takes about nine seconds on a laptop 
 cargo test --test cli r4_exit_codes            # one test in tests/cli.rs
 cargo test --test cli preview                  # every test with "preview" in its name
 cargo test --test mcp                          # the whole MCP file
-cargo test --bin svggod ops::                  # unit tests in src/ops.rs
+cargo test --lib ops::                         # unit tests in src/ops.rs
+cargo test --test lib                          # the library API, tests/lib.rs
+cargo test --doc                               # the examples in the API docs
 cargo test --test cli r8 -- --nocapture        # show output while it runs
 ```
 

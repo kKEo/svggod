@@ -13,6 +13,7 @@
 - [Part II: Install and deploy](install/README.md)
   - [Build from source](install/build-from-source.md)
   - [Release binaries](install/release-binaries.md)
+  - [Use as a library](install/library.md)
   - [Setting up the MCP server](install/mcp-setup.md)
 - [Part III: Reference](reference/README.md)
   - [Commands](reference/commands.md)

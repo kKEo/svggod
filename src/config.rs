@@ -16,14 +16,21 @@ pub const CONFIG_NAME: &str = "svggod.toml";
 pub const LEGACY_CONFIG_NAME: &str = "svgdog.toml";
 pub const PROFILES: &[&str] = &["minimal", "docs", "strict"];
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// A set of rule defaults.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Profile {
+    /// Structure and safety rules only.
     Minimal,
+    /// Every rule at its own severity; the default.
+    #[default]
     Docs,
+    /// Every rule on, warnings raised to errors.
     Strict,
 }
 
 impl Profile {
+    /// The profile with this name: `minimal`, `docs` or `strict`.
     pub fn parse(s: &str) -> Option<Profile> {
         match s {
             "minimal" => Some(Profile::Minimal),
@@ -239,7 +246,7 @@ fn parse_rules(table: &toml::Table, at: &str, file: &Path) -> Result<Vec<(&'stat
 }
 
 impl Config {
-    fn empty(dir: PathBuf) -> Config {
+    pub(crate) fn empty(dir: PathBuf) -> Config {
         Config {
             dir,
             profile: None,

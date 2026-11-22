@@ -17,7 +17,8 @@ use serde_json::{Map, Value, json};
 use crate::cli::Cli;
 use crate::envelope::{AppError, EXIT_INPUT, EXIT_INTERNAL, VERSION};
 use crate::util::did_you_mean;
-use crate::{Env, commands, execute};
+use crate::app::{Env, execute};
+use crate::commands;
 
 const MODERN: &[&str] = &["2026-07-28"];
 const LEGACY: &[&str] = &["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
@@ -395,7 +396,7 @@ let text = value.as_str().ok_or_else(|| bad(a.name, "text"))?;
             }
         }
     }
-    let cli = Cli::try_parse_from(&argv).map_err(|e| crate::usage_error(e, &argv))?;
+    let cli = Cli::try_parse_from(&argv).map_err(|e| crate::app::usage_error(e, &argv))?;
     let mut out = execute(&cli, &Env { color: false, ceiling: Some(root.to_path_buf()), inline_ops, inline_spec })?;
     if render {
         // Hand the drawing back as data: the SVG text when no file was asked for, and a picture on request.

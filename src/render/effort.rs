@@ -1,12 +1,17 @@
 //! How hard to work at a drawing. Every budget is a count, never a time, so the same
 //! effort gives the same drawing on every machine.
 
-/// The levels of the `effort` setting.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+/// How hard the renderer works at edges that cross. Every level is a fixed budget
+/// of attempts, never a time, so a level gives the same drawing on every machine.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Effort {
+    /// One pass; the default.
     #[default]
     Normal,
+    /// More routing attempts and box orders when crossings remain.
     High,
+    /// The largest budget; slowest.
     Max,
 }
 
@@ -32,6 +37,7 @@ pub struct Budget {
 }
 
 impl Effort {
+    /// The level with this name: `normal`, `high` or `max`.
     pub fn parse(s: &str) -> Option<Effort> {
         match s {
             "normal" => Some(Effort::Normal),
@@ -42,7 +48,7 @@ impl Effort {
     }
 
     /// The budgets to work through for this level, the lower levels first.
-    pub fn ladder(self) -> Vec<Budget> {
+    pub(crate) fn ladder(self) -> Vec<Budget> {
         let levels: &[Effort] = match self {
             Effort::Normal => &[Effort::Normal],
             Effort::High => &[Effort::Normal, Effort::High],

@@ -21,6 +21,8 @@ Each job runs these steps in order. A failing step fails the job.
 |---|---|---|
 | Lint | `cargo clippy --locked --all-targets -- -D warnings` | no clippy warning anywhere, including in tests |
 | Test | `cargo test --locked` | all 83 unit, command-line and MCP tests pass |
+| Library alone | `cargo clippy --locked --no-default-features --lib -- -D warnings`, the same with `--features preview`, and `cargo test --locked --no-default-features --test lib` | the library builds without warnings and passes its tests with the `cli` and `preview` features off |
+| API docs | `RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps --all-features` | the API reference builds with no broken link |
 | Timing budgets | `cargo test --locked --release r15` | speed budgets hold in a release build |
 
 `--locked` makes cargo fail if `Cargo.lock` would change, so a dependency change must be committed together with its lock file.
@@ -34,10 +36,14 @@ Every job also checks out the code, installs the stable Rust toolchain with the 
 ```bash
 cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
+cargo clippy --locked --no-default-features --lib -- -D warnings
+cargo clippy --locked --no-default-features --features preview --lib -- -D warnings
+cargo test --locked --no-default-features --test lib
+RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps --all-features
 cargo test --locked --release r15
 ```
 
-If all three pass, the Linux job should pass. See below for macOS.
+If all of these pass, the Linux job should pass. See below for macOS.
 
 ## Why two systems
 

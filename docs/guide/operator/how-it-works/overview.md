@@ -21,13 +21,16 @@ Every command prints one result object, the *envelope*, described in [Envelope a
 ## Modules behind each path
 
 ```text
-cli.rs ── main.rs ── commands/*.rs ─┬─ spec.rs → render/{layout,route,sequence,mod}.rs   (create)
+cli.rs ── app.rs ─── commands/*.rs ─┬─ spec.rs → render/{layout,route,sequence,mod}.rs   (create)
                                     ├─ rules/*.rs + catalogue.rs + config.rs             (check)
                                     ├─ svg/*.rs (parser, styles, text metrics, selector) (check, change)
                                     ├─ ops.rs, spec_edit.rs, yaml_patch.rs, diff.rs      (change)
                                     └─ preview.rs (resvg rasteriser)                     (preview)
 mcp.rs wraps the same commands as tools.
+main.rs is one line: it calls app.rs. api.rs is the library's public face over the same modules.
 ```
+
+The crate is a library (`src/lib.rs`) with a thin program on top. The program's parts (`cli.rs`, `app.rs`, `commands/`, `mcp.rs`) are behind the `cli` feature and `preview.rs` is behind `preview`; see [Use as a library](../install/library.md).
 
 - **`src/cli.rs`** declares the arguments with clap. **`src/main.rs`** parses them, picks the output format, runs one command and turns any failure into the error envelope. A panic anywhere is caught and reported as exit code 5 instead of a backtrace (`src/main.rs:185-198`).
 - **`src/spec.rs`** reads and validates a spec ([next chapter](spec-pipeline.md)). **`src/render/`** turns it into SVG text ([layout](layout.md), [routing](routing.md)).

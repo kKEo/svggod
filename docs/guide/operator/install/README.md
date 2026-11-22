@@ -6,6 +6,7 @@ SVGGod is one self-contained executable. There is nothing to configure on a serv
 | --- | --- |
 | [Build from source](build-from-source.md) | Build the binary yourself, or install it with `cargo install svggod`. |
 | [Release binaries](release-binaries.md) | Use the prebuilt archives from a GitHub release. |
+| [Use as a library](library.md) | Call SVGGod from your own Rust program instead of running the binary. |
 | [Setting up the MCP server](mcp-setup.md) | Let an AI agent client call SVGGod as a set of tools. |
 
 ## What you are deploying
@@ -21,6 +22,7 @@ SVGGod is one self-contained executable. There is nothing to configure on a serv
 | --- | --- |
 | Developer machine, or a CI image that already has Rust | [Build from source](build-from-source.md), or `cargo install --path .` |
 | CI image without Rust | [Release binaries](release-binaries.md), or `brew install kKEo/tap/svggod` |
+| A Rust program that draws or checks diagrams itself | [Use as a library](library.md) |
 | An agent client such as a coding assistant | Either of the above, then [MCP setup](mcp-setup.md) |
 
 > **Note.** SVGGod is published as the `svggod` crate on crates.io (`cargo install svggod`, or `cargo binstall svggod` for the prebuilt binary) and as a Homebrew formula (`brew install kKEo/tap/svggod`), from version 1.1.0 on. Older versions exist only under the previous name, `svgdog`. There is no npm wrapper or container image.
