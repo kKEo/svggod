@@ -25,4 +25,4 @@ SVGGod is one self-contained executable. There is nothing to configure on a serv
 | A Rust program that draws or checks diagrams itself | [Use as a library](library.md) |
 | An agent client such as a coding assistant | Either of the above, then [MCP setup](mcp-setup.md) |
 
-> **Note.** SVGGod is published as the `svggod` crate on crates.io (`cargo install svggod`, or `cargo binstall svggod` for the prebuilt binary) and as a Homebrew formula (`brew install kKEo/tap/svggod`), from version 1.1.0 on. Older versions exist only under the previous name, `svgdog`. There is no npm wrapper or container image.
+> **Note.** SVGGod is published as the `svggod` crate on crates.io (`cargo install svggod`, or `cargo binstall svggod` for the prebuilt binary) and as a Homebrew formula (`brew install kKEo/tap/svggod`), from version 1.1.0 on. Homebrew 7 and later only loads formulae from trusted taps, so run `brew tap kKEo/tap && brew trust kKEo/tap` once before installing. Older versions exist only under the previous name, `svgdog`. There is no npm wrapper or container image.

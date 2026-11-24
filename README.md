@@ -15,18 +15,28 @@ documentation repository.
 
 ## Documentation
 
-Full documentation lives in [`docs/guide/`](docs/guide/index.html): a landing page, a
-[TL;DR deck](docs/guide/tldr.html) and three books, the
-[user guide](docs/guide/user/README.md), the
-[operator guide](docs/guide/operator/README.md) and the
-[tester guide](docs/guide/tester/README.md). `make docs` builds them with mdBook.
+Full documentation is published at [kkeo.github.io/svggod](https://kkeo.github.io/svggod/):
+a landing page, a [TL;DR deck](https://kkeo.github.io/svggod/tldr.html) and three books, the
+[user guide](https://kkeo.github.io/svggod/user/), the
+[operator guide](https://kkeo.github.io/svggod/operator/) and the
+[tester guide](https://kkeo.github.io/svggod/tester/). The sources live in
+[`docs/guide/`](docs/guide/) and `make docs` builds them with mdBook.
 
 ## Install
+
+With Homebrew (macOS and Linux):
+
+```sh
+brew tap kKEo/tap
+brew trust kKEo/tap                  # Homebrew 7+ only loads formulae from trusted taps
+brew install svggod
+```
+
+With Cargo:
 
 ```sh
 cargo install svggod                 # from crates.io, builds from source
 cargo binstall svggod                # prebuilt binary, needs cargo-binstall
-brew install kKEo/tap/svggod         # Homebrew (macOS and Linux)
 ```
 
 Or download a tarball for Linux (x86_64 and arm64, static) or macOS (Apple silicon and
