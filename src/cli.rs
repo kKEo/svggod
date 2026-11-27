@@ -91,7 +91,7 @@ pub enum Command {
         /// Where to write the SVG; - writes it to stdout in place of the report
         #[arg(short = 'o', value_name = "OUT")]
         output: String,
-        /// Theme: docs, blueprint, paper, bold or cards (add -dark or -auto), or a theme folder [default: the spec's, else svggod.toml's, else docs-light]
+        /// Theme: docs, blueprint, paper, bold, cards, cartoon or sticker (add -dark or -auto), or a theme folder [default: the spec's, else svggod.toml's, else docs-light]
         #[arg(long, value_name = "NAME|DIR")]
         theme: Option<String>,
         /// How hard to work at edges that cross: normal, high or max [default: the spec's, else svggod.toml's, else normal]
@@ -306,7 +306,7 @@ pub enum ThemeAction {
         /// Folder for the theme; it is created when missing
         #[arg(value_name = "DIR")]
         dir: String,
-        /// Built-in theme to copy: docs, blueprint, paper, bold or cards
+        /// Built-in theme to copy: docs, blueprint, paper, bold, cards, cartoon or sticker
         #[arg(long, default_value = "docs", value_name = "NAME")]
         from: String,
         /// Replace a theme.toml that is already there

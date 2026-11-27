@@ -12,6 +12,8 @@ There is no per-node styling: to make something stand out use `emphasis: true` o
 | `paper` | Warm cream page, terracotta accent, round corners | Handbooks, blog posts |
 | `bold` | 16 px text, thick lines, strong contrast | Slides |
 | `cards` | Soft grey cards, hairline borders, system font | Product pages |
+| `cartoon` | Comic strip: thick ink outlines, hard shadows, comic lettering | Tutorials, talks |
+| `sticker` | Very round shapes, candy colours, small shadow below | Onboarding, playful pages |
 
 `svggod theme list --format text` prints them.
 

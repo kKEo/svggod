@@ -18,7 +18,7 @@ Change it, then check it with: svggod theme check themes/acme
 Use it with: --theme themes/acme
 ```
 
-`--from` takes `docs`, `blueprint`, `paper`, `bold` or `cards`; without it you get a copy of `docs`. The command does not replace a file that is already there unless you add `--force`.
+`--from` takes `docs`, `blueprint`, `paper`, `bold`, `cards`, `cartoon` or `sticker`; without it you get a copy of `docs`. The command does not replace a file that is already there unless you add `--force`.
 
 ## 2. Change the file
 
@@ -86,9 +86,11 @@ Everything in `[font]` and `[line]` is optional. A key you leave out takes the v
 | `line.corner` | 0 to 16 | 8 | Corner radius of the rounded kinds and of frames. States use 1.5 times it; notes and `external` boxes use half |
 | `line.box_corner` | 0 to 16 | 0 | Corner radius of the plain `box` |
 
+The built-in `cartoon` and `sticker` themes use three more settings, which you can copy: `font.weight` (such as 700 for bold text), and a `[style]` table with `shadow = [4, 4]` (a hard shadow that many pixels to the right of and below each box, each from 0 to 6), `round = true` (round line joins and ends) and `arrow = 1.5` (larger arrowheads, from 1 to 2). The shadow takes its colour from an optional `shadow` key in `[light]` and `[dark]`, or from `node_stroke`. Start from one of them with `svggod theme init DIR --from cartoon`.
+
 Two things to know about fonts:
 
-- SVGGod carries two fonts, Inter and JetBrains Mono, and measures text with one of them: JetBrains Mono when the first name in `family` is a monospace font, Inter otherwise. If you name another font, boxes are sized for the stand-in, and the reader's device draws your font if it has it. End the list with `sans-serif` or `monospace` so there is always a fallback.
+- SVGGod carries four fonts: Inter, JetBrains Mono, Comic Neue (in bold) and Varela Round. When the first name in `family` is one of them, text is measured with it. Otherwise text is measured with JetBrains Mono when the first name is a monospace font, and with Inter for anything else. If you name another font, boxes are sized for the stand-in, and the reader's device draws your font if it has it. End the list with `sans-serif` or `monospace` so there is always a fallback.
 - For the exact same letters everywhere, render with `--text-as-paths` (see [Text as outlines](themes-and-settings.md#text-as-outlines)).
 
 ## 3. Check it

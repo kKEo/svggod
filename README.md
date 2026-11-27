@@ -86,8 +86,9 @@ cargo build --release      # the binary is target/release/svggod
 cargo test                 # unit, library, command line and MCP tests
 ```
 
-No network, browser or language runtime is needed at run time. Fonts (Inter and
-JetBrains Mono, both under the SIL Open Font License, see `fonts/`) are compiled in.
+No network, browser or language runtime is needed at run time. Fonts (Inter,
+JetBrains Mono, Comic Neue and Varela Round, all under the SIL Open Font License, see
+`fonts/`) are compiled in.
 
 ## Diagram types
 
@@ -117,8 +118,8 @@ the reader's light or dark mode. `svggod describe` turns a diagram into words, a
 
 ## Themes
 
-A theme sets colours, font, text sizes, line widths and corner radii. Five are built
-in: `docs` (the default), `blueprint`, `paper`, `bold` and `cards`, each with a light, a dark
+A theme sets colours, font, text sizes, line widths and corner radii. Seven are built
+in: `docs` (the default), `blueprint`, `paper`, `bold`, `cards`, `cartoon` and `sticker`, each with a light, a dark
 (`-dark`) and an adaptive (`-auto`) variant. Name one with `--theme`, with `theme:` in
 a spec, or with `[style] theme` in `svggod.toml`.
 

@@ -1,0 +1,45 @@
+# A comic strip: thick ink outlines, hard shadows, bright flat colours and comic lettering.
+version = 1
+name = "cartoon"
+description = "A comic strip: thick ink outlines, hard shadows and bright colours"
+
+[font]
+family = ["Comic Neue", "Comic Sans MS", "Chalkboard SE", "cursive"]
+size = 16          # labels in boxes
+small = 13         # arrow labels, notes, legend, steps and caption
+weight = 700       # Comic Neue is bundled in bold, so that is what text is measured with
+
+[line]
+width = 3          # boxes and arrows
+thin = 2           # frames, notes and guide lines
+corner = 12        # rounded kinds (service, client, state) and frames; notes use half
+box_corner = 6     # the plain box
+
+[style]
+shadow = [4, 4]    # px right of and below each box
+round = true       # round line joins and ends
+arrow = 1.5        # arrowheads one and a half times the plain size
+
+[light]
+background = "#fffdf5"
+text = "#1b1b3a"
+muted = "#55557a"
+node_fill = "#ffd84d"
+node_stroke = "#1b1b3a"
+accent_fill = "#ff6b6b"
+accent_text = "#1b1b3a"
+note_fill = "#bfe9ff"
+edge = "#1b1b3a"
+shadow = "#1b1b3a"
+
+[dark]
+background = "#1b1b3a"
+text = "#fff8e7"
+muted = "#b5b5d6"
+node_fill = "#4338ca"
+node_stroke = "#fff8e7"
+accent_fill = "#ffd84d"
+accent_text = "#1b1b3a"
+note_fill = "#0f5c7a"
+edge = "#fff8e7"
+shadow = "#0a0a1c"

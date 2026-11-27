@@ -6,7 +6,7 @@ This page lists what SVGGod does and does not do with your files, so you can dec
 
 - **No network.** SVGGod does not need an internet connection to run, and nothing in the commands described in this guide sends your specs, pictures or settings anywhere. The program needs no browser and no other language runtime.
 - **No account, no tracking.** There is nothing to sign in to.
-- **Fonts are inside the program.** The two fonts SVGGod uses (Inter and JetBrains Mono, both under the SIL Open Font License) are built in. Measuring text and making preview pictures never depends on the fonts installed on your computer, so a preview looks the same everywhere. A saved SVG names Inter and falls back to the viewer's sans-serif font if Inter is missing; use `--text-as-paths` (see [Themes and settings](themes-and-settings.md)) when you need exact letter shapes everywhere.
+- **Fonts are inside the program.** The fonts SVGGod uses (Inter, JetBrains Mono, Comic Neue and Varela Round, all under the SIL Open Font License) are built in. Measuring text and making preview pictures never depends on the fonts installed on your computer, so a preview looks the same everywhere. A saved SVG names Inter and falls back to the viewer's sans-serif font if Inter is missing; use `--text-as-paths` (see [Themes and settings](themes-and-settings.md)) when you need exact letter shapes everywhere.
 - **Your diagrams are yours.** The SVG files, previews and specs SVGGod makes for you are not covered by SVGGod's licence (MPL-2.0), even where they contain theme styles, templates or letter shapes from the program. Use, license and share them however you like.
 
 ## It does not overwrite your work by surprise

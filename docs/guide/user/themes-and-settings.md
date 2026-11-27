@@ -4,7 +4,7 @@ This page shows how to change how diagrams look and how to set house rules for a
 
 ## Themes
 
-A theme sets the whole look of a diagram: its colours, its font and text sizes, how thick the lines are and how round the corners. SVGGod has five built-in themes:
+A theme sets the whole look of a diagram: its colours, its font and text sizes, how thick the lines are and how round the corners. SVGGod has seven built-in themes:
 
 | Theme | Look | Good for |
 |---|---|---|
@@ -13,6 +13,8 @@ A theme sets the whole look of a diagram: its colours, its font and text sizes, 
 | `paper` | Warm cream page, soft ink, a terracotta accent, well-rounded corners | Handbooks, blog posts and long reads |
 | `bold` | Larger text (16 px), thick lines, strong contrast | Slides and screens seen from a distance |
 | `cards` | Soft grey cards with hairline borders, round corners, a blue accent, the system font | Product pages and landing pages |
+| `cartoon` | A comic strip: thick ink outlines, hard shadows, yellow boxes, comic lettering | Tutorials, talks and anything that should feel friendly |
+| `sticker` | Very round shapes in candy colours on a lavender page, a small shadow below each box | Onboarding pages and playful product notes |
 
 List them, with their descriptions, at any time:
 

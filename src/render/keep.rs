@@ -71,6 +71,10 @@ pub fn read(text: &str, name: &str) -> Result<Previous, AppError> {
     let mut notes: BTreeMap<usize, Rect> = BTreeMap::new();
     for e in &scene.elems {
         let (Some(parent), Some(bbox), svg::Kind::Shape { .. }) = (e.parent, e.bbox, &e.kind) else { continue };
+        // A shadow is a copy of its box, moved aside.
+        if e.node.has_attribute(super::SHADOW_ATTR) {
+            continue;
+        }
         let Some(owner) = scene.elems[parent].node.attribute("id") else { continue };
         if let Some(id) = owner.strip_prefix("node-") {
             // The shape itself comes first; a lifeline, a place on a timeline's axis

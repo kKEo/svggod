@@ -38,7 +38,7 @@ The crate is a library (`src/lib.rs`) with a thin program on top. The program's 
 - **`src/rules/`** holds the 39 rule implementations in four files (structure, geometry, portability, accessibility). **`src/catalogue.rs`** is the metadata for each rule: id, group, default severity, autofix level, options and the failing and passing examples that `svggod rules --explain` prints.
 - **`src/config.rs`** finds and parses `svggod.toml` and resolves which rules are on, and at what severity, for each file.
 - **`src/ops.rs`** applies edit operations by patching text, so bytes outside the targeted elements stay as they were. **`src/spec_edit.rs`** and **`src/yaml_patch.rs`** do the same for specs, keeping comments where they can.
-- **`src/preview.rs`** rasterises with resvg using only the bundled Inter and JetBrains Mono fonts, so no system font can change the picture.
+- **`src/preview.rs`** rasterises with resvg using only the bundled fonts (Inter, JetBrains Mono, Comic Neue, Varela Round), so no system font can change the picture.
 
 ## What SVGGod never does
 

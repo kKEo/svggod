@@ -2158,7 +2158,7 @@ fn every_computed_layout_keeps_its_boxes_when_boxes_are_added() {
     }
 }
 
-const THEMES: [&str; 5] = ["docs", "blueprint", "paper", "bold", "cards"];
+const THEMES: [&str; 7] = ["docs", "blueprint", "paper", "bold", "cards", "cartoon", "sticker"];
 
 #[test]
 fn every_built_in_theme_draws_the_fixtures_in_each_variant_without_findings() {

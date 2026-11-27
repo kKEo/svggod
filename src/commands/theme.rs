@@ -17,6 +17,9 @@ fn colours(t: &Theme) -> Value {
     for (role, token) in ROLES {
         m.insert(role.into(), json!(t.role(token).unwrap_or("")));
     }
+    if t.has_shadow() {
+        m.insert(theme::SHADOW.0.into(), json!(t.shadow));
+    }
     Value::Object(m)
 }
 
@@ -26,8 +29,9 @@ fn family_json(f: &Family) -> Value {
         "name": f.name,
         "description": f.description,
         "variants": if f.dark.is_some() { vec!["light", "dark", "auto"] } else { vec!["light"] },
-        "font": { "family": t.family, "size": t.size, "small": t.small },
+        "font": { "family": t.family, "size": t.size, "small": t.small, "weight": t.weight },
         "line": { "width": t.width, "thin": t.thin, "corner": t.corner, "box_corner": t.box_corner },
+        "style": { "shadow": [t.shadow_offset.0, t.shadow_offset.1], "round": t.round, "arrow": t.arrow },
         "light": colours(t),
         "dark": f.dark.as_ref().map(colours),
     })

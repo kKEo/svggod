@@ -6,17 +6,27 @@ use harfrust::{Buffer, Font, GlyphInfo, GlyphPosition, ShapeOptions, ShaperFont}
 static INTER: &[u8] = include_bytes!("../../fonts/Inter-Regular.ttf");
 static INTER_BOLD: &[u8] = include_bytes!("../../fonts/Inter-Bold.ttf");
 static MONO: &[u8] = include_bytes!("../../fonts/JetBrainsMono-Regular.ttf");
+static COMIC: &[u8] = include_bytes!("../../fonts/ComicNeue-Bold.ttf");
+static ROUND: &[u8] = include_bytes!("../../fonts/VarelaRound-Regular.ttf");
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Class {
     Sans,
+    /// Inter Bold, for a theme whose text is all bold.
+    SansBold,
     Mono,
+    /// Comic Neue, bundled in its bold weight only.
+    Comic,
+    /// Varela Round, which has one weight.
+    Round,
 }
 
 struct Fonts {
     sans: Font,
     bold: Font,
     mono: Font,
+    comic: Font,
+    round: Font,
 }
 
 thread_local! {
@@ -24,18 +34,23 @@ thread_local! {
         sans: Font::new(INTER, 0).expect("bundled Inter Regular"),
         bold: Font::new(INTER_BOLD, 0).expect("bundled Inter Bold"),
         mono: Font::new(MONO, 0).expect("bundled JetBrains Mono"),
+        comic: Font::new(COMIC, 0).expect("bundled Comic Neue Bold"),
+        round: Font::new(ROUND, 0).expect("bundled Varela Round"),
     };
 }
 
 /// The font files compiled into the binary.
-pub fn bundled() -> [&'static [u8]; 3] {
-    [INTER, INTER_BOLD, MONO]
+pub fn bundled() -> [&'static [u8]; 5] {
+    [INTER, INTER_BOLD, MONO, COMIC, ROUND]
 }
 
 impl Fonts {
     fn face(&self, class: Class, bold: bool) -> &Font {
         match (class, bold) {
             (Class::Mono, _) => &self.mono,
+            (Class::SansBold, _) => &self.bold,
+            (Class::Comic, _) => &self.comic,
+            (Class::Round, _) => &self.round,
             (Class::Sans, true) => &self.bold,
             (Class::Sans, false) => &self.sans,
         }
@@ -108,8 +123,13 @@ pub fn classify(font_family: Option<&str>) -> (Class, bool) {
     let Some(value) = font_family else { return (Class::Sans, false) };
     let list = families(value);
     let Some(first) = list.first() else { return (Class::Sans, false) };
-    let class = if MONO_NAMES.contains(&first.as_str()) { Class::Mono } else { Class::Sans };
-    let exact = first == "inter" || first == "jetbrains mono";
+    let class = match first.as_str() {
+        "comic neue" => Class::Comic,
+        "varela round" => Class::Round,
+        f if MONO_NAMES.contains(&f) => Class::Mono,
+        _ => Class::Sans,
+    };
+    let exact = matches!(first.as_str(), "inter" | "jetbrains mono" | "comic neue" | "varela round");
     (class, exact)
 }
 

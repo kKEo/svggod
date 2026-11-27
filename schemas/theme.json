@@ -36,7 +36,7 @@
             "Inter",
             "sans-serif"
           ],
-          "description": "Font names written to the drawing, first choice first. Text is measured with the bundled Inter, or with JetBrains Mono when the first name is a monospace font"
+          "description": "Font names written to the drawing, first choice first. Text is measured with the bundled face of that name (Inter, JetBrains Mono, Comic Neue, Varela Round); any other monospace name is measured with JetBrains Mono and anything else with Inter"
         },
         "size": {
           "type": "number",
@@ -51,6 +51,14 @@
           "maximum": 20,
           "default": 12,
           "description": "px, arrow labels, notes, legend, steps and caption; not larger than size"
+        },
+        "weight": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 900,
+          "multipleOf": 100,
+          "default": 400,
+          "description": "Font weight of all text; from 600 up, Inter is measured in bold. Comic Neue is bundled in bold only, so give it 700"
         }
       }
     },
@@ -87,6 +95,40 @@
           "description": "px, corner radius of the plain box"
         }
       }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "shadow": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 6
+          },
+          "default": [
+            0,
+            0
+          ],
+          "description": "px, how far a hard shadow sits to the right of and below each box and note; [0, 0] draws none"
+        },
+        "round": {
+          "type": "boolean",
+          "default": false,
+          "description": "Round line joins and line ends"
+        },
+        "arrow": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 2,
+          "default": 1,
+          "description": "Size of arrowheads, as a multiple of the plain 10 by 8 px one"
+        }
+      },
+      "description": "Finer points of the look; every key is optional"
     },
     "light": {
       "type": "object",
@@ -147,6 +189,11 @@
           "type": "string",
           "pattern": "^#[0-9a-fA-F]{6}$",
           "description": "Arrows and the timeline axis"
+        },
+        "shadow": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "The shadow behind boxes, where style.shadow draws one; the box outline's colour when left out"
         }
       },
       "description": "Colours of the light variant"
@@ -210,6 +257,11 @@
           "type": "string",
           "pattern": "^#[0-9a-fA-F]{6}$",
           "description": "Arrows and the timeline axis"
+        },
+        "shadow": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "The shadow behind boxes, where style.shadow draws one; the box outline's colour when left out"
         }
       },
       "description": "Colours of the dark variant; without it, -dark and -auto are not available"

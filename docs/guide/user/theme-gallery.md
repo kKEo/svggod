@@ -110,10 +110,35 @@ Soft grey cards with hairline borders, round corners and a blue accent, in the r
 
 ![The order diagram in the cards theme, dark variant](images/showcase-cards-dark.svg)
 
+## cartoon
+
+A comic strip: thick ink outlines, a hard shadow behind every box, yellow boxes with a coral highlight, large arrowheads and comic lettering. Made for tutorials, talks and anything that should feel friendly.
+
+`--theme cartoon`
+
+![The order diagram in the cartoon theme, light variant: yellow boxes with thick dark outlines and hard shadows, a coral highlighted box and comic lettering](images/showcase-cartoon.svg)
+
+`--theme cartoon-dark`
+
+![The order diagram in the cartoon theme, dark variant: indigo boxes with cream outlines on a night-blue page](images/showcase-cartoon-dark.svg)
+
+## sticker
+
+Very round shapes in candy colours on a lavender page, with a small shadow below each box and rounded lettering. Made for onboarding pages and playful product notes.
+
+`--theme sticker`
+
+![The order diagram in the sticker theme, light variant: pink rounded boxes with plum outlines on a lavender page and a violet highlighted box](images/showcase-sticker.svg)
+
+`--theme sticker-dark`
+
+![The order diagram in the sticker theme, dark variant: plum boxes with pink outlines](images/showcase-sticker-dark.svg)
+
 ## What to notice
 
-- **Text size changes the layout.** `bold` and `cards` use larger text, so their boxes and the whole picture are larger. `blueprint` uses a monospace font, which makes labels wider.
+- **Text size changes the layout.** `bold`, `cards`, `cartoon` and `sticker` use larger text, so their boxes and the whole picture are larger. `blueprint` uses a monospace font, which makes labels wider.
 - **Corners and lines do not.** `docs` and `paper` have the same text sizes, so their boxes are in the same places; only colours, corners and line widths differ.
 - **`cards` has very light outlines.** Its boxes are told apart from the page by a hairline and a pale fill. It suits a page that is mostly looked at; for diagrams that must be read by everyone, in print or on a poor screen, prefer `docs` or `bold`.
+- **`cartoon` and `sticker` bring their own lettering.** Comic Neue and Varela Round are built into SVGGod, so labels are measured exactly. A reader without the font sees the next one in the list, such as Comic Sans MS, at nearly the same width.
 
 None of these is quite right? [Make your own theme](making-a-theme.md), starting from the closest one.

@@ -737,7 +737,28 @@ struct Writer {
     small: f64,
 }
 
+/// Mark on the copy of a box drawn behind it as its shadow; it is not the box.
+pub(crate) const SHADOW_ATTR: &str = "data-shadow";
+
 impl Writer {
+    /// The silhouette of a box once more, moved aside and in one colour, behind the box.
+    fn shadow(&mut self, p: &Part, theme: &theme::Theme) {
+        if !theme.has_shadow() || !matches!(p, Part::Rect { .. } | Part::Path { filled: true, .. } | Part::Polygon(_)) {
+            return;
+        }
+        let from = self.out.len();
+        // An outline in dashes casts a whole shadow.
+        match p {
+            Part::Rect { r, rx, .. } => self.part(&Part::Rect { r: *r, rx: *rx, dashed: false }, &theme.shadow, &theme.shadow),
+            other => self.part(other, &theme.shadow, &theme.shadow),
+        }
+        // The copy is the element just written; it is moved as a whole, so its own numbers stay the box's.
+        let end = self.out.trim_end().len() - 2;
+        let (dx, dy) = theme.shadow_offset;
+        self.out.insert_str(end, &format!(" transform=\"translate({} {})\" {SHADOW_ATTR}=\"1\"", fmt(dx), fmt(dy)));
+        debug_assert!(self.out[from..].contains(SHADOW_ATTR));
+    }
+
     /// Lines of text centred on (cx, cy); `anchor` is start or middle.
     #[allow(clippy::too_many_arguments)]
     fn text(&mut self, indent: &str, lines: &[String], x: f64, cy: f64, size: f64, leading: f64, fill: &str, anchor: &str) {
@@ -901,7 +922,9 @@ fn draw(spec: &Spec, opt: &Options, prev: Option<&keep::Previous>) -> Result<(St
 
     let family = theme.family.join(", ");
     let mut wr = Writer { out: String::new(), as_paths: opt.text_as_paths, class: theme.class, width: theme.width, small };
-    let font_attr = if opt.text_as_paths { String::new() } else { format!(" font-family=\"{}\"", esc_attr(&family)) };
+    let weight = if theme.weight == 400 { String::new() } else { format!(" font-weight=\"{}\"", theme.weight) };
+    let font_attr = if opt.text_as_paths { String::new() } else { format!(" font-family=\"{}\"{weight}", esc_attr(&family)) };
+    let font_attr = if theme.round { format!("{font_attr} stroke-linejoin=\"round\" stroke-linecap=\"round\"") } else { font_attr };
     wr.out.push_str(&format!("<svg xmlns=\"{SVG_NS}\" viewBox=\"0 0 {} {}\" data-svggod=\"1\"{font_attr}>\n", fmt(w), fmt(h)));
     wr.out.push_str(&format!("  <title>{}</title>\n", esc(&spec.title)));
     // Without a description of its own, the drawing says in a sentence what it shows.
@@ -914,17 +937,23 @@ fn draw(spec: &Spec, opt: &Options, prev: Option<&keep::Previous>) -> Result<(St
     let (need_end, need_start) = (need(false, false), need(true, false));
     if need_end || need_start || need(false, true) || need(true, true) {
         wr.out.push_str("  <defs>\n");
+        // The arrowhead: 10 by 8 px, scaled by the theme; its tip is where the line ends.
+        let (aw, ah) = (10.0 * theme.arrow, 8.0 * theme.arrow);
+        let mut marker = |id: &str, start: bool, colour: &str| {
+            let (ref_x, d) = if start { (0.0, format!("M{} 0L0 {}L{} {}Z", fmt(aw), fmt(ah / 2.0), fmt(aw), fmt(ah))) } else { (aw, format!("M0 0L{} {}L0 {}Z", fmt(aw), fmt(ah / 2.0), fmt(ah))) };
+            wr.out.push_str(&format!("    <marker id=\"{id}\" markerWidth=\"{}\" markerHeight=\"{}\" refX=\"{}\" refY=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\"><path d=\"{d}\" fill=\"{colour}\"/></marker>\n", fmt(aw), fmt(ah), fmt(ref_x), fmt(ah / 2.0)));
+        };
         if need_end {
-            wr.out.push_str(&format!("    <marker id=\"arrow\" markerWidth=\"10\" markerHeight=\"8\" refX=\"10\" refY=\"4\" orient=\"auto\" markerUnits=\"userSpaceOnUse\"><path d=\"M0 0L10 4L0 8Z\" fill=\"{}\"/></marker>\n", theme.edge));
+            marker("arrow", false, &theme.edge);
         }
         if need_start {
-            wr.out.push_str(&format!("    <marker id=\"arrow-start\" markerWidth=\"10\" markerHeight=\"8\" refX=\"0\" refY=\"4\" orient=\"auto\" markerUnits=\"userSpaceOnUse\"><path d=\"M10 0L0 4L10 8Z\" fill=\"{}\"/></marker>\n", theme.edge));
+            marker("arrow-start", true, &theme.edge);
         }
         if need(false, true) {
-            wr.out.push_str(&format!("    <marker id=\"arrow-dim\" markerWidth=\"10\" markerHeight=\"8\" refX=\"10\" refY=\"4\" orient=\"auto\" markerUnits=\"userSpaceOnUse\"><path d=\"M0 0L10 4L0 8Z\" fill=\"{}\"/></marker>\n", theme.muted));
+            marker("arrow-dim", false, &theme.muted);
         }
         if need(true, true) {
-            wr.out.push_str(&format!("    <marker id=\"arrow-start-dim\" markerWidth=\"10\" markerHeight=\"8\" refX=\"0\" refY=\"4\" orient=\"auto\" markerUnits=\"userSpaceOnUse\"><path d=\"M10 0L0 4L10 8Z\" fill=\"{}\"/></marker>\n", theme.muted));
+            marker("arrow-start-dim", true, &theme.muted);
         }
         wr.out.push_str("  </defs>\n");
     }
@@ -983,7 +1012,12 @@ fn draw(spec: &Spec, opt: &Options, prev: Option<&keep::Previous>) -> Result<(St
                 Mark::When { at, text, anchor, .. } => wr.text("    ", std::slice::from_ref(text), at.x, at.y, small, small_lead, if spec.in_focus(Ref::Node(i)) { &theme.text } else { &theme.muted }, anchor),
             }
         }
-        for p in &shape(n.kind, r, theme).parts {
+        let parts = shape(n.kind, r, theme).parts;
+        // A box out of focus lies flat: no shadow.
+        if let Some(first) = parts.first().filter(|_| spec.in_focus(Ref::Node(i))) {
+            wr.shadow(first, theme);
+        }
+        for p in &parts {
             wr.part(p, fill, pen);
         }
         if !n.label.is_empty() {
@@ -1039,6 +1073,10 @@ fn draw(spec: &Spec, opt: &Options, prev: Option<&keep::Previous>) -> Result<(St
         if let Some((a, b)) = d.leaders[i] {
             wr.out.push_str(&format!("    <line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{}\" stroke-dasharray=\"2 3\"/>\n", fmt(a.x), fmt(a.y), fmt(b.x), fmt(b.y), theme.muted, fmt(theme.thin)));
         }
+        if theme.has_shadow() {
+            let (dx, dy) = theme.shadow_offset;
+            wr.out.push_str(&format!("    <rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\"{} fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\" transform=\"translate({} {})\" {SHADOW_ATTR}=\"1\"/>\n", fmt(r.x0), fmt(r.y0), fmt(r.width()), fmt(r.height()), rx(theme.corner / 2.0), theme.shadow, theme.shadow, fmt(theme.thin), fmt(dx), fmt(dy)));
+        }
         wr.out.push_str(&format!("    <rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\"{} fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\"/>\n", fmt(r.x0), fmt(r.y0), fmt(r.width()), fmt(r.height()), rx(theme.corner / 2.0), theme.note_fill, theme.muted, fmt(theme.thin)));
         let ink = if spec.lookup(&spec.notes[i].attach).is_none_or(|r| spec.in_focus(r)) { &theme.text } else { &theme.muted };
         wr.text("    ", &m.notes[i].text.lines, r.center().x, r.center().y, small, small_lead, ink, "middle");
@@ -1075,8 +1113,9 @@ mod tests {
                 let name = path.to_string_lossy().into_owned();
                 let doc = crate::spec::read_document(&std::fs::read_to_string(&path).unwrap(), &name).unwrap();
                 let spec = crate::spec::parse(&doc).unwrap();
-                for text_as_paths in [false, true] {
-                    let look = theme::default();
+                // The cartoon theme draws a shadow behind each box, which is not the box.
+                for (look, text_as_paths) in [("docs-light", false), ("docs-light", true), ("cartoon", false)] {
+                    let look = theme::resolve(look, std::path::Path::new(""), None).unwrap();
                     let opt = Options { theme: &look, text_as_paths, embed: None, interactive: false, effort: Effort::Normal };
                     let svg = render(&spec, &opt).unwrap();
                     let prev = keep::read(&svg, &name).unwrap();
