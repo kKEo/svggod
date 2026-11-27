@@ -1,6 +1,6 @@
 [package]
 name = "svggod"
-version = "1.2.2"
+version = "1.2.3"
 edition = "2024"
 rust-version = "1.88"
 description = "Compile declarative diagram descriptions to SVG and check any SVG for correctness, legibility and portability"

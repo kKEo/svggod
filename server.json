@@ -7,12 +7,12 @@
     "url": "https://github.com/kKEo/svggod",
     "source": "github"
   },
-  "version": "1.2.2",
+  "version": "1.2.3",
   "packages": [
     {
       "registryType": "cargo",
       "identifier": "svggod",
-      "version": "1.2.2",
+      "version": "1.2.3",
       "transport": {
         "type": "stdio"
       },
